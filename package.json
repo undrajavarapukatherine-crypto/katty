@@ -1,0 +1,10 @@
+{
+  "name": "sih-indra-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix indra run dev",
+    "build": "npm --prefix indra run build",
+    "start": "npm --prefix indra run start"
+  }
+}

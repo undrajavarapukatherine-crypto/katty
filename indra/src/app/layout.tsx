@@ -1,0 +1,21 @@
+import type { Metadata } from 'next';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: 'INDRA — Industrial Neural Decision & Reasoning Assistant',
+  description: 'Air-gapped, on-premise sovereign AI workbench for refinery operations',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className="dark h-full bg-[#0a0a0a]">
+      <body className="h-full bg-[#0a0a0a] text-zinc-100 antialiased overflow-hidden select-none">
+        {children}
+      </body>
+    </html>
+  );
+}
