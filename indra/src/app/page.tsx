@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LeftPane from '@/components/left-pane/LeftPane';
 import CenterPane from '@/components/center-pane/CenterPane';
 import RightPane from '@/components/right-pane/RightPane';
 import KnowledgeBaseView from '@/components/views/KnowledgeBaseView';
 import AuditLedgerView from '@/components/views/AuditLedgerView';
+import HITLApprovalModal from '@/components/approvals/HITLApprovalModal';
 import { useIndraStore } from '@/store/indra-store';
 import { 
   PanelLeft, 
@@ -33,12 +34,19 @@ export default function Home() {
     setActiveModel,
     activeNav,
     loadedModels,
-    isBackendConnected
+    isBackendConnected,
+    pendingApprovals,
+    setApprovalsModalOpen,
+    fetchPendingApprovals
   } = useIndraStore();
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
+
+  useEffect(() => {
+    fetchPendingApprovals();
+  }, [fetchPendingApprovals]);
 
   const runVerifiedAudit = () => {
     if (isAgentWorking) return;
@@ -154,8 +162,27 @@ export default function Home() {
           <span>Execute ASME B31.3 Audit</span>
         </button>
 
-        {/* Right: Antigravity "Install IDE" button + Menu */}
+        {/* Right: HITL Approvals + Antigravity "Install IDE" button + Menu */}
         <div className="flex items-center gap-2">
+          {/* HITL Approvals Gate Trigger */}
+          <button
+            onClick={() => setApprovalsModalOpen(true)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono transition-all border cursor-pointer ${
+              pendingApprovals.length > 0
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25 shadow-sm'
+                : 'bg-zinc-800/60 border-zinc-700/50 text-zinc-400 hover:text-zinc-200'
+            }`}
+            title="Human-in-the-Loop Pending Approvals Gate"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>HITL Approvals</span>
+            {pendingApprovals.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-black font-bold text-[9px] animate-pulse">
+                {pendingApprovals.length}
+              </span>
+            )}
+          </button>
+
           {/* Antigravity "A Install IDE" Button (Direct match to reference image) */}
           <button
             onClick={() => setShowInstallModal(true)}
@@ -319,6 +346,9 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* 6. Human-in-the-Loop (HITL) Approvals Modal */}
+      <HITLApprovalModal />
     </div>
   );
 }

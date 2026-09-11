@@ -97,29 +97,37 @@ export interface EquipmentData {
 }
 
 export interface AuditBlock {
-  index: number;
+  index?: number;
   timestamp: string;
-  prev_hash: string;
-  hash: string;
+  event_type?: string;
   merkle_root?: string;
+  previous_hash?: string;
+  prev_hash?: string;
+  hash?: string;
   task_id?: string;
-  action: string;
+  action?: string;
   operator?: string;
-  valid: boolean;
+  valid?: boolean;
   signature?: string;
+  details?: any;
   [key: string]: any;
 }
 
 export interface PendingApproval {
-  id: string;
+  id?: string;
   task_id: string;
-  title: string;
-  description: string;
-  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  tier_required: number;
-  created_at: string;
-  status: string;
-  calculations?: any;
+  step_index: number;
+  tool?: string;
+  tool_name?: string;
+  title?: string;
+  description?: string;
+  arguments?: Record<string, any>;
+  args?: Record<string, any>;
+  calculations?: Record<string, any>;
+  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  tier_required?: number;
+  created_at?: string;
+  status?: string;
   [key: string]: any;
 }
 
@@ -148,6 +156,11 @@ export interface IndraState {
   isAgentWorking: boolean;
   inputValue: string;
 
+  // Human-in-the-Loop Approvals
+  pendingApprovals: PendingApproval[];
+  loadingApprovals: boolean;
+  isApprovalsModalOpen: boolean;
+
   // Actions
   setInputValue: (value: string) => void;
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => void;
@@ -155,10 +168,18 @@ export interface IndraState {
   setActiveModel: (model: string) => void;
   toggleSidebar: () => void;
   newConversation: () => void;
+  setApprovalsModalOpen: (open: boolean) => void;
 
   // Real Backend Calls & WebSocket Handlers
   fetchModels: () => Promise<void>;
   connectNetworkWebSocket: () => void;
+  fetchPendingApprovals: () => Promise<void>;
+  signApproval: (params: {
+    taskId: string;
+    stepIndex: number;
+    approved: boolean;
+    signature: string;
+  }) => Promise<{ success: boolean; message?: string }>;
   sendMessage: (content: string, attachments?: { id?: string; name: string; type: string; size: string; url?: string }[]) => Promise<void>;
   addDeliverable: (deliverable: Deliverable) => void;
   addNetworkEvent: (event: NetworkEvent) => void;
@@ -192,6 +213,10 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
   isAgentWorking: false,
   inputValue: '',
 
+  pendingApprovals: [],
+  loadingApprovals: false,
+  isApprovalsModalOpen: false,
+
   setInputValue: (value: string) => set({ inputValue: value }),
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
   setActiveProject: (project: string) => set({ activeProject: project }),
@@ -199,6 +224,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
   setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
+  setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
 
   newConversation: () => {
     if (taskWs) {
@@ -308,7 +334,62 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
     }
   },
 
-  // Send message to FastAPI POST /api/tasks and stream via ws://localhost:8000/ws/tasks/${taskId}
+  // 3. Human-in-the-Loop Approvals (GET /api/approvals/pending & POST /api/approvals/sign)
+  fetchPendingApprovals: async () => {
+    try {
+      set({ loadingApprovals: true });
+      const res = await fetch(`${API_BASE}/api/approvals/pending`);
+      if (res.ok) {
+        const data = await res.json();
+        const list: PendingApproval[] = Array.isArray(data)
+          ? data
+          : (Array.isArray(data.approvals) ? data.approvals : (Array.isArray(data.pending) ? data.pending : []));
+        set({ pendingApprovals: list });
+      }
+    } catch (err) {
+      console.warn('Failed to fetch pending approvals from', `${API_BASE}/api/approvals/pending`, err);
+    } finally {
+      set({ loadingApprovals: false });
+    }
+  },
+
+  signApproval: async ({ taskId, stepIndex, approved, signature }) => {
+    try {
+      // Exact specification payload: {"task_id": "the-uuid", "step_index": 0, "approved": true, "signature": "Admin User"}
+      const payload = {
+        task_id: taskId,
+        step_index: typeof stepIndex === 'number' ? stepIndex : 0,
+        approved,
+        signature: signature || 'Admin User',
+      };
+
+      const res = await fetch(`${API_BASE}/api/approvals/sign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Sign-off failed (HTTP ${res.status})`);
+      }
+
+      // Optimistically remove signed approval
+      set((state) => ({
+        pendingApprovals: state.pendingApprovals.filter(
+          (p) => !((p.task_id === taskId || (p as any).taskId === taskId) && ((p.step_index ?? 0) === stepIndex))
+        ),
+      }));
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error signing approval:', err);
+      return { success: false, message: err.message || 'Signature failed' };
+    }
+  },
+
+  // 1. Task Submission: POST http://localhost:8000/api/tasks with {"text": "..."}
+  // 2. Live WebSocket Streaming: ws://localhost:8000/ws/tasks/{taskId}
   sendMessage: async (content: string, attachments?: { id?: string; name: string; type: string; size: string; url?: string }[]) => {
     const userMessage: Message = {
       id: `msg-user-${Date.now()}`,
@@ -335,16 +416,12 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
     }));
 
     try {
-      const fileIds = attachments?.map((a) => a.id).filter(Boolean) as string[];
-
-      // 1. Initiate task on backend
+      // Exact payload format: {"text": "user's prompt string"}
       const res = await fetch(`${API_BASE}/api/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: content,
-          fileIds: fileIds || [],
-          file_ids: fileIds || [],
         }),
       });
 
@@ -352,6 +429,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
         throw new Error(`Failed to create task on backend: ${res.statusText}`);
       }
 
+      // Backend response: {"taskId": "some-uuid", "status": "processing"}
       const taskData = await res.json();
       const taskId = taskData.taskId || taskData.task_id || taskData.id;
 
@@ -361,7 +439,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
 
       set({ currentTaskId: taskId, isBackendConnected: true });
 
-      // 2. Open live task WebSocket ws://localhost:8000/ws/tasks/${taskId}
+      // Open live task WebSocket ws://localhost:8000/ws/tasks/{taskId}
       if (taskWs) {
         taskWs.close();
       }
@@ -373,9 +451,9 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
           const ev = JSON.parse(event.data);
           const type = ev.type || ev.event;
 
-          // Event A: model_selected
+          // Event 1: {"type": "model_selected", "model": "..."}
           if (type === 'model_selected') {
-            const modelName = ev.model || ev.name || ev.model_name;
+            const modelName = ev.model || ev.name || ev.model_name || 'Resident Model';
             set({ 
               activeModel: modelName,
               modelReason: ev.reason || ev.description
@@ -387,7 +465,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
             }));
           }
 
-          // Event B: plan (DAG execution steps)
+          // Event 2: {"type": "plan", "steps": [...]}
           else if (type === 'plan') {
             const rawSteps = ev.steps || ev.data || [];
             const steps: AgentStep[] = rawSteps.map((s: any, idx: number) => {
@@ -413,47 +491,63 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
             }));
           }
 
-          // Event C: tool_call
+          // Event 3: {"type": "tool_call", "tool": "name", "arguments": {...}}
           else if (type === 'tool_call') {
-            const toolName = ev.tool || ev.name || ev.tool_name || 'deterministic_sandbox';
-            const argsStr = typeof ev.args === 'string' ? ev.args : JSON.stringify(ev.args, null, 2);
+            const toolName = ev.tool || ev.name || ev.tool_name || 'deterministic_tool';
+            const toolArguments = ev.arguments !== undefined ? ev.arguments : (ev.args !== undefined ? ev.args : {});
+            const argsStr = typeof toolArguments === 'string' ? toolArguments : JSON.stringify(toolArguments, null, 2);
 
             set((state) => ({
               messages: state.messages.map((m) => {
                 if (m.id !== agentMessageId) return m;
 
-                // Advance corresponding step to in-progress if available
-                const updatedSteps = m.agentSteps?.map((s) => {
-                  if (s.label.toLowerCase().includes(toolName.toLowerCase())) {
-                    return { ...s, status: 'in-progress' as const };
-                  }
-                  return s;
-                });
+                const hasMatchingStep = m.agentSteps?.some((s) => s.id === ev.id || s.label.toLowerCase().includes(toolName.toLowerCase()));
+                const updatedSteps = hasMatchingStep
+                  ? m.agentSteps?.map((s) => {
+                      if (s.id === ev.id || s.label.toLowerCase().includes(toolName.toLowerCase())) {
+                        return { ...s, status: 'in-progress' as const };
+                      }
+                      return s;
+                    })
+                  : [
+                      ...(m.agentSteps || []),
+                      {
+                        id: ev.id || `tool-${Date.now()}`,
+                        label: `Running ${toolName}`,
+                        status: 'in-progress' as const,
+                        detail: `Authorizing & executing with deterministic solver`,
+                      },
+                    ];
 
                 return {
                   ...m,
                   agentSteps: updatedSteps,
                   toolExecution: {
                     code: argsStr,
-                    output: 'Executing in air-gapped deterministic container...',
-                    language: toolName.includes('python') ? 'python' : 'json',
+                    output: `Executing tool "${toolName}" in air-gapped deterministic container...`,
+                    language: toolName.toLowerCase().includes('python') ? 'python' : 'json',
                     toolName,
                   },
                 };
               }),
             }));
+
+            // Check if pending approvals were triggered by this tool call
+            get().fetchPendingApprovals();
           }
 
-          // Event D: tool_result
+          // Event 4: {"type": "tool_result", "id": "...", "status": "success", "result": {...}}
           else if (type === 'tool_result') {
+            const stepId = ev.id;
+            const status = ev.status || 'success';
+            const resultData = ev.result !== undefined ? ev.result : (ev.output !== undefined ? ev.output : {});
+            const outputStr = typeof resultData === 'string' ? resultData : JSON.stringify(resultData, null, 2);
             const toolName = ev.tool || ev.name || 'tool';
-            const outputVal = ev.output !== undefined ? ev.output : ev.result;
-            const outputStr = typeof outputVal === 'string' ? outputVal : JSON.stringify(outputVal, null, 2);
 
-            // If RAG search, extract and populate evidence citations
+            // RAG citations extraction
             if (toolName.includes('search') || toolName.includes('rag') || toolName.includes('knowledge') || ev.sources) {
-              const rawSources = ev.sources || (Array.isArray(outputVal) ? outputVal : []);
-              if (Array.isArray(rawSources)) {
+              const rawSources = ev.sources || (Array.isArray(resultData) ? resultData : []);
+              if (Array.isArray(rawSources) && rawSources.length > 0) {
                 const newSources: RAGSource[] = rawSources.map((s: any, i: number) => ({
                   id: s.id || `src-${Date.now()}-${i}`,
                   document: s.document || s.documentName || s.filename || 'Refinery Knowledge Base',
@@ -466,9 +560,9 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
               }
             }
 
-            // If P&ID extraction, extract dynamic tags
+            // P&ID dynamic tags extraction
             if (toolName.includes('pid') || toolName.includes('ocr') || ev.tags) {
-              const detected = ev.tags || (outputVal?.tags) || (Array.isArray(outputVal) ? outputVal : []);
+              const detected = ev.tags || (resultData?.tags) || (Array.isArray(resultData) ? resultData : []);
               if (Array.isArray(detected) && detected.length > 0) {
                 set({ detectedTags: detected.map((t: any) => typeof t === 'string' ? t : t.tag || t.name) });
               }
@@ -479,8 +573,8 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
                 if (m.id !== agentMessageId) return m;
 
                 const updatedSteps = m.agentSteps?.map((s) => {
-                  if (s.status === 'in-progress') {
-                    return { ...s, status: 'completed' as const };
+                  if ((stepId && s.id === stepId) || s.status === 'in-progress') {
+                    return { ...s, status: 'completed' as const, detail: status };
                   }
                   return s;
                 });
@@ -490,15 +584,15 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
                   agentSteps: updatedSteps,
                   toolExecution: m.toolExecution
                     ? { ...m.toolExecution, output: outputStr }
-                    : { code: '', output: outputStr, language: 'text', toolName },
+                    : { code: '', output: outputStr, language: 'json', toolName },
                 };
               }),
             }));
           }
 
-          // Event E: token (Progressive markdown text stream)
+          // Event 5: {"type": "token", "content": "..."}
           else if (type === 'token') {
-            const chunk = ev.token || ev.text || ev.chunk || ev.content || '';
+            const chunk = ev.content !== undefined ? ev.content : (ev.token || ev.text || ev.chunk || '');
             set((state) => ({
               messages: state.messages.map((m) =>
                 m.id === agentMessageId
@@ -508,14 +602,19 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
             }));
           }
 
-          // Event F: deliverable
+          // Event 6: {"type": "deliverable", "filename": "...", "url": "..."}
           else if (type === 'deliverable') {
             const filename = ev.filename || ev.name || 'Deliverable.docx';
+            const rawUrl = ev.url || `/files/${taskId}/artifacts/${filename}`;
+            // Construct download link pointing to http://localhost:8000{url}
+            const downloadUrl = rawUrl.startsWith('http')
+              ? rawUrl
+              : `${API_BASE}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
             const kind = ev.kind || (filename.endsWith('.xlsx') ? 'xlsx' : 'docx');
             const nowTime = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
             
             const newDeliverable: Deliverable = {
-              id: ev.id || `del-${Date.now()}`,
+              id: ev.id || `del-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
               name: filename,
               filename,
               type: kind,
@@ -523,14 +622,14 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
               generatedAt: nowTime,
               timestamp: nowTime,
               description: ev.description || (kind === 'xlsx' ? 'Deterministic ASME B31.3 Equipment Health Workbook' : 'Statutory Plant Maintenance Approval Note'),
-              url: ev.url || `/files/${taskId}/artifacts/${filename}`,
+              url: downloadUrl,
               hash: ev.hash || ev.sha256,
             };
 
             get().addDeliverable(newDeliverable);
           }
 
-          // Event G: done
+          // Event 7: {"type": "done"}
           else if (type === 'done') {
             set((state) => ({
               isAgentWorking: false,
@@ -548,6 +647,9 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
               taskWs.close();
               taskWs = null;
             }
+
+            // Sync approvals after task completion
+            get().fetchPendingApprovals();
           }
         } catch (err) {
           console.error('Error processing task WebSocket message:', err);
@@ -571,7 +673,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
           m.id === agentMessageId
             ? {
                 ...m,
-                content: `⚠️ **Connection to Sovereign Backend Failed**\n\nCould not reach \`http://localhost:8000/api/tasks\`. Please ensure the FastAPI backend is running locally.\n\n*Error: ${err.message || err}*`,
+                content: `⚠️ **Connection to Sovereign Backend Failed**\n\nCould not reach \`${API_BASE}/api/tasks\`.\n\n*Error: ${err.message || err}*`,
               }
             : m
         ),

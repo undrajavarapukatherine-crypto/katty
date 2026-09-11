@@ -37,21 +37,29 @@ export default function AuditLedgerView() {
   const [signSuccess, setSignSuccess] = useState<string | null>(null);
   const [signError, setSignError] = useState<string | null>(null);
 
+  const [totalBlocks, setTotalBlocks] = useState<number>(0);
+
   // 1. Fetch Merkle Audit Ledger from GET /api/audit/ledger
+  // Response schema: {"verified": true, "total_blocks": 5, "chain": [...]}
   const fetchLedger = async () => {
     try {
       setLoadingLedger(true);
       const res = await fetch(`${API_BASE}/api/audit/ledger`);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
-          setBlocks(data);
-          setMerkleRoot(data[data.length - 1]?.hash || data[0]?.merkle_root || 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
-          setIsValidChain(true);
-        } else if (data && typeof data === 'object') {
-          setBlocks(Array.isArray(data.blocks) ? data.blocks : []);
-          setMerkleRoot(data.merkle_root || data.root || 'SHA256:AUTHENTICATED_ROOT');
-          setIsValidChain(data.is_valid !== undefined ? Boolean(data.is_valid) : true);
+        const chain: AuditBlock[] = Array.isArray(data.chain)
+          ? data.chain
+          : (Array.isArray(data.blocks) ? data.blocks : (Array.isArray(data) ? data : []));
+        setBlocks(chain);
+        setIsValidChain(data.verified !== undefined ? Boolean(data.verified) : true);
+        setTotalBlocks(typeof data.total_blocks === 'number' ? data.total_blocks : chain.length);
+        if (chain.length > 0) {
+          setMerkleRoot(
+            chain[chain.length - 1]?.merkle_root || 
+            chain[0]?.merkle_root || 
+            chain[chain.length - 1]?.hash || 
+            'SHA256:AUTHENTICATED_ROOT'
+          );
         }
       }
     } catch (err) {
@@ -68,7 +76,9 @@ export default function AuditLedgerView() {
       const res = await fetch(`${API_BASE}/api/approvals/pending`);
       if (res.ok) {
         const data = await res.json();
-        const list = Array.isArray(data) ? data : data.approvals || [];
+        const list = Array.isArray(data) 
+          ? data 
+          : (Array.isArray(data.approvals) ? data.approvals : (Array.isArray(data.pending) ? data.pending : []));
         setPendingApprovals(list);
         if (list.length > 0 && !selectedApproval) {
           setSelectedApproval(list[0]);
@@ -87,12 +97,10 @@ export default function AuditLedgerView() {
   }, []);
 
   // 3. Submit 3-Tier Human-in-the-Loop Sign-off to POST /api/approvals/sign
+  // Exact payload format: {"task_id": "the-uuid", "step_index": 0, "approved": true, "signature": "Admin User"}
   const handleSignApproval = async (decision: 'APPROVED' | 'REJECTED') => {
     if (!selectedApproval) return;
-    if (!engineerName.trim() || !employeeId.trim()) {
-      setSignError('Engineer Name and Employee ID are required for cryptographic compliance.');
-      return;
-    }
+    const signer = engineerName.trim() || 'Admin User';
 
     try {
       setSigning(true);
@@ -100,14 +108,10 @@ export default function AuditLedgerView() {
       setSignSuccess(null);
 
       const payload = {
-        approval_id: selectedApproval.id,
-        id: selectedApproval.id,
-        task_id: selectedApproval.task_id,
-        engineer_name: engineerName.trim(),
-        employee_id: employeeId.trim(),
-        tier: Number(tier),
-        decision,
-        notes: notes.trim() || undefined,
+        task_id: selectedApproval.task_id || (selectedApproval as any).taskId || selectedApproval.id,
+        step_index: typeof selectedApproval.step_index === 'number' ? selectedApproval.step_index : 0,
+        approved: decision === 'APPROVED',
+        signature: signer,
       };
 
       const res = await fetch(`${API_BASE}/api/approvals/sign`, {
@@ -120,7 +124,7 @@ export default function AuditLedgerView() {
         throw new Error(`Failed to submit digital sign-off (HTTP ${res.status})`);
       }
 
-      setSignSuccess(`Action recorded: Decision ${decision} sealed into Merkle Ledger.`);
+      setSignSuccess(`Action recorded: Tool execution ${decision === 'APPROVED' ? 'Approved' : 'Rejected'} by ${signer} & sealed into Merkle Ledger.`);
       setNotes('');
       
       // Refresh pending items and ledger
@@ -159,9 +163,13 @@ export default function AuditLedgerView() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>100% VALID & VERIFIED</span>
+          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border ${
+            isValidChain 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+          }`}>
+            {isValidChain ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+            <span>{isValidChain ? 'CRYPTOGRAPHICALLY VERIFIED (0 TAMPERING)' : 'INTEGRITY CHECK FAILED'}</span>
           </div>
 
           <button
@@ -184,17 +192,17 @@ export default function AuditLedgerView() {
             </div>
             <div>
               <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                Cryptographic Merkle Root
+                Active Merkle Root (SHA-256)
               </div>
               <div className="text-zinc-200 font-bold truncate max-w-lg">
-                {merkleRoot || 'SHA-256:ROOT_SEALED_ON_PREMISE'}
+                {merkleRoot || 'SHA256:ROOT_SEALED_ON_PREMISE'}
               </div>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Ledger Depth</div>
-            <div className="text-emerald-400 font-bold">{blocks.length} Blocks</div>
+            <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Total Blocks in Chain</div>
+            <div className="text-emerald-400 font-bold text-sm">{totalBlocks || blocks.length} Blocks</div>
           </div>
         </div>
 
@@ -223,11 +231,12 @@ export default function AuditLedgerView() {
                 <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-mono">
                   Select Action Requiring Authorization:
                 </div>
-                {pendingApprovals.map((item) => {
-                  const isSelected = selectedApproval?.id === item.id;
+                {pendingApprovals.map((item, idx) => {
+                  const itemKey = `${item.task_id}-${item.step_index ?? idx}`;
+                  const isSelected = selectedApproval?.task_id === item.task_id && (selectedApproval?.step_index ?? 0) === (item.step_index ?? idx);
                   return (
                     <div
-                      key={item.id}
+                      key={itemKey}
                       onClick={() => setSelectedApproval(item)}
                       className={`p-3 rounded-lg border cursor-pointer transition-all ${
                         isSelected
@@ -237,18 +246,18 @@ export default function AuditLedgerView() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-mono text-xs font-semibold text-zinc-200">
-                          {item.title}
+                          {item.tool || item.tool_name || item.title || 'Tool Authorization'}
                         </span>
                         <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30">
                           {item.severity || 'CRITICAL'}
                         </span>
                       </div>
                       <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">
-                        {item.description}
+                        {item.description || (item.arguments ? JSON.stringify(item.arguments) : 'Deterministic action waiting for approval')}
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-1 border-t border-zinc-800/60 text-[10px] font-mono text-zinc-500">
-                        <span>Required: Tier {item.tier_required || 2}</span>
-                        <span>{item.created_at || 'Recent'}</span>
+                        <span>Task: {item.task_id?.slice(0, 8)}... (Step #{item.step_index ?? idx})</span>
+                        <span>{item.created_at || 'Pending'}</span>
                       </div>
                     </div>
                   );
@@ -260,69 +269,37 @@ export default function AuditLedgerView() {
                 <div className="p-4 rounded-lg bg-zinc-950/80 border border-zinc-800/80 space-y-3 font-mono text-xs">
                   <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
                     <span className="font-semibold text-zinc-200">
-                      Sign-Off: {selectedApproval.title}
+                      Sign-Off: {selectedApproval.tool || selectedApproval.tool_name || selectedApproval.title || 'Tool Execution'}
                     </span>
                     <span className="text-[10px] text-emerald-400">
-                      Tier {selectedApproval.tier_required || 2} Required
+                      Step #{selectedApproval.step_index ?? 0}
                     </span>
                   </div>
 
                   <div className="space-y-2">
                     <div>
                       <label className="block text-[10px] text-zinc-500 mb-1 uppercase">
-                        Plant Engineer Full Name:
+                        Digital Signer Name:
                       </label>
                       <input
                         type="text"
                         value={engineerName}
                         onChange={(e) => setEngineerName(e.target.value)}
-                        placeholder="e.g. Dr. Lokesh Varma"
+                        placeholder="Admin User"
                         className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 outline-none focus:border-emerald-500"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    {selectedApproval.arguments && (
                       <div>
                         <label className="block text-[10px] text-zinc-500 mb-1 uppercase">
-                          Employee ID:
+                          Tool Parameters:
                         </label>
-                        <input
-                          type="text"
-                          value={employeeId}
-                          onChange={(e) => setEmployeeId(e.target.value)}
-                          placeholder="EMP-94021"
-                          className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 outline-none focus:border-emerald-500"
-                        />
+                        <pre className="p-2 rounded bg-black/60 border border-zinc-800 text-[10px] text-zinc-300 overflow-x-auto">
+                          {JSON.stringify(selectedApproval.arguments, null, 2)}
+                        </pre>
                       </div>
-
-                      <div>
-                        <label className="block text-[10px] text-zinc-500 mb-1 uppercase">
-                          Authorization Tier:
-                        </label>
-                        <select
-                          value={tier}
-                          onChange={(e) => setTier(e.target.value as any)}
-                          className="w-full px-2 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 outline-none"
-                        >
-                          <option value="1">Tier 1 — Field Operator</option>
-                          <option value="2">Tier 2 — Reliability Engineer</option>
-                          <option value="3">Tier 3 — Chief Plant Inspector</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] text-zinc-500 mb-1 uppercase">
-                        Engineering Justification Notes:
-                      </label>
-                      <textarea
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Verified ultrasonic wall thickness & ASME B31.3 allowable stress equations."
-                        rows={2}
-                        className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 outline-none resize-none"
-                      />
-                    </div>
+                    )}
                   </div>
 
                   {signError && (
@@ -370,7 +347,7 @@ export default function AuditLedgerView() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-400">
-              Cryptographic Audit Blocks ({blocks.length})
+              Cryptographic Audit Blocks ({totalBlocks || blocks.length})
             </h2>
             <span className="text-[10px] font-mono text-zinc-500">
               GET /api/audit/ledger
@@ -383,47 +360,56 @@ export default function AuditLedgerView() {
             </div>
           ) : (
             <div className="space-y-2">
-              {blocks.map((b, idx) => (
-                <div
-                  key={b.hash || idx}
-                  className="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all font-mono text-xs space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 font-bold">
-                        BLOCK #{b.index !== undefined ? b.index : idx}
-                      </span>
-                      <span className="text-zinc-200 font-semibold">{b.action || 'Sovereign Execution'}</span>
+              {blocks.map((b, idx) => {
+                const eventType = b.event_type || b.action || 'ASME_B31_3_EXECUTION';
+                const merkleRoot = b.merkle_root || b.hash || 'sha256:sealed';
+                const prevHash = b.previous_hash || b.prev_hash || '00000000000000000000000000000000';
+                const blockNum = b.index !== undefined ? b.index : idx;
+
+                return (
+                  <div
+                    key={b.hash || `${b.timestamp}-${idx}`}
+                    className="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-all font-mono text-xs space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 font-bold text-[10px]">
+                          BLOCK #{blockNum}
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+                          {eventType}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-400">
+                        <Clock className="w-3 h-3" />
+                        <span>{b.timestamp || 'Recorded'}</span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[10px] text-zinc-500">
-                      <Clock className="w-3 h-3" />
-                      <span>{b.timestamp || 'Recorded'}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] pt-1 border-t border-zinc-800/50">
+                      <div className="flex items-center gap-1.5 text-zinc-400 truncate">
+                        <LinkIcon className="w-3 h-3 text-zinc-500 flex-shrink-0" />
+                        <span className="text-zinc-500">previous_hash:</span>
+                        <span className="truncate text-zinc-400">{prevHash}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-emerald-400 truncate">
+                        <Hash className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        <span className="text-zinc-500">merkle_root:</span>
+                        <span className="truncate text-emerald-400">{merkleRoot}</span>
+                      </div>
                     </div>
+
+                    {b.operator && (
+                      <div className="text-[10px] text-zinc-400">
+                        <span className="text-zinc-500">Signed By: </span>
+                        {b.operator}
+                      </div>
+                    )}
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] pt-1 border-t border-zinc-800/50">
-                    <div className="flex items-center gap-1.5 text-zinc-400 truncate">
-                      <LinkIcon className="w-3 h-3 text-zinc-500 flex-shrink-0" />
-                      <span className="text-zinc-500">Parent:</span>
-                      <span className="truncate">{b.prev_hash || '00000000000000000000000000000000'}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-emerald-400 truncate">
-                      <Hash className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                      <span className="text-zinc-500">Block Hash:</span>
-                      <span className="truncate">{b.hash || 'sha256:genesis'}</span>
-                    </div>
-                  </div>
-
-                  {b.operator && (
-                    <div className="text-[10px] text-zinc-400">
-                      <span className="text-zinc-500">Signed By: </span>
-                      {b.operator}
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

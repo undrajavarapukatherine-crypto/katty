@@ -11,7 +11,7 @@ import {
 import useIndraStore from '@/store/indra-store';
 
 export default function NavigationMenu() {
-  const { activeNav, setActiveNav, activeProject, setActiveProject } = useIndraStore();
+  const { activeNav, setActiveNav, activeProject, pendingApprovals } = useIndraStore();
 
   const NAV_ITEMS = [
     { 
@@ -30,7 +30,8 @@ export default function NavigationMenu() {
       id: 'audit' as const, 
       label: 'Merkle Audit Ledger', 
       icon: ShieldCheck,
-      desc: 'SHA-256 Chain & 3-Tier HITL'
+      desc: 'SHA-256 Chain & 3-Tier HITL',
+      badge: pendingApprovals.length > 0 ? `${pendingApprovals.length} pending` : undefined,
     },
   ];
 
@@ -57,7 +58,14 @@ export default function NavigationMenu() {
               >
                 <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`} />
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium truncate">{item.label}</div>
+                  <div className="font-medium truncate flex items-center justify-between">
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-[10px] text-zinc-500 truncate">{item.desc}</div>
                 </div>
               </button>
