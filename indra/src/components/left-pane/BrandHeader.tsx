@@ -9,18 +9,30 @@ export default function BrandHeader() {
   return (
     <div className="px-3 pt-3 pb-2 border-b border-zinc-800/50">
       {/* Sovereign Title & Air-Gap Badge */}
-      <div className="flex items-center justify-between mb-2.5">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span className="text-sm font-bold tracking-[0.25em] text-zinc-100">INDRA</span>
+          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800/80 p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm relative group">
+            <img 
+              src="/logo.png" 
+              alt="INDRA Logo" 
+              className="w-full h-full object-contain"
+            />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-zinc-950 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold tracking-[0.22em] text-zinc-100 font-mono">INDRA</span>
+            </div>
+            <div className="text-[9px] text-zinc-500 font-mono tracking-wider -mt-0.5">SOVEREIGN AI</div>
+          </div>
         </div>
-        <div className="flex items-center gap-1 text-[9px] font-medium tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded px-1.5 py-0.5">
+        <div className="flex items-center gap-1 text-[9px] font-medium tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded px-1.5 py-0.5 font-mono">
           <Lock className="w-2.5 h-2.5" />
           <span>AIR-GAPPED</span>
         </div>
       </div>
 
-      <div className="text-[10px] text-zinc-500 leading-tight mb-3">
+      <div className="text-[10px] text-zinc-500 leading-tight mb-3 font-mono">
         Industrial Neural Decision & Reasoning Assistant
       </div>
 

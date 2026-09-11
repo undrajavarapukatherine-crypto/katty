@@ -59,6 +59,28 @@ export default function MessageArea() {
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 select-none overflow-y-auto">
+        {/* Sovereign AI Hero Emblem */}
+        <div className="flex flex-col items-center mb-6 text-center">
+          <div className="relative mb-3 group">
+            <div className="absolute -inset-2 rounded-2xl bg-emerald-500/10 blur-xl opacity-80 group-hover:opacity-100 transition-opacity" />
+            <div className="relative w-16 h-16 rounded-2xl bg-zinc-950/90 border border-zinc-800/80 p-1.5 flex items-center justify-center shadow-2xl">
+              <img src="/logo.png" alt="INDRA Sovereign AI" className="w-full h-full object-contain drop-shadow" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center shadow">
+              <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-base font-bold tracking-[0.25em] text-zinc-100 font-mono">INDRA</h1>
+            <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/30 font-bold">
+              0-WAN AIR-GAP
+            </span>
+          </div>
+          <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
+            Industrial Neural Decision & Reasoning Assistant
+          </p>
+        </div>
+
         {/* Antigravity "📁 Unit Context ˅" Folder Indicator Header */}
         <div className="w-full max-w-xl flex items-center justify-between pl-1 mb-2">
           <button className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono">

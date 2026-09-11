@@ -58,8 +58,11 @@ export default function Home() {
       {/* 1. Top OS / Electron Menu Bar (Antigravity Reference: Antigravity File View Window) */}
       <header className="h-7 bg-[#0a0a0a] border-b border-zinc-800/30 flex items-center justify-between px-3 text-xs z-50">
         {/* Left: App Title & Menus */}
-        <div className="flex items-center gap-4">
-          <span className="font-semibold text-zinc-300 tracking-wide text-xs">Antigravity</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <img src="/logo.png" alt="INDRA" className="w-4 h-4 object-contain" />
+            <span className="font-bold text-zinc-100 tracking-wider text-xs font-mono">INDRA</span>
+          </div>
 
           <nav className="flex items-center gap-3 text-zinc-400 text-[11px] relative">
             <button 
@@ -224,8 +227,10 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-xl p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Cpu className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center">
+                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
+                </div>
                 <h2 className="text-base font-semibold text-zinc-100 font-mono">
                   INDRA Sovereign Hardware & Network Telemetry
                 </h2>
@@ -306,10 +311,10 @@ export default function Home() {
           <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded bg-blue-500 text-white font-bold text-[10px] flex items-center justify-center">
-                  A
-                </span>
-                <h2 className="text-sm font-semibold text-zinc-100">Antigravity Sovereign Desktop IDE</h2>
+                <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center">
+                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
+                </div>
+                <h2 className="text-sm font-semibold text-zinc-100 font-mono">INDRA Sovereign Desktop IDE</h2>
               </div>
               <button onClick={() => setShowInstallModal(false)} className="text-zinc-500 hover:text-white">
                 <X className="w-4 h-4" />

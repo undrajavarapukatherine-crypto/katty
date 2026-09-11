@@ -4,6 +4,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'INDRA — Industrial Neural Decision & Reasoning Assistant',
   description: 'Air-gapped, on-premise sovereign AI workbench for refinery operations',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
