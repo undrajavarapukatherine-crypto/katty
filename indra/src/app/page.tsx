@@ -19,8 +19,7 @@ import {
   Cpu,
   Lock,
   Sparkles,
-  ShieldCheck,
-  Check
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Home() {
@@ -323,27 +322,10 @@ export default function Home() {
             <p className="text-xs text-zinc-400 leading-relaxed">
               INDRA is running as an on-premise sovereign desktop instance under Smart India Hackathon Problem Statement 26117.
             </p>
-            <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono space-y-1">
-              <div className="text-emerald-400 flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5" />
-                Air-Gapped Package Ready
-              </div>
-              <div className="text-zinc-500">Package: INDRA-Workbench-v2.4.0-win-x64.msi</div>
-              <div className="text-zinc-500">Compliance: 0-WAN / ASME B31.3 / API-570</div>
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800/60">
               <button 
                 onClick={() => setShowInstallModal(false)}
-                className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-300"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => {
-                  alert('Sovereign Desktop Installer verified. Air-gapped deployment active.');
-                  setShowInstallModal(false);
-                }}
-                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs text-white font-medium"
+                className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-200 transition-colors cursor-pointer"
               >
                 Close
               </button>
