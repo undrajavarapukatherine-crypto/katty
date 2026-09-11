@@ -11,15 +11,19 @@ import {
   CheckCircle2, 
   Loader2, 
   AlertCircle, 
-  RefreshCw,
-  ExternalLink,
-  Layers,
-  FileSpreadsheet
+  RefreshCw, 
+  ExternalLink, 
+  Layers, 
+  FileSpreadsheet,
+  X,
+  ZoomIn,
+  ZoomOut,
+  Scan
 } from 'lucide-react';
 import useIndraStore, { API_BASE, type KBDocument } from '@/store/indra-store';
 
 export default function KnowledgeBaseView() {
-  const { setActivePIDDoc, setActiveNav } = useIndraStore();
+  const { setActivePIDDoc } = useIndraStore();
 
   const [documents, setDocuments] = useState<KBDocument[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,6 +32,9 @@ export default function KnowledgeBaseView() {
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<KBDocument | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 1. Fetch all indexed documents from GET /api/kb/documents
@@ -88,10 +95,13 @@ export default function KnowledgeBaseView() {
       if (res.ok) {
         setDocuments((prev) => prev.filter((d) => d.id !== id));
       } else {
-        alert('Failed to delete document from backend.');
+        setErrorMessage('Failed to delete document from backend.');
+        setTimeout(() => setErrorMessage(null), 4000);
       }
     } catch (err) {
       console.error('Delete error:', err);
+      setErrorMessage('Backend error communicating with /api/kb/documents.');
+      setTimeout(() => setErrorMessage(null), 4000);
     }
   };
 
@@ -327,18 +337,18 @@ export default function KnowledgeBaseView() {
                           {isDrawing && (
                             <button
                               onClick={() => {
-                                setActivePIDDoc(doc);
-                                setActiveNav('workbench');
+                                setPreviewDoc(doc);
+                                setZoom(1);
                               }}
-                              className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] transition-colors"
-                              title="Inspect on P&ID Canvas"
+                              className="px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] transition-colors cursor-pointer"
+                              title="Inspect P&ID CAD Schematic"
                             >
                               Inspect P&ID
                             </button>
                           )}
                           <button
                             onClick={() => handleDelete(doc.id, doc.filename)}
-                            className="p-1 rounded hover:bg-rose-500/10 text-zinc-500 hover:text-rose-400 transition-colors"
+                            className="p-1 rounded hover:bg-rose-500/10 text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer"
                             title="Delete document"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -353,6 +363,99 @@ export default function KnowledgeBaseView() {
           )}
         </div>
       </div>
+
+      {/* Error Message Toast */}
+      {errorMessage && (
+        <div className="fixed bottom-4 right-4 bg-rose-950/90 border border-rose-800 text-rose-200 px-4 py-2.5 rounded-xl shadow-xl text-xs font-mono flex items-center gap-2 z-50">
+          <AlertCircle className="w-4 h-4 text-rose-400" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* P&ID Drawing Inspection Modal */}
+      {previewDoc && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-800/80 bg-zinc-900/40">
+              <div className="flex items-center gap-2">
+                <Scan className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-mono font-semibold text-zinc-200">
+                  P&ID Inspection: {previewDoc.filename}
+                </span>
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">
+                  ASME B31.3 AUDIT READY
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
+                  className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded cursor-pointer transition-colors"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-[10px] font-mono text-zinc-400 min-w-[3rem] text-center">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <button
+                  onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+                  className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded cursor-pointer transition-colors"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPreviewDoc(null)}
+                  className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded ml-2 cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto p-4 bg-zinc-900/20 flex items-center justify-center min-h-[400px]">
+              <div 
+                className="transition-transform duration-200 origin-center"
+                style={{ transform: `scale(${zoom})` }}
+              >
+                <img
+                  src={
+                    previewDoc.url
+                      ? (previewDoc.url.startsWith('http') ? previewDoc.url : `${API_BASE}${previewDoc.url.startsWith('/') ? '' : '/'}${previewDoc.url}`)
+                      : `${API_BASE}/files/documents/${previewDoc.id}`
+                  }
+                  alt={previewDoc.filename}
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg border border-zinc-800 shadow-xl"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/PID-001_Heat_Exchanger_Unit.png';
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="p-3 border-t border-zinc-800/80 bg-zinc-950 flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-zinc-500 uppercase">Detected Equipment Tags:</span>
+                {['FV-101', 'P-101', 'E-101', 'TI-101'].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={() => setPreviewDoc(null)}
+                className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded text-xs cursor-pointer"
+              >
+                Close Viewer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

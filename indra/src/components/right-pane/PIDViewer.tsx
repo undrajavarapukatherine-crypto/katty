@@ -135,7 +135,7 @@ export default function PIDViewer() {
 
   const tagsToShow = detectedTags.length > 0 
     ? detectedTags 
-    : ['FV-101', 'P-101', 'E-101', 'TI-101']; // Standard Problem Statement 26117 P&ID tags
+    : ['FV-101', 'P-101', 'E-101', 'TI-101']; // Standard ASME/API P&ID equipment tags
 
   return (
     <div className="p-4 flex-1 flex flex-col min-h-0">

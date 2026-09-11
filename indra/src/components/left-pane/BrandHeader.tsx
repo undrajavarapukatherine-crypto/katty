@@ -4,7 +4,7 @@ import { Lock, Plus, History, Clock } from 'lucide-react';
 import { useIndraStore } from '@/store/indra-store';
 
 export default function BrandHeader() {
-  const newConversation = useIndraStore((state) => state.newConversation);
+  const { newConversation, setScheduledTasksOpen, setActiveNav, messages } = useIndraStore();
 
   return (
     <div className="px-3 pt-3 pb-2 border-b border-zinc-800/50">
@@ -36,10 +36,14 @@ export default function BrandHeader() {
         Industrial Neural Decision & Reasoning Assistant
       </div>
 
-      {/* Antigravity "+ New Conversation" Pill Button */}
+      {/* "+ New Conversation" Pill Button */}
       <button
-        onClick={newConversation}
+        onClick={() => {
+          newConversation();
+          setActiveNav('workbench');
+        }}
         className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg bg-zinc-900/90 hover:bg-zinc-800/80 border border-zinc-700/50 hover:border-zinc-600 text-xs text-zinc-200 font-medium transition-all shadow-sm group cursor-pointer"
+        title="Start fresh conversation"
       >
         <Plus className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-200" />
         <span>New Conversation</span>
@@ -48,17 +52,27 @@ export default function BrandHeader() {
       {/* Quick Antigravity Links */}
       <div className="mt-2 space-y-0.5 text-[11px]">
         <button 
-          onClick={newConversation}
-          className="w-full flex items-center gap-2 px-2 py-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 rounded transition-colors text-left"
+          onClick={() => setActiveNav('workbench')}
+          className="w-full flex items-center gap-2 px-2 py-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 rounded transition-colors text-left cursor-pointer"
+          title="Jump to active conversation"
         >
           <History className="w-3.5 h-3.5 text-zinc-500" />
           <span>Conversation History</span>
+          {messages.length > 0 && (
+            <span className="ml-auto text-[9px] px-1.5 bg-zinc-800 text-emerald-400 rounded font-mono">
+              {messages.length}
+            </span>
+          )}
         </button>
-        <div className="w-full flex items-center gap-2 px-2 py-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 rounded transition-colors text-left cursor-pointer">
+        <button 
+          onClick={() => setScheduledTasksOpen(true)}
+          className="w-full flex items-center gap-2 px-2 py-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 rounded transition-colors text-left cursor-pointer"
+          title="View scheduled autonomous plant watchdogs"
+        >
           <Clock className="w-3.5 h-3.5 text-zinc-500" />
           <span>Scheduled Tasks</span>
-          <span className="ml-auto text-[9px] px-1 bg-zinc-800 text-zinc-500 rounded font-mono">2</span>
-        </div>
+          <span className="ml-auto text-[9px] px-1 bg-emerald-500/20 text-emerald-300 rounded font-mono border border-emerald-500/30">4</span>
+        </button>
       </div>
     </div>
   );

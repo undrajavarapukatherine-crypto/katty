@@ -48,8 +48,19 @@ const verifiedWorkflows = [
 ];
 
 export default function MessageArea() {
-  const { messages, setInputValue, sendMessage, activeProject, isAgentWorking } = useIndraStore();
+  const { messages, setInputValue, sendMessage, activeProject, setActiveProject, isAgentWorking } = useIndraStore();
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const cycleProject = () => {
+    const units = [
+      'Refinery Unit #04',
+      'Refinery Unit #02',
+      'Refinery Unit #07',
+      'Refinery Unit #09',
+    ];
+    const nextIndex = (units.indexOf(activeProject) + 1) % units.length;
+    setActiveProject(units[nextIndex]);
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -81,22 +92,26 @@ export default function MessageArea() {
           </p>
         </div>
 
-        {/* Antigravity "📁 Unit Context ˅" Folder Indicator Header */}
+        {/* Unit Context Folder Indicator Header */}
         <div className="w-full max-w-xl flex items-center justify-between pl-1 mb-2">
-          <button className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono">
+          <button 
+            onClick={cycleProject}
+            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono cursor-pointer"
+            title="Click to switch active refinery unit"
+          >
             <Folder className="w-3.5 h-3.5 text-emerald-400" />
             <span className="font-semibold text-zinc-300">{activeProject}</span>
             <ChevronDown className="w-3 h-3 text-zinc-500" />
           </button>
-          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-            SIH PROBLEM STATEMENT 26117
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-medium">
+            SOVEREIGN AIR-GAP COMPLIANCE
           </span>
         </div>
 
         {/* Antigravity Central Floating Card */}
         <ChatInput mode="center" />
 
-        {/* Verified SIH Problem Statement 26117 Workflows Grid Below Card */}
+        {/* Verified Industrial Reasoning Workflows Grid Below Card */}
         <div className="w-full max-w-xl mt-7">
           <div className="flex items-center justify-between mb-2.5 px-1">
             <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500 font-mono">

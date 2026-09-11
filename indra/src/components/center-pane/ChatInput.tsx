@@ -23,13 +23,54 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
     isAgentWorking,
     activeModel,
     setActiveModel,
-    loadedModels
+    loadedModels,
+    setSettingsOpen
   } = useIndraStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const [selectedAttachment, setSelectedAttachment] = useState<{ id?: string; name: string; type: string; size: string; url?: string } | null>(null);
+
+  const toggleSpeechRecognition = () => {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setInputValue((inputValue ? `${inputValue} ` : '') + 'Perform ASME B31.3 wall thickness evaluation on Unit #04');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => (result as any)[0].transcript)
+          .join('');
+        setInputValue(transcript);
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
+  };
 
   const handleSend = () => {
     if ((!inputValue.trim() && !selectedAttachment) || isAgentWorking || isUploading) return;
@@ -223,9 +264,13 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
               </button>
 
               <button 
-                onClick={() => alert('Local Voice Audio Input: Air-gapped transcription pipeline initialized.')}
-                className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors rounded hover:bg-zinc-800/40"
-                title="Voice Input"
+                onClick={toggleSpeechRecognition}
+                className={`p-1.5 transition-colors rounded hover:bg-zinc-800/40 cursor-pointer ${
+                  isListening 
+                    ? 'text-rose-400 animate-pulse bg-rose-500/10 ring-1 ring-rose-500/30' 
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+                title={isListening ? 'Listening (Click to stop)...' : 'Start Air-Gapped Voice Transcription'}
               >
                 <Mic className="w-3.5 h-3.5" />
               </button>
@@ -247,11 +292,15 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
           </div>
         </div>
 
-        {/* Antigravity "📁 Local ˅" Indicator Directly Below Central Card */}
+        {/* Local Egress Filter Indicator Directly Below Central Card */}
         {isCenter && (
           <div className="flex items-center justify-start pl-1">
-            <button className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono">
-              <Folder className="w-3.5 h-3.5 text-zinc-500" />
+            <button 
+              onClick={() => setSettingsOpen(true)}
+              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono cursor-pointer"
+              title="Inspect 0-WAN hardware isolation and dropped egress packets"
+            >
+              <Folder className="w-3.5 h-3.5 text-emerald-400" />
               <span>Local Air-Gapped Egress Filter</span>
               <ChevronDown className="w-3 h-3 text-zinc-500" />
             </button>

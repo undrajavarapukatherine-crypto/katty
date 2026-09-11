@@ -156,19 +156,24 @@ export interface IndraState {
   isAgentWorking: boolean;
   inputValue: string;
 
-  // Human-in-the-Loop Approvals
+  // Human-in-the-Loop Approvals & Modals
   pendingApprovals: PendingApproval[];
   loadingApprovals: boolean;
   isApprovalsModalOpen: boolean;
+  isSettingsOpen: boolean;
+  isScheduledTasksOpen: boolean;
 
   // Actions
   setInputValue: (value: string) => void;
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => void;
+  cycleNav: (direction: 'forward' | 'backward') => void;
   setActiveProject: (project: string) => void;
   setActiveModel: (model: string) => void;
   toggleSidebar: () => void;
   newConversation: () => void;
   setApprovalsModalOpen: (open: boolean) => void;
+  setSettingsOpen: (open: boolean) => void;
+  setScheduledTasksOpen: (open: boolean) => void;
 
   // Real Backend Calls & WebSocket Handlers
   fetchModels: () => Promise<void>;
@@ -190,6 +195,8 @@ export interface IndraState {
 
 let networkWs: WebSocket | null = null;
 let taskWs: WebSocket | null = null;
+
+const NAV_VIEWS: ('workbench' | 'kb' | 'audit')[] = ['workbench', 'kb', 'audit'];
 
 export const useIndraStore = create<IndraState>()((set, get) => ({
   activeNav: 'workbench',
@@ -216,15 +223,30 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
   pendingApprovals: [],
   loadingApprovals: false,
   isApprovalsModalOpen: false,
+  isSettingsOpen: false,
+  isScheduledTasksOpen: false,
 
   setInputValue: (value: string) => set({ inputValue: value }),
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
+  cycleNav: (direction: 'forward' | 'backward') => {
+    const current = get().activeNav;
+    const currentIndex = NAV_VIEWS.indexOf(current);
+    if (direction === 'forward') {
+      const nextIndex = (currentIndex + 1) % NAV_VIEWS.length;
+      set({ activeNav: NAV_VIEWS[nextIndex] });
+    } else {
+      const prevIndex = (currentIndex - 1 + NAV_VIEWS.length) % NAV_VIEWS.length;
+      set({ activeNav: NAV_VIEWS[prevIndex] });
+    }
+  },
   setActiveProject: (project: string) => set({ activeProject: project }),
   setActiveModel: (model: string) => set({ activeModel: model }),
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
+  setSettingsOpen: (open: boolean) => set({ isSettingsOpen: open }),
+  setScheduledTasksOpen: (open: boolean) => set({ isScheduledTasksOpen: open }),
   setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
   setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
-  setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
 
   newConversation: () => {
     if (taskWs) {

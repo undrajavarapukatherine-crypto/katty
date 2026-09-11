@@ -8,7 +8,7 @@ import { Settings, ShieldCheck } from 'lucide-react';
 import { useIndraStore } from '@/store/indra-store';
 
 export default function LeftPane() {
-  const blockedCount = useIndraStore((state) => state.blockedCount);
+  const { blockedCount, setSettingsOpen } = useIndraStore();
 
   return (
     <aside className="w-64 h-full flex flex-col bg-zinc-950 border-r border-zinc-800/50 select-none z-10 flex-shrink-0">
@@ -26,11 +26,12 @@ export default function LeftPane() {
         <EvidencePanel />
       </div>
 
-      {/* Bottom Settings & Node Status Footer (Antigravity Reference) */}
+      {/* Bottom Settings & Node Status Footer */}
       <div className="p-2 border-t border-zinc-800/50 bg-zinc-950 flex items-center justify-between text-xs text-zinc-400">
         <button 
-          onClick={() => alert('INDRA Sovereign Node: Local air-gapped configuration active. Hardware root of trust verified.')}
-          className="flex items-center gap-2 hover:text-zinc-200 transition-colors px-2 py-1 rounded hover:bg-zinc-900"
+          onClick={() => setSettingsOpen(true)}
+          className="flex items-center gap-2 hover:text-zinc-200 transition-colors px-2 py-1 rounded hover:bg-zinc-900 cursor-pointer"
+          title="Open Sovereign Hardware & Air-Gap Telemetry Settings"
         >
           <Settings className="w-3.5 h-3.5 text-zinc-500" />
           <span className="text-[11px]">Settings</span>
