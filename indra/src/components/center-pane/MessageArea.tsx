@@ -1,45 +1,54 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import { FileText, Activity, BookOpen, Scan, Folder, ChevronDown, Sparkles } from 'lucide-react';
+import { 
+  Calculator, 
+  Scan, 
+  Activity, 
+  FileSpreadsheet, 
+  Folder, 
+  ChevronDown, 
+  Sparkles,
+  ShieldAlert
+} from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
 import UserMessage from './UserMessage';
 import AgentMessage from './AgentMessage';
 import ChatInput from './ChatInput';
 
-const promptStarters = [
+const verifiedWorkflows = [
   {
-    title: 'Audit Heat Exchanger HX-4201',
-    desc: 'Verify ultrasonic wall thickness against API-570 minimum allowable standards',
-    query: 'Audit Heat Exchanger HX-4201 with ultrasonic thickness log and API-570 safety checks',
-    icon: FileText,
-    badge: 'API-570',
+    title: 'ASME B31.3 Pipe Thickness Calculation',
+    desc: 'Deterministic calculation for minimum wall thickness under design pressure & temperature',
+    query: 'Calculate minimum required pipe wall thickness under ASME B31.3 for design pressure 24.0 bar, temperature 180°C, and ASTM A106 Grade B pipe',
+    icon: Calculator,
+    badge: 'ASME B31.3',
   },
   {
-    title: 'Run Sandboxed Duty & Efficiency Math',
-    desc: 'Execute isolated Python model to calculate duty Q_cold, Q_hot and remaining life',
-    query: 'Calculate thermodynamic heat duty and remaining life for HX-4201 in isolated Python sandbox',
-    icon: Activity,
-    badge: 'Deterministic',
-  },
-  {
-    title: 'Review Refinery Maintenance SOP',
-    desc: 'Retrieve Section 4.2 protocol for pre-flash crude distillation train inspection',
-    query: 'Retrieve and review Maintenance SOP Rev.12 Section 4.2 compliance standards',
-    icon: BookOpen,
-    badge: 'SOP Rev.12',
-  },
-  {
-    title: 'Cross-Reference P&ID Drawing Tags',
-    desc: 'Perform local neural OCR on drawing HX-4201-P01 to reconcile valve and sensor tags',
-    query: 'Cross-reference and verify detected P&ID tags (TI-4201, FV-3102, PI-3104) against CAD drawing',
+    title: 'Extract P&ID Valve Part Numbers',
+    desc: 'Local neural OCR to locate and extract valve tags, instrument references, and line numbers',
+    query: 'Analyze the active P&ID drawing and extract all valve part numbers, instrument tags, and piping classes',
     icon: Scan,
-    badge: 'Qwen-VL',
+    badge: 'Vision OCR',
+  },
+  {
+    title: 'ISO 10816 Vibration Analysis',
+    desc: 'Evaluate pump velocity telemetry against ISO 10816-3 Class I-IV vibration severity bands',
+    query: 'Perform ISO 10816-3 vibration severity evaluation on Feed Pump P-101 motor velocity telemetry (4.2 mm/s RMS)',
+    icon: Activity,
+    badge: 'ISO 10816',
+  },
+  {
+    title: 'Generate Word & Excel Deliverables',
+    desc: 'Synthesize formal Maintenance Approval Note (.docx) and Health Workbook (.xlsx)',
+    query: 'Generate statutory Maintenance Approval Note (.docx) and Equipment Health Workbook (.xlsx) with cryptographic SHA-256 verification',
+    icon: FileSpreadsheet,
+    badge: 'Native Files',
   },
 ];
 
 export default function MessageArea() {
-  const { messages, setInputValue, sendMessage, activeProject } = useIndraStore();
+  const { messages, setInputValue, sendMessage, activeProject, isAgentWorking } = useIndraStore();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,42 +58,43 @@ export default function MessageArea() {
   // Antigravity Home View (Centered floating card)
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 select-none">
-        {/* Antigravity "📁 SIH ˅" Folder Indicator Header */}
-        <div className="w-full max-w-xl flex items-center justify-start pl-1 mb-2">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 select-none overflow-y-auto">
+        {/* Antigravity "📁 Unit Context ˅" Folder Indicator Header */}
+        <div className="w-full max-w-xl flex items-center justify-between pl-1 mb-2">
           <button className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono">
-            <Folder className="w-3.5 h-3.5 text-zinc-500" />
+            <Folder className="w-3.5 h-3.5 text-emerald-400" />
             <span className="font-semibold text-zinc-300">{activeProject}</span>
             <ChevronDown className="w-3 h-3 text-zinc-500" />
           </button>
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            SIH PROBLEM STATEMENT 26117
+          </span>
         </div>
 
         {/* Antigravity Central Floating Card */}
         <ChatInput mode="center" />
 
-        {/* Industrial Quick Starters Grid Below Card */}
-        <div className="w-full max-w-xl mt-8">
-          <div className="flex items-center justify-between mb-3 px-1">
+        {/* Verified SIH Problem Statement 26117 Workflows Grid Below Card */}
+        <div className="w-full max-w-xl mt-7">
+          <div className="flex items-center justify-between mb-2.5 px-1">
             <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500 font-mono">
-              Refinery Autonomous Workflows
+              Verified Industrial Reasoning Workflows
             </span>
-            <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              SOVEREIGN READY
+            <span className="text-[10px] text-zinc-500 font-mono">
+              FastAPI: http://localhost:8000
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            {promptStarters.map((starter) => {
+            {verifiedWorkflows.map((starter) => {
               const Icon = starter.icon;
               return (
                 <button
                   key={starter.title}
                   onClick={() => {
+                    if (isAgentWorking) return;
                     setInputValue(starter.query);
-                    sendMessage(starter.query, [
-                      { name: 'Inspection_Report_HX-4201.pdf', type: 'application/pdf', size: '3.8 MB' },
-                    ]);
+                    sendMessage(starter.query);
                   }}
                   className="p-3 rounded-xl border border-zinc-800/60 bg-zinc-900/40 hover:bg-zinc-850 hover:border-zinc-700 cursor-pointer transition-all text-left group shadow-sm"
                 >
@@ -97,7 +107,7 @@ export default function MessageArea() {
                   <div className="text-xs font-medium text-zinc-300 group-hover:text-zinc-100 transition-colors">
                     {starter.title}
                   </div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5 leading-snug line-clamp-1">
+                  <div className="text-[10px] text-zinc-500 mt-0.5 leading-snug line-clamp-2">
                     {starter.desc}
                   </div>
                 </button>

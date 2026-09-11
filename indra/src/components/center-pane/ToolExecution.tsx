@@ -1,12 +1,13 @@
 'use client';
 
-import { Terminal } from 'lucide-react';
+import { Terminal, Cpu } from 'lucide-react';
 
-function highlightPython(code: string) {
+function highlightCode(code: string, language: string) {
+  if (!code) return null;
   const lines = code.split('\n');
+
   return lines.map((line, i) => {
-    // Comments
-    if (line.trimStart().startsWith('#')) {
+    if (line.trimStart().startsWith('#') || line.trimStart().startsWith('//')) {
       return (
         <div key={i} className="text-zinc-500 italic">
           {line}
@@ -14,21 +15,18 @@ function highlightPython(code: string) {
       );
     }
 
-    // Process tokens
-    const tokens = line.split(/(\b(?:import|from|def|print|return|if|else|for|in|as|with|class)\b|"[^"]*"|'[^']*'|f"[^"]*"|\b\d+\.?\d*\b)/g);
+    const tokens = line.split(/(\b(?:import|from|def|print|return|if|else|for|in|as|with|class|const|let|function)\b|"[^"]*"|'[^']*'|f"[^"]*"|\b\d+\.?\d*\b)/g);
 
     return (
       <div key={i}>
         {tokens.map((token, j) => {
-          // Keywords
-          if (/^(import|from|def|print|return|if|else|for|in|as|with|class)$/.test(token)) {
+          if (/^(import|from|def|print|return|if|else|for|in|as|with|class|const|let|function)$/.test(token)) {
             return (
               <span key={j} className="text-blue-400">
                 {token}
               </span>
             );
           }
-          // Strings
           if (/^["']/.test(token) || /^f"/.test(token)) {
             return (
               <span key={j} className="text-emerald-400">
@@ -36,7 +34,6 @@ function highlightPython(code: string) {
               </span>
             );
           }
-          // Numbers
           if (/^\d+\.?\d*$/.test(token)) {
             return (
               <span key={j} className="text-amber-400">
@@ -44,7 +41,6 @@ function highlightPython(code: string) {
               </span>
             );
           }
-          // Default
           return (
             <span key={j} className="text-zinc-300">
               {token}
@@ -57,25 +53,27 @@ function highlightPython(code: string) {
 }
 
 function highlightOutput(output: string) {
+  if (!output) return null;
   const lines = output.split('\n');
+
   return lines.map((line, i) => {
-    if (line.startsWith('>>>')) {
+    if (line.startsWith('>>>') || line.startsWith('$')) {
       return (
-        <div key={i} className="text-zinc-600">
+        <div key={i} className="text-zinc-500 font-bold">
           {line}
         </div>
       );
     }
-    if (line.includes('VERDICT') || line.includes('APPROVED')) {
+    if (line.includes('VERDICT') || line.includes('APPROVED') || line.includes('VALID') || line.includes('SUCCESS')) {
       return (
         <div key={i} className="text-emerald-300 font-semibold">
           {line}
         </div>
       );
     }
-    if (line.startsWith('[Process')) {
+    if (line.includes('CRITICAL') || line.includes('WARNING') || line.includes('FAILED') || line.includes('REJECTED')) {
       return (
-        <div key={i} className="text-zinc-600 text-[10px] mt-2">
+        <div key={i} className="text-rose-400 font-semibold">
           {line}
         </div>
       );
@@ -91,35 +89,49 @@ function highlightOutput(output: string) {
 export default function ToolExecution({
   execution,
 }: {
-  execution: { code: string; output: string; language: string };
+  execution: { code: string; output: string; language: string; toolName?: string };
 }) {
+  const toolTitle = execution.toolName
+    ? execution.toolName.replace(/_/g, ' ').toUpperCase()
+    : 'DETERMINISTIC SANDBOX — ASME B31.3 RUNTIME';
+
   return (
-    <div className="rounded-lg border border-zinc-800/50 overflow-hidden">
+    <div className="rounded-xl border border-zinc-800/80 overflow-hidden bg-black/60 shadow-lg my-2">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border-b border-zinc-800/50">
-        <Terminal className="w-3.5 h-3.5 text-zinc-500" />
-        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-          Python Sandbox — Isolated Runtime
-        </span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="text-[10px] text-emerald-500 font-mono">secure</span>
+      <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-900/90 border-b border-zinc-800/80">
+        <div className="flex items-center gap-2">
+          <Terminal className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-[10px] font-mono text-zinc-300 uppercase tracking-wider font-semibold">
+            {toolTitle}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[9px] text-emerald-400 font-mono">0-WAN ISOLATED</span>
         </div>
       </div>
 
-      {/* Code */}
-      <div className="p-4 bg-black/80 font-mono text-xs leading-relaxed overflow-x-auto">
-        {highlightPython(execution.code)}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-zinc-800/50" />
+      {/* Code / Input Args */}
+      {execution.code && (
+        <div className="p-3.5 bg-black/80 font-mono text-xs leading-relaxed overflow-x-auto border-b border-zinc-800/60">
+          <div className="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 font-mono">
+            Input Parameters & Mathematical Model:
+          </div>
+          {highlightCode(execution.code, execution.language)}
+        </div>
+      )}
 
       {/* Output */}
-      <div className="p-4 bg-black/60 font-mono text-xs">
-        <div className="text-[10px] text-zinc-600 mb-2 uppercase tracking-wider">Output</div>
-        <div className="leading-relaxed whitespace-pre-wrap">{highlightOutput(execution.output)}</div>
-      </div>
+      {execution.output && (
+        <div className="p-3.5 bg-black/70 font-mono text-xs">
+          <div className="text-[9px] text-zinc-500 mb-1.5 uppercase tracking-wider font-mono">
+            Verified Execution Output:
+          </div>
+          <div className="leading-relaxed whitespace-pre-wrap">
+            {highlightOutput(execution.output)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

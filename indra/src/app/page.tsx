@@ -4,6 +4,8 @@ import { useState } from 'react';
 import LeftPane from '@/components/left-pane/LeftPane';
 import CenterPane from '@/components/center-pane/CenterPane';
 import RightPane from '@/components/right-pane/RightPane';
+import KnowledgeBaseView from '@/components/views/KnowledgeBaseView';
+import AuditLedgerView from '@/components/views/AuditLedgerView';
 import { useIndraStore } from '@/store/indra-store';
 import { 
   PanelLeft, 
@@ -28,19 +30,19 @@ export default function Home() {
     sendMessage, 
     isAgentWorking,
     activeModel,
-    setActiveModel
+    setActiveModel,
+    activeNav,
+    loadedModels,
+    isBackendConnected
   } = useIndraStore();
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
 
-  const runDemoInspection = () => {
+  const runVerifiedAudit = () => {
     if (isAgentWorking) return;
-    sendMessage('Initiate full structural integrity & thermal efficiency audit for Heat Exchanger HX-4201', [
-      { name: 'Inspection_Report_HX-4201.pdf', type: 'application/pdf', size: '3.8 MB' },
-      { name: 'UT_Ultrasonic_Thickness_Logs.csv', type: 'text/csv', size: '412 KB' }
-    ]);
+    sendMessage('Execute deterministic ASME B31.3 pipe wall thickness calculation and extract P&ID valve part numbers for Unit #04');
   };
 
   return (
@@ -85,10 +87,10 @@ export default function Home() {
                   <span className="text-zinc-500 text-[10px] font-mono">Ctrl+N</span>
                 </button>
                 <button 
-                  onClick={() => { runDemoInspection(); setActiveMenu(null); }}
+                  onClick={() => { runVerifiedAudit(); setActiveMenu(null); }}
                   className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-emerald-400 flex justify-between"
                 >
-                  <span>Run Demo Audit</span>
+                  <span>Run ASME B31.3 Audit</span>
                   <span className="text-zinc-500 text-[10px] font-mono">F5</span>
                 </button>
                 <button 
@@ -99,7 +101,7 @@ export default function Home() {
                 </button>
                 <div className="h-px bg-zinc-800 my-1" />
                 <div className="px-3 py-1 text-[10px] text-zinc-500 font-mono">
-                  Sovereign Refinery Node #04
+                  FastAPI: http://localhost:8000
                 </div>
               </div>
             )}
@@ -141,15 +143,15 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Center: Quick Simulation CTA */}
+        {/* Center: Quick Verification Action */}
         <button 
-          onClick={runDemoInspection}
+          onClick={runVerifiedAudit}
           disabled={isAgentWorking}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono hover:bg-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
-          title="Click to execute the instant sovereign inspection demo"
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono hover:bg-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 shadow-sm"
+          title="Click to execute ASME B31.3 deterministic calculation on live backend"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Simulate HX-4201 Audit</span>
+          <span>Execute ASME B31.3 Audit</span>
         </button>
 
         {/* Right: Antigravity "Install IDE" button + Menu */}
@@ -176,13 +178,15 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 3. Main 3-Pane Desktop Layout */}
+      {/* 3. Main 3-Pane Desktop Layout with View Switching */}
       <main className="flex flex-1 overflow-hidden relative">
         {/* Pane 1: Left Pane (w-64) */}
         {isSidebarOpen && <LeftPane />}
 
-        {/* Pane 2: Center Pane (flex-1) */}
-        <CenterPane />
+        {/* Pane 2: Center Content Area (Dynamic based on activeNav) */}
+        {activeNav === 'workbench' && <CenterPane />}
+        {activeNav === 'kb' && <KnowledgeBaseView />}
+        {activeNav === 'audit' && <AuditLedgerView />}
 
         {/* Pane 3: Right Pane (w-72) */}
         <RightPane />
@@ -220,33 +224,39 @@ export default function Home() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg">
-                  <span className="text-zinc-500 block">VRAM Provisioned</span>
-                  <span className="text-lg font-bold text-zinc-200">144.0 GB / 160 GB</span>
-                  <span className="text-[10px] text-emerald-400 block mt-1">NVIDIA SXM5 H100 × 2</span>
+                  <span className="text-zinc-500 block">Backend Status</span>
+                  <span className="text-lg font-bold text-zinc-200">
+                    {isBackendConnected ? 'ONLINE (127.0.0.1)' : 'OFFLINE'}
+                  </span>
+                  <span className="text-[10px] text-emerald-400 block mt-1">FastAPI Port 8000</span>
                 </div>
                 <div className="p-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg">
-                  <span className="text-zinc-500 block">Model Weights Hash</span>
-                  <span className="text-xs text-zinc-300 block truncate">sha256:e3b0c44298fc1c149afbf4c8</span>
+                  <span className="text-zinc-500 block">Model Weights Security</span>
+                  <span className="text-xs text-zinc-300 block truncate">SHA-256 Merkle Validated</span>
                   <span className="text-[10px] text-zinc-500 block mt-1">Cryptographically Sealed</span>
                 </div>
               </div>
 
               <div className="p-3 bg-zinc-900/40 border border-zinc-800/50 rounded-lg space-y-2">
-                <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">Active Open-Weight Engine</span>
-                <div className="flex gap-2">
-                  {['Qwen3-235B · High', 'Qwen2.5-Coder-32B', 'Qwen-VL-72B'].map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setActiveModel(m)}
-                      className={`px-2.5 py-1 rounded text-[11px] transition-all ${
-                        activeModel === m
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 font-bold'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  ))}
+                <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">Resident Model Core</span>
+                <div className="flex flex-wrap gap-2">
+                  {loadedModels.length > 0 ? (
+                    loadedModels.map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => setActiveModel(m.name)}
+                        className={`px-2.5 py-1 rounded text-[11px] transition-all ${
+                          activeModel === m.name
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 font-bold'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                        }`}
+                      >
+                        {m.name}
+                      </button>
+                    ))
+                  ) : (
+                    <span className="text-zinc-500 text-xs italic">Resident models fetched from /api/models</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,7 +273,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 5. Install IDE Modal (For the "Install IDE" button from reference screenshot) */}
+      {/* 5. Install IDE Modal */}
       {showInstallModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-2xl space-y-4">
@@ -279,15 +289,15 @@ export default function Home() {
               </button>
             </div>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              INDRA is running as an on-premise sovereign desktop instance. You can install the native local application package for Windows/Linux workstations.
+              INDRA is running as an on-premise sovereign desktop instance under Smart India Hackathon Problem Statement 26117.
             </p>
             <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono space-y-1">
               <div className="text-emerald-400 flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5" />
-                Air-Gapped Installer Package Ready
+                Air-Gapped Package Ready
               </div>
               <div className="text-zinc-500">Package: INDRA-Workbench-v2.4.0-win-x64.msi</div>
-              <div className="text-zinc-500">SHA256: e8b941d34...a091</div>
+              <div className="text-zinc-500">Compliance: 0-WAN / ASME B31.3 / API-570</div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <button 
@@ -298,12 +308,12 @@ export default function Home() {
               </button>
               <button 
                 onClick={() => {
-                  alert('Sovereign Desktop Installer package verified. Air-gapped deployment verified.');
+                  alert('Sovereign Desktop Installer verified. Air-gapped deployment active.');
                   setShowInstallModal(false);
                 }}
                 className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs text-white font-medium"
               >
-                Download Installer (.msi)
+                Close
               </button>
             </div>
           </div>

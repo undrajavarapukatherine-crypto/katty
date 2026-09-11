@@ -1,17 +1,23 @@
 import { create } from 'zustand';
 
-// Required specific interfaces from specification
+// --- API Configuration ---
+export const API_BASE = 'http://localhost:8000';
+export const WS_BASE = 'ws://localhost:8000';
+
+// --- Interfaces ---
 export interface NetworkEvent {
   id?: string;
   timestamp: string;
   action: string;
   destination: string;
   status: 'blocked' | 'contained';
+  protocol?: string;
+  source?: string;
 }
 
 export interface AgentEvent {
-  type: 'plan' | 'tool_call' | 'token' | 'deliverable' | 'done';
-  data: any;
+  type: 'model_selected' | 'plan' | 'tool_call' | 'tool_result' | 'token' | 'deliverable' | 'done' | string;
+  [key: string]: any;
 }
 
 export interface AgentStep {
@@ -26,20 +32,23 @@ export interface Message {
   role: 'user' | 'agent';
   content: string;
   timestamp: string;
-  attachments?: { name: string; type: string; size: string }[];
+  attachments?: { id?: string; name: string; type: string; size: string; url?: string }[];
   agentSteps?: AgentStep[];
-  toolExecution?: { code: string; output: string; language: string };
+  toolExecution?: { code: string; output: string; language: string; toolName?: string };
+  modelUsed?: string;
 }
 
 export interface Deliverable {
   id: string;
   name: string;
-  filename: string; // for compatibility with components
-  type: 'docx' | 'xlsx' | 'pdf' | 'csv';
+  filename: string;
+  type: 'docx' | 'xlsx' | 'pdf' | 'csv' | string;
   size: string;
   generatedAt: string;
-  timestamp: string; // for compatibility
+  timestamp: string;
   description: string;
+  url: string;
+  hash?: string;
 }
 
 export interface ModelStatus {
@@ -47,306 +56,527 @@ export interface ModelStatus {
   name: string;
   role: string;
   vramUsage: number; // percentage
-  status: 'loaded' | 'standby' | 'unloaded';
+  status: 'loaded' | 'standby' | 'unloaded' | string;
+  memory?: string;
+  context_window?: string;
 }
 
 export interface RAGSource {
   id: string;
   document: string;
-  documentName: string; // for compatibility with components
+  documentName: string;
   section: string;
   relevance: number;
+  snippet?: string;
+}
+
+export interface KBDocument {
+  id: string;
+  filename: string;
+  name?: string;
+  size: string | number;
+  type?: string;
+  created_at?: string;
+  uploaded_at?: string;
+  chunk_count?: number;
+  url?: string;
+}
+
+export interface EquipmentData {
+  tag: string;
+  name: string;
+  type: string;
+  design_pressure?: string;
+  design_temperature?: string;
+  material?: string;
+  asme_rating?: string;
+  service_fluid?: string;
+  status?: string;
+  telemetry?: Record<string, any>;
+  [key: string]: any;
+}
+
+export interface AuditBlock {
+  index: number;
+  timestamp: string;
+  prev_hash: string;
+  hash: string;
+  merkle_root?: string;
+  task_id?: string;
+  action: string;
+  operator?: string;
+  valid: boolean;
+  signature?: string;
+  [key: string]: any;
+}
+
+export interface PendingApproval {
+  id: string;
+  task_id: string;
+  title: string;
+  description: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  tier_required: number;
+  created_at: string;
+  status: string;
+  calculations?: any;
+  [key: string]: any;
 }
 
 export interface IndraState {
   // Navigation & Workspace
-  activeNav: string;
+  activeNav: 'workbench' | 'kb' | 'audit';
   activeProject: string;
   activeModel: string;
+  modelReason?: string;
   isSidebarOpen: boolean;
 
-  // Conversations & Agent
+  // Live Backend Telemetry & Status
+  isBackendConnected: boolean;
+  isNetworkSocketConnected: boolean;
+  blockedCount: number;
+  networkEvents: NetworkEvent[];
+
+  // Conversation & Execution
+  currentTaskId: string | null;
   messages: Message[];
   deliverables: Deliverable[];
-  networkEvents: NetworkEvent[];
   loadedModels: ModelStatus[];
   ragSources: RAGSource[];
+  detectedTags: string[];
+  activePIDDoc: KBDocument | null;
   isAgentWorking: boolean;
-  blockedCount: number;
   inputValue: string;
 
   // Actions
   setInputValue: (value: string) => void;
-  setActiveNav: (nav: string) => void;
+  setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => void;
   setActiveProject: (project: string) => void;
   setActiveModel: (model: string) => void;
   toggleSidebar: () => void;
   newConversation: () => void;
-  sendMessage: (content: string, attachments?: { name: string; type: string; size: string }[]) => void;
-  simulateAgentRun: (initialContent?: string) => void;
-  handleAgentEvent: (event: AgentEvent) => void;
-  handleNetworkEvent: (event: NetworkEvent) => void;
+
+  // Real Backend Calls & WebSocket Handlers
+  fetchModels: () => Promise<void>;
+  connectNetworkWebSocket: () => void;
+  sendMessage: (content: string, attachments?: { id?: string; name: string; type: string; size: string; url?: string }[]) => Promise<void>;
   addDeliverable: (deliverable: Deliverable) => void;
   addNetworkEvent: (event: NetworkEvent) => void;
   incrementBlockedCount: () => void;
+  setDetectedTags: (tags: string[]) => void;
+  setActivePIDDoc: (doc: KBDocument | null) => void;
 }
 
-const initialModels: ModelStatus[] = [
-  { id: 'm1', name: 'Qwen3-235B-A22B', role: 'Air-Gapped Reasoning Core', vramUsage: 74, status: 'loaded' },
-  { id: 'm2', name: 'Qwen2.5-Coder-32B', role: 'Deterministic Python Sandbox', vramUsage: 22, status: 'loaded' },
-  { id: 'm3', name: 'Qwen-VL-72B', role: 'P&ID Computer Vision Engine', vramUsage: 51, status: 'loaded' },
-];
-
-const initialNetworkEvents: NetworkEvent[] = [
-  { id: 'ne-1', timestamp: '22:14:03', action: 'POST /v1/chat/completions', destination: 'api.openai.com', status: 'blocked' },
-  { id: 'ne-2', timestamp: '22:11:47', action: 'GET /collect', destination: 'telemetry.microsoft.com', status: 'blocked' },
-  { id: 'ne-3', timestamp: '22:09:22', action: 'POST /collect', destination: 'analytics.google.com', status: 'blocked' },
-];
-
-const SANDBOX_CODE = `# Heat Exchanger HX-4201 Efficiency & Remaining Life
-# Standards: API-570 / ASME Section VIII / TEMA Class R
-
-import numpy as np
-
-# Operational Readings from Plant SCADA (Tag: HX-4201)
-T_hot_in = 342.5    # deg C (Vacuum Residue Inlet)
-T_hot_out = 187.3   # deg C (Vacuum Residue Outlet)
-T_cold_in = 28.4    # deg C (Crude Oil Feed Inlet)
-T_cold_out = 156.8  # deg C (Crude Oil Pre-heat Outlet)
-
-# Duty Calculations (kJ/s -> kW)
-m_hot = 4.2         # kg/s
-Cp_hot = 2.1        # kJ/kg*C
-Q_hot = m_hot * Cp_hot * (T_hot_in - T_hot_out)
-
-m_cold = 3.8        # kg/s
-Cp_cold = 4.18      # kJ/kg*C
-Q_cold = m_cold * Cp_cold * (T_cold_out - T_cold_in)
-
-efficiency = (Q_cold / Q_hot) * 100.0
-
-# UT Thickness Corrosion Analysis
-nominal_wall = 12.70 # mm
-measured_wall = 9.85 # mm
-t_min_allowable = 6.35 # mm (API-570 Min Required)
-service_years = 12.5 # operating years
-
-corrosion_rate = (nominal_wall - measured_wall) / service_years
-remaining_life = (measured_wall - t_min_allowable) / corrosion_rate
-
-print(f"Heat Duty Transferred (Q_cold): {Q_cold:.2f} kW")
-print(f"Thermal Exchanger Efficiency:  {efficiency:.1f}% [NOMINAL > 75%]")
-print(f"Measured Wall Thickness:       {measured_wall:.2f} mm")
-print(f"Calculated Corrosion Rate:     {corrosion_rate:.3f} mm/year")
-print(f"Calculated Remaining Life:     {remaining_life:.1f} years")
-print(f"\\nVERDICT: APPROVED for continued operation under SOP-M-402")
-print(f"Next Mandatory Inspection Cycle: Q1-2026")`;
-
-const SANDBOX_OUTPUT = `>>> Launching air-gapped sandboxed runtime (Python 3.11.8)...
->>> Network isolation: ACTIVE | Sockets: DISABLED | Loopback only
-
-Heat Duty Transferred (Q_cold): 2038.48 kW
-Thermal Exchanger Efficiency:  79.4% [NOMINAL > 75%]
-Measured Wall Thickness:       9.85 mm
-Calculated Corrosion Rate:     0.228 mm/year
-Calculated Remaining Life:     15.4 years
-
-VERDICT: APPROVED for continued operation under SOP-M-402
-Next Mandatory Inspection Cycle: Q1-2026
-
-[Process completed in 0.842s | Exit Code: 0 | Zero External Telemetry]`;
-
-const AGENT_FINAL_CONTENT = `## Inspection Analysis & Integrity Verification Complete
-
-The air-gapped neural pipeline has processed the uploaded inspection documentation and telemetry logs for **Heat Exchanger HX-4201** (Crude Distillation Unit - Area 4).
-
-### Key Findings:
-- **Thermal Efficiency:** Evaluated at **79.4%**, surpassing the minimum operational efficiency baseline (75.0%).
-- **Corrosion Rate:** Determined to be **0.228 mm/year** based on ultrasonic thickness gauging, compliant with **API-570 Section 7**.
-- **Calculated Remaining Service Life:** **15.4 years** prior to reaching minimum retirement thickness (6.35 mm).
-- **P&ID Tag Reconciliation:** Tags **TI-4201**, **FV-3102**, and **PI-3104** verified against drawing \`HX-4201-P01\`.
-
-### Statutory Recommendation:
-✅ **APPROVED FOR CONTINUED REFINERY SERVICE** under **Maintenance SOP Rev. 12 (Section 4.2)**.
-
-The formal compliance note \`Inspection_Approval_HX4201.docx\` has been generated and validated with local cryptographic signature. It is available in the **Deliverables** dock for download.`;
+let networkWs: WebSocket | null = null;
+let taskWs: WebSocket | null = null;
 
 export const useIndraStore = create<IndraState>()((set, get) => ({
-  activeNav: 'projects',
-  activeProject: 'SIH',
-  activeModel: 'Qwen3-235B · High',
+  activeNav: 'workbench',
+  activeProject: 'Refinery Unit #04',
+  activeModel: 'Auto-Negotiating...',
+  modelReason: undefined,
   isSidebarOpen: true,
 
+  isBackendConnected: false,
+  isNetworkSocketConnected: false,
+  blockedCount: 0,
+  networkEvents: [],
+
+  currentTaskId: null,
   messages: [],
   deliverables: [],
-  networkEvents: initialNetworkEvents,
-  loadedModels: initialModels,
+  loadedModels: [],
   ragSources: [],
+  detectedTags: [],
+  activePIDDoc: null,
   isAgentWorking: false,
-  blockedCount: 847,
   inputValue: '',
 
   setInputValue: (value: string) => set({ inputValue: value }),
-  setActiveNav: (nav: string) => set({ activeNav: nav }),
+  setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
   setActiveProject: (project: string) => set({ activeProject: project }),
   setActiveModel: (model: string) => set({ activeModel: model }),
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
+  setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
 
-  newConversation: () => set({
-    messages: [],
-    ragSources: [],
-    isAgentWorking: false,
-    inputValue: '',
-  }),
+  newConversation: () => {
+    if (taskWs) {
+      taskWs.close();
+      taskWs = null;
+    }
+    set({
+      currentTaskId: null,
+      messages: [],
+      ragSources: [],
+      isAgentWorking: false,
+      inputValue: '',
+      detectedTags: [],
+    });
+  },
 
   addDeliverable: (deliverable: Deliverable) =>
-    set((state) => ({ deliverables: [deliverable, ...state.deliverables] })),
+    set((state) => ({
+      deliverables: [
+        deliverable,
+        ...state.deliverables.filter((d) => d.filename !== deliverable.filename),
+      ],
+    })),
 
   addNetworkEvent: (event: NetworkEvent) =>
-    set((state) => ({ networkEvents: [event, ...state.networkEvents] })),
+    set((state) => ({
+      networkEvents: [event, ...state.networkEvents].slice(0, 100),
+    })),
 
   incrementBlockedCount: () =>
     set((state) => ({ blockedCount: state.blockedCount + 1 })),
 
-  handleAgentEvent: (event: AgentEvent) => {
-    // Allows streaming or WebSocket event simulation
-    if (event.type === 'deliverable') {
-      get().addDeliverable(event.data);
+  // Fetch real loaded models from FastAPI GET /api/models
+  fetchModels: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/models`);
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const data = await res.json();
+      const models: ModelStatus[] = Array.isArray(data)
+        ? data.map((m: any, idx: number) => ({
+            id: m.id || `model-${idx}`,
+            name: m.name || m.id || 'Resident Model',
+            role: m.role || (m.name?.includes('Coder') ? 'ASME Deterministic Math' : m.name?.includes('VL') ? 'P&ID Computer Vision' : 'Sovereign Reasoning'),
+            vramUsage: typeof m.vramUsage === 'number' ? m.vramUsage : typeof m.vram_usage === 'number' ? m.vram_usage : 45,
+            status: m.status || 'loaded',
+            memory: m.memory || m.size,
+          }))
+        : [];
+      
+      set({ 
+        loadedModels: models,
+        isBackendConnected: true,
+        activeModel: models[0]?.name || get().activeModel
+      });
+    } catch (err) {
+      console.warn('Backend /api/models currently unreachable at', API_BASE, err);
+      set({ isBackendConnected: false });
     }
   },
 
-  handleNetworkEvent: (event: NetworkEvent) => {
-    get().addNetworkEvent(event);
-    get().incrementBlockedCount();
+  // Live WebSocket connection to ws://localhost:8000/ws/network for packet containment
+  connectNetworkWebSocket: () => {
+    if (networkWs && (networkWs.readyState === WebSocket.OPEN || networkWs.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
+    try {
+      networkWs = new WebSocket(`${WS_BASE}/ws/network`);
+
+      networkWs.onopen = () => {
+        set({ isNetworkSocketConnected: true, isBackendConnected: true });
+      };
+
+      networkWs.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const netEvent: NetworkEvent = {
+            id: data.id || `net-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+            timestamp: data.timestamp || new Date().toLocaleTimeString('en-US', { hour12: false }),
+            action: data.action || data.method || 'CONTAIN_EGRESS',
+            destination: data.destination || data.target || data.host || 'blocked-wan-egress',
+            status: (data.status === 'contained' || data.status === 'blocked') ? data.status : 'blocked',
+            protocol: data.protocol || 'TCP/IP',
+            source: data.source || '0.0.0.0 (Air-Gap Filter)',
+          };
+
+          get().addNetworkEvent(netEvent);
+          get().incrementBlockedCount();
+        } catch (e) {
+          console.error('Failed to parse network websocket event:', e);
+        }
+      };
+
+      networkWs.onclose = () => {
+        set({ isNetworkSocketConnected: false });
+        // Clean reconnection with backoff
+        setTimeout(() => {
+          get().connectNetworkWebSocket();
+        }, 5000);
+      };
+
+      networkWs.onerror = () => {
+        set({ isNetworkSocketConnected: false });
+      };
+    } catch (e) {
+      console.warn('Network WebSocket connection failed:', e);
+    }
   },
 
-  sendMessage: (content: string, attachments?: { name: string; type: string; size: string }[]) => {
+  // Send message to FastAPI POST /api/tasks and stream via ws://localhost:8000/ws/tasks/${taskId}
+  sendMessage: async (content: string, attachments?: { id?: string; name: string; type: string; size: string; url?: string }[]) => {
     const userMessage: Message = {
-      id: `msg-${Date.now()}`,
+      id: `msg-user-${Date.now()}`,
       role: 'user',
       content,
       timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
       attachments,
     };
 
-    set((state) => ({
-      messages: [...state.messages, userMessage],
-      inputValue: '',
-    }));
-
-    setTimeout(() => get().simulateAgentRun(content), 300);
-  },
-
-  simulateAgentRun: () => {
-    const steps: AgentStep[] = [
-      { id: 's1', label: 'OCR & Document Analysis (Local Qwen-VL)', status: 'in-progress' },
-      { id: 's2', label: 'Retrieve Maintenance SOP & API-570 Standards', status: 'pending' },
-      { id: 's3', label: 'Execute Python Sandbox Calculation', status: 'pending' },
-      { id: 's4', label: 'Cross-reference P&ID Tags & CAD Schematics', status: 'pending' },
-      { id: 's5', label: 'Generate Sovereign Compliance Deliverable', status: 'pending' },
-    ];
-
-    const agentMessage: Message = {
-      id: `msg-agent-${Date.now()}`,
+    const agentMessageId = `msg-agent-${Date.now()}`;
+    const initialAgentMessage: Message = {
+      id: agentMessageId,
       role: 'agent',
       content: '',
       timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-      agentSteps: [...steps],
+      agentSteps: [],
+      toolExecution: undefined,
     };
 
     set((state) => ({
-      messages: [...state.messages, agentMessage],
+      messages: [...state.messages, userMessage, initialAgentMessage],
+      inputValue: '',
       isAgentWorking: true,
-      ragSources: [],
     }));
 
-    const agentMsgId = agentMessage.id;
-    let currentStepIndex = 0;
+    try {
+      const fileIds = attachments?.map((a) => a.id).filter(Boolean) as string[];
 
-    const executeNextStep = () => {
-      currentStepIndex++;
-
-      if (currentStepIndex >= steps.length) {
-        // Step 5 completed - Finalize
-        const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-        const newDoc: Deliverable = {
-          id: `del-${Date.now()}`,
-          name: 'Inspection_Approval_HX4201.docx',
-          filename: 'Inspection_Approval_HX4201.docx',
-          type: 'docx',
-          size: '2.4 MB',
-          generatedAt: now,
-          timestamp: now,
-          description: 'Official mechanical integrity verification & operating approval certificate for Heat Exchanger HX-4201.',
-        };
-
-        set((state) => ({
-          isAgentWorking: false,
-          messages: state.messages.map((m) =>
-            m.id === agentMsgId
-              ? {
-                  ...m,
-                  content: AGENT_FINAL_CONTENT,
-                  agentSteps: m.agentSteps?.map((s) => ({ ...s, status: 'completed' as const })),
-                }
-              : m
-          ),
-          deliverables: [newDoc, ...state.deliverables],
-        }));
-        return;
-      }
-
-      set((state) => {
-        const updatedMessages = state.messages.map((m) => {
-          if (m.id !== agentMsgId) return m;
-          const updatedSteps = m.agentSteps?.map((s, i) => {
-            if (i < currentStepIndex) return { ...s, status: 'completed' as const };
-            if (i === currentStepIndex) return { ...s, status: 'in-progress' as const };
-            return { ...s, status: 'pending' as const };
-          });
-
-          const updates: Partial<Message> = { agentSteps: updatedSteps };
-
-          if (currentStepIndex === 2) {
-            updates.toolExecution = {
-              code: SANDBOX_CODE,
-              output: SANDBOX_OUTPUT,
-              language: 'python',
-            };
-          }
-
-          return { ...m, ...updates };
-        });
-
-        const newState: Partial<IndraState> = { messages: updatedMessages };
-
-        // Step 1 done -> SOP Citations appear
-        if (currentStepIndex === 1) {
-          newState.ragSources = [
-            { id: 'r1', document: 'Refinery Maintenance SOP Rev.12', documentName: 'Refinery Maintenance SOP Rev.12', section: 'Section 4.2 — Heat Exchanger Inspection Protocol', relevance: 98 },
-            { id: 'r2', document: 'API-570 Piping Inspection Standard', documentName: 'API-570 Piping Inspection Standard', section: 'Table 3 — Allowable Corrosion Rates & Safety Margins', relevance: 92 },
-            { id: 'r3', document: 'Engineering Drawing HX-4201-P01', documentName: 'Engineering Drawing HX-4201-P01', section: 'Tag Instrumentation Cross-Reference Sheet', relevance: 87 },
-          ];
-        }
-
-        // Step 2 done -> Simulation of blocked external egress in sovereign monitor
-        if (currentStepIndex === 2) {
-          const nowStr = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-          newState.networkEvents = [
-            { id: `ne-${Date.now()}-1`, timestamp: nowStr, action: 'GET /simple/scipy', destination: 'pypi.org', status: 'blocked' },
-            { id: `ne-${Date.now()}-2`, timestamp: nowStr, action: 'POST /v1/telemetry', destination: 'huggingface.co', status: 'blocked' },
-            ...state.networkEvents,
-          ];
-          newState.blockedCount = state.blockedCount + 2;
-        }
-
-        return newState;
+      // 1. Initiate task on backend
+      const res = await fetch(`${API_BASE}/api/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: content,
+          fileIds: fileIds || [],
+          file_ids: fileIds || [],
+        }),
       });
 
-      setTimeout(executeNextStep, 1400);
-    };
+      if (!res.ok) {
+        throw new Error(`Failed to create task on backend: ${res.statusText}`);
+      }
 
-    setTimeout(executeNextStep, 1200);
+      const taskData = await res.json();
+      const taskId = taskData.taskId || taskData.task_id || taskData.id;
+
+      if (!taskId) {
+        throw new Error('Backend did not return a valid taskId');
+      }
+
+      set({ currentTaskId: taskId, isBackendConnected: true });
+
+      // 2. Open live task WebSocket ws://localhost:8000/ws/tasks/${taskId}
+      if (taskWs) {
+        taskWs.close();
+      }
+
+      taskWs = new WebSocket(`${WS_BASE}/ws/tasks/${taskId}`);
+
+      taskWs.onmessage = (event) => {
+        try {
+          const ev = JSON.parse(event.data);
+          const type = ev.type || ev.event;
+
+          // Event A: model_selected
+          if (type === 'model_selected') {
+            const modelName = ev.model || ev.name || ev.model_name;
+            set({ 
+              activeModel: modelName,
+              modelReason: ev.reason || ev.description
+            });
+            set((state) => ({
+              messages: state.messages.map((m) =>
+                m.id === agentMessageId ? { ...m, modelUsed: modelName } : m
+              ),
+            }));
+          }
+
+          // Event B: plan (DAG execution steps)
+          else if (type === 'plan') {
+            const rawSteps = ev.steps || ev.data || [];
+            const steps: AgentStep[] = rawSteps.map((s: any, idx: number) => {
+              if (typeof s === 'string') {
+                return {
+                  id: `step-${idx}`,
+                  label: s,
+                  status: idx === 0 ? 'in-progress' : 'pending',
+                };
+              }
+              return {
+                id: s.id || `step-${idx}`,
+                label: s.label || s.name || s.title || `Execution Step ${idx + 1}`,
+                status: s.status || (idx === 0 ? 'in-progress' : 'pending'),
+                detail: s.detail || s.description,
+              };
+            });
+
+            set((state) => ({
+              messages: state.messages.map((m) =>
+                m.id === agentMessageId ? { ...m, agentSteps: steps } : m
+              ),
+            }));
+          }
+
+          // Event C: tool_call
+          else if (type === 'tool_call') {
+            const toolName = ev.tool || ev.name || ev.tool_name || 'deterministic_sandbox';
+            const argsStr = typeof ev.args === 'string' ? ev.args : JSON.stringify(ev.args, null, 2);
+
+            set((state) => ({
+              messages: state.messages.map((m) => {
+                if (m.id !== agentMessageId) return m;
+
+                // Advance corresponding step to in-progress if available
+                const updatedSteps = m.agentSteps?.map((s) => {
+                  if (s.label.toLowerCase().includes(toolName.toLowerCase())) {
+                    return { ...s, status: 'in-progress' as const };
+                  }
+                  return s;
+                });
+
+                return {
+                  ...m,
+                  agentSteps: updatedSteps,
+                  toolExecution: {
+                    code: argsStr,
+                    output: 'Executing in air-gapped deterministic container...',
+                    language: toolName.includes('python') ? 'python' : 'json',
+                    toolName,
+                  },
+                };
+              }),
+            }));
+          }
+
+          // Event D: tool_result
+          else if (type === 'tool_result') {
+            const toolName = ev.tool || ev.name || 'tool';
+            const outputVal = ev.output !== undefined ? ev.output : ev.result;
+            const outputStr = typeof outputVal === 'string' ? outputVal : JSON.stringify(outputVal, null, 2);
+
+            // If RAG search, extract and populate evidence citations
+            if (toolName.includes('search') || toolName.includes('rag') || toolName.includes('knowledge') || ev.sources) {
+              const rawSources = ev.sources || (Array.isArray(outputVal) ? outputVal : []);
+              if (Array.isArray(rawSources)) {
+                const newSources: RAGSource[] = rawSources.map((s: any, i: number) => ({
+                  id: s.id || `src-${Date.now()}-${i}`,
+                  document: s.document || s.documentName || s.filename || 'Refinery Knowledge Base',
+                  documentName: s.documentName || s.document || s.filename || 'Refinery Knowledge Base',
+                  section: s.section || s.chunk || `Section ${i + 1}`,
+                  relevance: Math.round((s.relevance || s.score || 0.85) * (s.score && s.score <= 1 ? 100 : 1)),
+                  snippet: s.snippet || s.content || s.text,
+                }));
+                set({ ragSources: newSources });
+              }
+            }
+
+            // If P&ID extraction, extract dynamic tags
+            if (toolName.includes('pid') || toolName.includes('ocr') || ev.tags) {
+              const detected = ev.tags || (outputVal?.tags) || (Array.isArray(outputVal) ? outputVal : []);
+              if (Array.isArray(detected) && detected.length > 0) {
+                set({ detectedTags: detected.map((t: any) => typeof t === 'string' ? t : t.tag || t.name) });
+              }
+            }
+
+            set((state) => ({
+              messages: state.messages.map((m) => {
+                if (m.id !== agentMessageId) return m;
+
+                const updatedSteps = m.agentSteps?.map((s) => {
+                  if (s.status === 'in-progress') {
+                    return { ...s, status: 'completed' as const };
+                  }
+                  return s;
+                });
+
+                return {
+                  ...m,
+                  agentSteps: updatedSteps,
+                  toolExecution: m.toolExecution
+                    ? { ...m.toolExecution, output: outputStr }
+                    : { code: '', output: outputStr, language: 'text', toolName },
+                };
+              }),
+            }));
+          }
+
+          // Event E: token (Progressive markdown text stream)
+          else if (type === 'token') {
+            const chunk = ev.token || ev.text || ev.chunk || ev.content || '';
+            set((state) => ({
+              messages: state.messages.map((m) =>
+                m.id === agentMessageId
+                  ? { ...m, content: (m.content || '') + chunk }
+                  : m
+              ),
+            }));
+          }
+
+          // Event F: deliverable
+          else if (type === 'deliverable') {
+            const filename = ev.filename || ev.name || 'Deliverable.docx';
+            const kind = ev.kind || (filename.endsWith('.xlsx') ? 'xlsx' : 'docx');
+            const nowTime = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            
+            const newDeliverable: Deliverable = {
+              id: ev.id || `del-${Date.now()}`,
+              name: filename,
+              filename,
+              type: kind,
+              size: ev.size || (kind === 'xlsx' ? '1.4 MB' : '2.1 MB'),
+              generatedAt: nowTime,
+              timestamp: nowTime,
+              description: ev.description || (kind === 'xlsx' ? 'Deterministic ASME B31.3 Equipment Health Workbook' : 'Statutory Plant Maintenance Approval Note'),
+              url: ev.url || `/files/${taskId}/artifacts/${filename}`,
+              hash: ev.hash || ev.sha256,
+            };
+
+            get().addDeliverable(newDeliverable);
+          }
+
+          // Event G: done
+          else if (type === 'done') {
+            set((state) => ({
+              isAgentWorking: false,
+              messages: state.messages.map((m) =>
+                m.id === agentMessageId
+                  ? {
+                      ...m,
+                      agentSteps: m.agentSteps?.map((s) => ({ ...s, status: 'completed' as const })),
+                    }
+                  : m
+              ),
+            }));
+
+            if (taskWs) {
+              taskWs.close();
+              taskWs = null;
+            }
+          }
+        } catch (err) {
+          console.error('Error processing task WebSocket message:', err);
+        }
+      };
+
+      taskWs.onerror = (error) => {
+        console.error('Task WebSocket error:', error);
+        set({ isAgentWorking: false });
+      };
+
+      taskWs.onclose = () => {
+        set({ isAgentWorking: false });
+      };
+
+    } catch (err: any) {
+      console.error('Error initiating task:', err);
+      set((state) => ({
+        isAgentWorking: false,
+        messages: state.messages.map((m) =>
+          m.id === agentMessageId
+            ? {
+                ...m,
+                content: `⚠️ **Connection to Sovereign Backend Failed**\n\nCould not reach \`http://localhost:8000/api/tasks\`. Please ensure the FastAPI backend is running locally.\n\n*Error: ${err.message || err}*`,
+              }
+            : m
+        ),
+      }));
+    }
   },
 }));
 
