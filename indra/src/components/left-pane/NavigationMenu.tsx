@@ -18,7 +18,7 @@ export default function NavigationMenu() {
       id: 'workbench' as const, 
       label: 'Agent Workbench', 
       icon: Bot,
-      desc: '3-Pane Sovereign AI Reasoning'
+      desc: 'Sovereign AI Reasoning Workspace'
     },
     { 
       id: 'kb' as const, 

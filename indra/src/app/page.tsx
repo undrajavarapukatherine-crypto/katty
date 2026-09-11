@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import LeftPane from '@/components/left-pane/LeftPane';
 import CenterPane from '@/components/center-pane/CenterPane';
-import RightPane from '@/components/right-pane/RightPane';
 import KnowledgeBaseView from '@/components/views/KnowledgeBaseView';
 import AuditLedgerView from '@/components/views/AuditLedgerView';
 import HITLApprovalModal from '@/components/approvals/HITLApprovalModal';
@@ -41,7 +40,6 @@ export default function Home() {
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showInstallModal, setShowInstallModal] = useState(false);
 
   useEffect(() => {
     fetchPendingApprovals();
@@ -185,17 +183,6 @@ export default function Home() {
             )}
           </button>
 
-          {/* Antigravity "A Install IDE" Button (Direct match to reference image) */}
-          <button
-            onClick={() => setShowInstallModal(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 text-xs text-zinc-200 font-medium transition-colors"
-          >
-            <span className="w-3.5 h-3.5 rounded bg-blue-500 text-white font-bold text-[9px] flex items-center justify-center font-sans">
-              A
-            </span>
-            <span>Install IDE</span>
-          </button>
-
           {/* More options menu */}
           <button 
             onClick={() => setShowSettingsModal(true)}
@@ -207,7 +194,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 3. Main 3-Pane Desktop Layout with View Switching */}
+      {/* 3. Main Desktop Layout with View Switching */}
       <main className="flex flex-1 overflow-hidden relative">
         {/* Pane 1: Left Pane (w-64) */}
         {isSidebarOpen && <LeftPane />}
@@ -216,9 +203,6 @@ export default function Home() {
         {activeNav === 'workbench' && <CenterPane />}
         {activeNav === 'kb' && <KnowledgeBaseView />}
         {activeNav === 'audit' && <AuditLedgerView />}
-
-        {/* Pane 3: Right Pane (w-72) */}
-        <RightPane />
       </main>
 
       {/* 4. Settings / Sovereign Diagnostics Modal */}
@@ -304,37 +288,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 5. Install IDE Modal */}
-      {showInstallModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center">
-                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
-                </div>
-                <h2 className="text-sm font-semibold text-zinc-100 font-mono">INDRA Sovereign Desktop IDE</h2>
-              </div>
-              <button onClick={() => setShowInstallModal(false)} className="text-zinc-500 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              INDRA is running as an on-premise sovereign desktop instance under Smart India Hackathon Problem Statement 26117.
-            </p>
-            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800/60">
-              <button 
-                onClick={() => setShowInstallModal(false)}
-                className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-200 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 6. Human-in-the-Loop (HITL) Approvals Modal */}
+      {/* 5. Human-in-the-Loop (HITL) Approvals Modal */}
       <HITLApprovalModal />
     </div>
   );
