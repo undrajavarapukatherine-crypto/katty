@@ -301,10 +301,10 @@ export default function PIDViewer() {
                   <span className="text-slate-800 dark:text-zinc-200 font-medium">{selectedTag.design_temperature}</span>
                 </div>
               )}
-              {selectedTag.asme_rating && (
+              {(selectedTag.rating || selectedTag.asme_rating) && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400 dark:text-zinc-500">ASME Rating:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{selectedTag.asme_rating}</span>
+                  <span className="text-slate-400 dark:text-zinc-500">Rating / Class:</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{selectedTag.rating || selectedTag.asme_rating}</span>
                 </div>
               )}
               {selectedTag.material && (

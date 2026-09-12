@@ -119,6 +119,7 @@ export interface EquipmentData {
   design_pressure?: string;
   design_temperature?: string;
   material?: string;
+  rating?: string;
   asme_rating?: string;
   service_fluid?: string;
   status?: string;
