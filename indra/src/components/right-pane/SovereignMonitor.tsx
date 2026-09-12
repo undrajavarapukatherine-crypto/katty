@@ -80,7 +80,7 @@ export default function SovereignMonitor() {
           </span>
         </div>
         <div className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 font-mono">
-          outbound egress packets dropped at kernel layer
+          outbound egress requests contained by local proxy
         </div>
       </div>
 

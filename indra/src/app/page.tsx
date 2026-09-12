@@ -222,7 +222,7 @@ export default function Home() {
                   <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_2px_8px_rgba(124,58,237,0.2)]" />
                 </div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 font-mono">
-                  INDRA Sovereign Hardware & Network Telemetry
+                  INDRA Sovereign Architecture & Security Telemetry
                 </h2>
               </div>
               <button 
@@ -237,25 +237,27 @@ export default function Home() {
               <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2">
                 <div className="text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-2">
                   <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  AIR-GAP PROTOCOL: ENFORCED (HARDWARE SWITCH)
+                  AIR-GAP ARCHITECTURE: LOCALHOST LOOPBACK
                 </div>
-                <div className="text-emerald-700 dark:text-emerald-400/90 leading-relaxed text-[11px]">
-                  All external WAN gateways, cloud telemetry endpoints, and external socket listeners are strictly dropped at the kernel driver layer.
+                <div className="text-emerald-700 dark:text-emerald-400/90 leading-relaxed text-[11px] space-y-1 font-sans">
+                  <div>• <strong>Loopback Binding:</strong> FastAPI backend is strictly bound to local loopback <code className="px-1 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 font-mono text-[10px] text-emerald-900 dark:text-emerald-200 font-semibold">127.0.0.1:8000</code>.</div>
+                  <div>• <strong>Zero Cloud Calls:</strong> No external cloud LLM APIs, telemetry sinks, or WAN endpoints are contacted.</div>
+                  <div>• <strong>Local-Only Routing:</strong> Prompts, RAG embeddings, and calculations run entirely on-device with local resident models.</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
-                  <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Backend Status</span>
+                  <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Backend Binding</span>
                   <span className="text-base font-bold text-slate-900 dark:text-zinc-100 block mt-0.5">
-                    {isBackendConnected ? 'ONLINE (127.0.0.1)' : 'OFFLINE'}
+                    {isBackendConnected ? '127.0.0.1:8000' : 'OFFLINE'}
                   </span>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-1 font-semibold">FastAPI Port 8000</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-1 font-semibold">Localhost Loopback Only</span>
                 </div>
                 <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
-                  <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Model Weights Security</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block truncate mt-0.5">SHA-256 Merkle Validated</span>
-                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-1">Cryptographically Sealed</span>
+                  <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Model Routing</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block truncate mt-0.5">Local-Only (Zero WAN)</span>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-1">Resident Quantized Weights</span>
                 </div>
               </div>
 
