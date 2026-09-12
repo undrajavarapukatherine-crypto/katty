@@ -40,10 +40,11 @@ function DocumentTableSkeleton() {
             <tr key={item} className="animate-pulse">
               <td className="p-3.5">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded bg-slate-200 dark:bg-zinc-800 flex-shrink-0" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-zinc-800 flex-shrink-0" />
+                  <div className="w-9 h-4 rounded bg-slate-200 dark:bg-zinc-800 flex-shrink-0" />
                   <div 
                     className="h-3.5 rounded bg-slate-200 dark:bg-zinc-800" 
-                    style={{ width: `${140 + (item * 37) % 110}px` }} 
+                    style={{ width: `${130 + (item * 35) % 100}px` }} 
                   />
                 </div>
               </td>
@@ -176,15 +177,46 @@ export default function KnowledgeBaseView() {
     }
   };
 
-  const getDocIcon = (filename: string) => {
-    const fn = filename.toLowerCase();
+  const getDocTypeInfo = (filename?: string) => {
+    const fn = (filename || '').toLowerCase();
+    if (fn.endsWith('.pdf')) {
+      return {
+        label: 'PDF',
+        icon: FileText,
+        badgeClass: 'bg-rose-100/90 dark:bg-rose-950/90 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900/60',
+        iconBoxClass: 'bg-rose-50 dark:bg-rose-950/50 border-rose-200/80 dark:border-rose-900/60 text-rose-600 dark:text-rose-400',
+      };
+    }
+    if (fn.endsWith('.docx') || fn.endsWith('.doc')) {
+      return {
+        label: 'DOCX',
+        icon: FileText,
+        badgeClass: 'bg-blue-100/90 dark:bg-blue-950/90 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900/60',
+        iconBoxClass: 'bg-blue-50 dark:bg-blue-950/50 border-blue-200/80 dark:border-blue-900/60 text-blue-600 dark:text-blue-400',
+      };
+    }
+    if (fn.endsWith('.xlsx') || fn.endsWith('.xls') || fn.endsWith('.csv')) {
+      return {
+        label: fn.endsWith('.csv') ? 'CSV' : 'XLSX',
+        icon: FileSpreadsheet,
+        badgeClass: 'bg-emerald-100/90 dark:bg-emerald-950/90 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+        iconBoxClass: 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200/80 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400',
+      };
+    }
     if (fn.endsWith('.png') || fn.endsWith('.jpg') || fn.endsWith('.jpeg') || fn.endsWith('.svg')) {
-      return <FileImage className="w-4 h-4 text-blue-400" />;
+      return {
+        label: 'IMG',
+        icon: FileImage,
+        badgeClass: 'bg-violet-100/90 dark:bg-violet-950/90 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-900/60',
+        iconBoxClass: 'bg-violet-50 dark:bg-violet-950/50 border-violet-200/80 dark:border-violet-900/60 text-violet-600 dark:text-violet-400',
+      };
     }
-    if (fn.endsWith('.xlsx') || fn.endsWith('.csv')) {
-      return <FileSpreadsheet className="w-4 h-4 text-emerald-400" />;
-    }
-    return <FileText className="w-4 h-4 text-zinc-400" />;
+    return {
+      label: 'TXT',
+      icon: FileText,
+      badgeClass: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',
+      iconBoxClass: 'bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-500 dark:text-zinc-400',
+    };
   };
 
   return (
@@ -382,12 +414,20 @@ export default function KnowledgeBaseView() {
                     const isDrawing = (doc.filename || '').toLowerCase().includes('pid') || 
                       (doc.filename || '').toLowerCase().endsWith('.png') ||
                       (doc.filename || '').toLowerCase().endsWith('.jpg');
+                    const { label, icon: DocIcon, badgeClass, iconBoxClass } = getDocTypeInfo(doc.filename || doc.name);
 
                     return (
                       <tr key={doc.id} className="hover:bg-slate-50/70 dark:hover:bg-zinc-800/60 transition-colors">
-                        <td className="p-3.5 flex items-center gap-2 text-slate-800 dark:text-zinc-200 font-semibold">
-                          {getDocIcon(doc.filename)}
-                          <span className="truncate max-w-xs">{doc.filename || doc.name}</span>
+                        <td className="p-3.5 flex items-center gap-2.5 text-slate-800 dark:text-zinc-200 font-semibold">
+                          <div className={`w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 shadow-2xs ${iconBoxClass}`}>
+                            <DocIcon className="w-3.5 h-3.5 stroke-[2.2]" />
+                          </div>
+                          <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${badgeClass}`}>
+                            {label}
+                          </span>
+                          <span className="truncate max-w-xs font-mono text-xs font-medium text-slate-800 dark:text-zinc-200">
+                            {doc.filename || doc.name}
+                          </span>
                         </td>
                         <td className="p-3.5 text-slate-500 dark:text-zinc-400">{typeof doc.size === 'number' ? `${(doc.size / 1024).toFixed(1)} KB` : doc.size || '-'}</td>
                         <td className="p-3.5 text-slate-500 dark:text-zinc-400">{doc.chunk_count || 1}</td>
