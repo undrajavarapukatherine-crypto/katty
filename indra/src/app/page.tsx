@@ -168,9 +168,9 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-xl p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center">
-                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 p-1 flex items-center justify-center shadow-md">
+                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow" />
                 </div>
                 <h2 className="text-base font-semibold text-zinc-100 font-mono">
                   INDRA Sovereign Hardware & Network Telemetry

@@ -84,11 +84,11 @@ export default function AgentMessage({ message }: { message: Message }) {
       <div className="max-w-[85%] space-y-3">
         {/* Agent label */}
         <div className="flex items-center gap-2 mb-1">
-          <div className="relative w-5 h-5 rounded-md bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <div className="relative w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm">
             <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
-            <div className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 ring-1 ring-zinc-950" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-zinc-950" />
           </div>
-          <span className="text-[10px] font-bold tracking-wider text-zinc-300 uppercase font-mono">INDRA</span>
+          <span className="text-[11px] font-bold tracking-wider text-zinc-200 uppercase font-mono">INDRA</span>
           
           {message.modelUsed && (
             <span className="text-[9px] font-mono text-zinc-500 px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 flex items-center gap-1">
