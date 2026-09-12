@@ -54,31 +54,31 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0a0a0a] text-zinc-100 select-none">
-      {/* 1. Top OS / Electron Header Bar */}
-      <header className="h-10 bg-[#0a0a0a] border-b border-zinc-800/40 flex items-center justify-between px-3 text-xs z-50">
-        {/* Left: App Title & Prominent Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800/80 p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm relative group">
-            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
-            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-zinc-950 animate-pulse" />
+      {/* 1. Top Sovereign Header Bar */}
+      <header className="h-16 bg-[#0a0a0a] border-b border-zinc-800/50 flex items-center justify-between px-4 text-xs z-50">
+        {/* Left: App Title & Large Prominent Logo */}
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800/80 p-1 flex items-center justify-center flex-shrink-0 shadow-xl relative group">
+            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-md" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-zinc-950 animate-pulse" />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-zinc-100 tracking-[0.2em] text-sm font-mono">INDRA</span>
-            <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/25 font-semibold">
-              0-WAN SOVEREIGN
-            </span>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="font-bold text-zinc-100 tracking-[0.22em] text-lg font-mono">INDRA</span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 font-bold tracking-wider">
+                0-WAN SOVEREIGN
+              </span>
+            </div>
+            <div className="text-[11px] text-zinc-400 font-mono">Industrial Neural Decision & Reasoning Assistant</div>
           </div>
         </div>
 
-        {/* Right: Window Controls (Close/Reset only, minimize and maximize removed) */}
-        <div className="flex items-center gap-2 text-zinc-500">
-          <button 
-            onClick={newConversation} 
-            className="hover:text-rose-400 p-1 hover:bg-zinc-800/60 rounded cursor-pointer transition-colors"
-            title="Reset Conversation / Session"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+        {/* Right: Telemetry & Air-Gap Status Indicator (Cross mark removed) */}
+        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400">
+          <div className="flex items-center gap-1.5 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-zinc-300 font-medium">ON-PREMISE LOCAL</span>
+          </div>
         </div>
       </header>
 

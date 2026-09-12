@@ -72,22 +72,22 @@ export default function MessageArea() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 select-none overflow-y-auto">
         {/* Sovereign AI Hero Emblem */}
         <div className="flex flex-col items-center mb-6 text-center">
-          <div className="relative mb-4 group">
-            <div className="absolute -inset-3 rounded-3xl bg-emerald-500/15 blur-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
-            <div className="relative w-28 h-28 rounded-3xl bg-zinc-950/95 border border-zinc-800 p-2.5 flex items-center justify-center shadow-2xl">
-              <img src="/logo.png" alt="INDRA Sovereign AI" className="w-full h-full object-contain drop-shadow-xl" />
+          <div className="relative mb-5 group">
+            <div className="absolute -inset-4 rounded-3xl bg-emerald-500/20 blur-3xl opacity-80 group-hover:opacity-100 transition-opacity" />
+            <div className="relative w-40 h-40 rounded-3xl bg-zinc-950/95 border border-zinc-800 p-3.5 flex items-center justify-center shadow-2xl">
+              <img src="/logo.png" alt="INDRA Sovereign AI" className="w-full h-full object-contain drop-shadow-2xl" />
             </div>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center shadow-lg">
-              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center shadow-lg">
+              <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-[0.25em] text-zinc-100 font-mono">INDRA</h1>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
+            <h1 className="text-2xl font-bold tracking-[0.25em] text-zinc-100 font-mono">INDRA</h1>
+            <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30 font-bold tracking-wider">
               0-WAN AIR-GAP
             </span>
           </div>
-          <p className="text-xs text-zinc-400 font-mono mt-1">
+          <p className="text-xs text-zinc-400 font-mono mt-1.5">
             Industrial Neural Decision & Reasoning Assistant
           </p>
         </div>
