@@ -1242,6 +1242,10 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
             const kind = ev.kind || (filename.endsWith('.xlsx') ? 'xlsx' : 'docx');
             const nowTime = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
             
+            const fallbackDescription = filename && filename !== 'Deliverable.docx'
+              ? `Generated ${filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')}`
+              : 'Generated document';
+
             const newDeliverable: Deliverable = {
               id: ev.id || `del-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
               name: filename,
@@ -1250,7 +1254,7 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
               size: ev.size || (kind === 'xlsx' ? '1.4 MB' : '2.1 MB'),
               generatedAt: nowTime,
               timestamp: nowTime,
-              description: ev.description || (kind === 'xlsx' ? 'Deterministic ASME B31.3 Equipment Health Workbook' : 'Statutory Plant Maintenance Approval Note'),
+              description: ev.description || ev.desc || fallbackDescription,
               url: downloadUrl,
               hash: ev.hash || ev.sha256,
             };
