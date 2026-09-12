@@ -1,20 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
 import { ShieldCheck, Lock, Radio, Network, CheckCircle2, AlertOctagon } from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
+import { useWebSocket } from '@/providers/WebSocketProvider';
 
 export default function SovereignMonitor() {
-  const { 
-    blockedCount, 
-    networkEvents, 
-    isNetworkSocketConnected, 
-    connectNetworkWebSocket 
-  } = useIndraStore();
-
-  useEffect(() => {
-    connectNetworkWebSocket();
-  }, [connectNetworkWebSocket]);
+  const { blockedCount, networkEvents } = useIndraStore();
+  const { networkStatus } = useWebSocket();
 
   return (
     <div className="p-4 text-slate-800 dark:text-zinc-100">
@@ -27,9 +19,15 @@ export default function SovereignMonitor() {
           </h2>
         </div>
         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-[9px] font-mono font-medium">
-          <span className={`w-1.5 h-1.5 rounded-full ${isNetworkSocketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-          <span className="text-slate-600 dark:text-zinc-400">
-            {isNetworkSocketConnected ? 'WS:LIVE' : 'WS:RETRY'}
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            networkStatus === 'connected'
+              ? 'bg-emerald-500 animate-pulse'
+              : networkStatus === 'reconnecting'
+              ? 'bg-amber-500 animate-pulse'
+              : 'bg-rose-500'
+          }`} />
+          <span className="text-slate-600 dark:text-zinc-400 uppercase">
+            {networkStatus === 'connected' ? 'WS:LIVE' : networkStatus === 'reconnecting' ? 'WS:RETRY' : 'WS:OFFLINE'}
           </span>
         </div>
       </div>

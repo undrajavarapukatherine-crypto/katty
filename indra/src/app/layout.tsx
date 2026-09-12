@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import QueryProvider from '@/providers/QueryProvider';
+import WebSocketProvider from '@/providers/WebSocketProvider';
 import AppShell from '@/components/layout/AppShell';
 
 export const metadata: Metadata = {
@@ -27,9 +28,11 @@ export default function RootLayout({
       <body className="h-full bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 antialiased overflow-hidden select-none">
         <ErrorBoundary>
           <QueryProvider>
-            <AppShell>
-              {children}
-            </AppShell>
+            <WebSocketProvider>
+              <AppShell>
+                {children}
+              </AppShell>
+            </WebSocketProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>

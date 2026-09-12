@@ -15,16 +15,15 @@ import {
 import useIndraStore, { API_BASE } from '@/store/indra-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, useModelsQuery } from '@/lib/queries';
+import { useWebSocket } from '@/providers/WebSocketProvider';
 
 export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bottom' }) {
   const queryClient = useQueryClient();
   const { data: loadedModels = [] } = useModelsQuery();
+  const { sendMessage, isAgentWorking, abortTask } = useWebSocket();
   const { 
     inputValue, 
     setInputValue, 
-    sendMessage, 
-    isAgentWorking,
-    abortTask,
     activeModel,
     setActiveModel,
     setSettingsOpen

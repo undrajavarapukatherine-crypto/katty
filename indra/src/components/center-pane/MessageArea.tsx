@@ -10,6 +10,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
+import { useWebSocket } from '@/providers/WebSocketProvider';
 import UserMessage from './UserMessage';
 import AgentMessage from './AgentMessage';
 import ChatInput from './ChatInput';
@@ -46,7 +47,8 @@ const verifiedWorkflows = [
 ];
 
 export default function MessageArea() {
-  const { messages, setInputValue, sendMessage, isAgentWorking } = useIndraStore();
+  const { messages, setInputValue } = useIndraStore();
+  const { sendMessage, isAgentWorking } = useWebSocket();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

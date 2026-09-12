@@ -3,13 +3,15 @@
 import { useState } from 'react';
 import useIndraStore from '@/store/indra-store';
 import type { Message } from '@/store/indra-store';
+import { useWebSocket } from '@/providers/WebSocketProvider';
 import AgentTrace from './AgentTrace';
 import ToolExecution from './ToolExecution';
 import MarkdownRenderer from '@/components/common/MarkdownRenderer';
 import { Cpu, AlertCircle, RefreshCw, Play, Copy, Check } from 'lucide-react';
 
 export default function AgentMessage({ message }: { message: Message }) {
-  const { isAgentWorking, retryMessage, runOfflineSimulation } = useIndraStore();
+  const { runOfflineSimulation } = useIndraStore();
+  const { isAgentWorking, retryMessage } = useWebSocket();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
