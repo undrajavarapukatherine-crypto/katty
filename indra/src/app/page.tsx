@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import LeftPane from '@/components/left-pane/LeftPane';
 import CenterPane from '@/components/center-pane/CenterPane';
+import RightPane from '@/components/right-pane/RightPane';
 import KnowledgeBaseView from '@/components/views/KnowledgeBaseView';
 import AuditLedgerView from '@/components/views/AuditLedgerView';
 import HITLApprovalModal from '@/components/approvals/HITLApprovalModal';
@@ -11,6 +12,7 @@ import ToastContainer from '@/components/common/ToastContainer';
 import { useIndraStore } from '@/store/indra-store';
 import { 
   PanelLeft, 
+  PanelRight,
   ArrowLeft, 
   ArrowRight, 
   X, 
@@ -25,6 +27,9 @@ export default function Home() {
   const { 
     isSidebarOpen, 
     toggleSidebar, 
+    isRightPaneOpen,
+    toggleRightPane,
+    deliverables,
     activeModel,
     setActiveModel,
     activeNav,
@@ -150,7 +155,7 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Right: HITL Approvals Gate */}
+        {/* Right: HITL Approvals Gate & Right Pane Toggle */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setApprovalsModalOpen(true)}
@@ -169,6 +174,27 @@ export default function Home() {
               </span>
             )}
           </button>
+
+          <div className="h-4 w-px bg-slate-200 dark:bg-zinc-800" />
+
+          {/* Right Inspector Pane Toggle Button */}
+          <button
+            onClick={toggleRightPane}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
+              isRightPaneOpen
+                ? 'bg-violet-50 dark:bg-violet-950/40 border-violet-300 dark:border-violet-700 text-violet-800 dark:text-violet-200 shadow-xs font-semibold'
+                : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-slate-300 dark:hover:border-zinc-700 shadow-xs'
+            }`}
+            title="Toggle Sovereign Inspector & Deliverables Pane"
+          >
+            <PanelRight className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Inspector</span>
+            {deliverables.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-violet-600 text-white font-mono font-bold text-[9px]">
+                {deliverables.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -181,6 +207,9 @@ export default function Home() {
         {activeNav === 'workbench' && <CenterPane />}
         {activeNav === 'kb' && <KnowledgeBaseView />}
         {activeNav === 'audit' && <AuditLedgerView />}
+
+        {/* Pane 3: Right Pane (w-80, Collapsible Inspector) */}
+        {isRightPaneOpen && <RightPane />}
       </main>
 
       {/* 4. Settings / Sovereign Diagnostics Modal */}

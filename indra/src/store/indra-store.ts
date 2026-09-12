@@ -178,6 +178,7 @@ export interface IndraState {
   activeModel: string;
   modelReason?: string;
   isSidebarOpen: boolean;
+  isRightPaneOpen: boolean;
   scheduledTasks: WatchdogTask[];
 
   // Live Backend Telemetry & Status
@@ -215,6 +216,8 @@ export interface IndraState {
   cycleNav: (direction: 'forward' | 'backward') => void;
   setActiveModel: (model: string) => void;
   toggleSidebar: () => void;
+  toggleRightPane: () => void;
+  setRightPaneOpen: (open: boolean) => void;
   newConversation: () => void;
   setApprovalsModalOpen: (open: boolean) => void;
   setSettingsOpen: (open: boolean) => void;
@@ -273,6 +276,7 @@ export const useIndraStore = create<IndraState>()(
       activeModel: 'Auto-Negotiating...',
       modelReason: undefined,
       isSidebarOpen: true,
+      isRightPaneOpen: false,
 
       isBackendConnected: false,
       isNetworkSocketConnected: false,
@@ -350,6 +354,8 @@ export const useIndraStore = create<IndraState>()(
       },
       setActiveModel: (model: string) => set({ activeModel: model }),
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      toggleRightPane: () => set((state) => ({ isRightPaneOpen: !state.isRightPaneOpen })),
+      setRightPaneOpen: (open: boolean) => set({ isRightPaneOpen: open }),
       setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
       setSettingsOpen: (open: boolean) => set({ isSettingsOpen: open }),
       setScheduledTasksOpen: (open: boolean) => set({ isScheduledTasksOpen: open }),
@@ -361,7 +367,10 @@ export const useIndraStore = create<IndraState>()(
         scheduledTasks: state.scheduledTasks.filter((t) => t.id !== id),
       })),
       setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
-      setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
+      setActivePIDDoc: (doc: KBDocument | null) => set({ 
+        activePIDDoc: doc,
+        ...(doc ? { isRightPaneOpen: true } : {})
+      }),
 
       // Session Management Implementations
       saveCurrentSession: () => {
@@ -532,6 +541,7 @@ export const useIndraStore = create<IndraState>()(
 
       addDeliverable: (deliverable: Deliverable) => {
         set((state) => ({
+          isRightPaneOpen: true,
           deliverables: [
             deliverable,
             ...state.deliverables.filter((d) => d.filename !== deliverable.filename),
@@ -1335,6 +1345,7 @@ export const useIndraStore = create<IndraState>()(
         currentTaskId: state.currentTaskId,
         scheduledTasks: state.scheduledTasks,
         theme: state.theme,
+        isRightPaneOpen: state.isRightPaneOpen,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
