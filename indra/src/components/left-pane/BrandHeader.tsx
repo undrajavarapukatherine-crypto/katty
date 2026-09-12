@@ -1,9 +1,11 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Plus, Clock } from 'lucide-react';
 import { useIndraStore } from '@/store/indra-store';
 
 export default function BrandHeader() {
+  const router = useRouter();
   const { newConversation, setScheduledTasksOpen, setActiveNav, scheduledTasks } = useIndraStore();
   const activeCount = (scheduledTasks || []).filter((t) => t.status === 'active').length;
 
@@ -14,6 +16,7 @@ export default function BrandHeader() {
         onClick={() => {
           newConversation();
           setActiveNav('workbench');
+          router.push('/workbench');
         }}
         className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-xs text-white font-bold transition-all shadow-sm shadow-violet-500/25 group cursor-pointer"
         title="Start fresh conversation"

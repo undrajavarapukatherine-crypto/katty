@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Clock, 
   X, 
@@ -26,6 +27,7 @@ export default function ScheduledTasksModal() {
     addScheduledTask
   } = useIndraStore();
 
+  const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [taskSchedule, setTaskSchedule] = useState('Every 30 mins');
@@ -41,6 +43,7 @@ export default function ScheduledTasksModal() {
     if (isAgentWorking) return;
     setScheduledTasksOpen(false);
     setActiveNav('workbench');
+    router.push('/workbench');
     sendMessage(task.query);
   };
 

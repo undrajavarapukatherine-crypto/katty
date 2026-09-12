@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   Bot, 
   Database, 
@@ -8,23 +10,27 @@ import {
 import useIndraStore from '@/store/indra-store';
 
 export default function NavigationMenu() {
-  const { activeNav, setActiveNav, pendingApprovals } = useIndraStore();
+  const pathname = usePathname();
+  const { setActiveNav, pendingApprovals } = useIndraStore();
 
   const NAV_ITEMS = [
     { 
       id: 'workbench' as const, 
+      href: '/workbench',
       label: 'Agent Workbench', 
       icon: Bot,
       desc: 'Sovereign AI Reasoning Workspace'
     },
     { 
       id: 'kb' as const, 
+      href: '/kb',
       label: 'Knowledge Base (RAG)', 
       icon: Database,
       desc: 'Plant SOPs & CAD Schematics'
     },
     { 
       id: 'audit' as const, 
+      href: '/audit',
       label: 'Merkle Audit Ledger', 
       icon: ShieldCheck,
       desc: 'SHA-256 Chain & 3-Tier HITL',
@@ -42,10 +48,11 @@ export default function NavigationMenu() {
         <div className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = activeNav === item.id;
+            const isActive = pathname.startsWith(item.href);
             return (
-              <button
+              <Link
                 key={item.id}
+                href={item.href}
                 onClick={() => setActiveNav(item.id)}
                 className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-xl text-xs cursor-pointer transition-all duration-150 text-left ${
                   isActive
@@ -65,7 +72,7 @@ export default function NavigationMenu() {
                   </div>
                   <div className="text-[10px] text-slate-400 dark:text-zinc-500 truncate mt-0.5 font-normal">{item.desc}</div>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>

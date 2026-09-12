@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   MessageSquare, 
   Trash2, 
@@ -43,6 +44,7 @@ export default function ConversationHistory() {
     messages 
   } = useIndraStore();
 
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
 
   // If there are no sessions yet and current conversation has messages, we still show the current active one
@@ -101,7 +103,10 @@ export default function ConversationHistory() {
               return (
                 <div
                   key={session.id}
-                  onClick={() => loadSession(session.id)}
+                  onClick={() => {
+                    loadSession(session.id);
+                    router.push('/workbench');
+                  }}
                   className={`group relative flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs cursor-pointer transition-all duration-150 border ${
                     isActive
                       ? 'bg-violet-50/90 dark:bg-violet-950/50 border-violet-200 dark:border-violet-800/60 text-violet-900 dark:text-violet-200 shadow-2xs font-medium'
