@@ -22,11 +22,59 @@ import {
 } from 'lucide-react';
 import useIndraStore, { API_BASE, type KBDocument } from '@/store/indra-store';
 
+function DocumentTableSkeleton() {
+  return (
+    <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-xs">
+      <table className="w-full text-left text-xs font-mono">
+        <thead className="bg-slate-50/90 dark:bg-zinc-950/90 text-slate-500 dark:text-zinc-400 text-[10px] uppercase tracking-wider border-b border-slate-200 dark:border-zinc-800 font-bold">
+          <tr>
+            <th className="p-3.5">Filename</th>
+            <th className="p-3.5">Size</th>
+            <th className="p-3.5">Chunks</th>
+            <th className="p-3.5">Indexed At</th>
+            <th className="p-3.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+          {[1, 2, 3, 4, 5].map((item) => (
+            <tr key={item} className="animate-pulse">
+              <td className="p-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded bg-slate-200 dark:bg-zinc-800 flex-shrink-0" />
+                  <div 
+                    className="h-3.5 rounded bg-slate-200 dark:bg-zinc-800" 
+                    style={{ width: `${140 + (item * 37) % 110}px` }} 
+                  />
+                </div>
+              </td>
+              <td className="p-3.5">
+                <div className="h-3 w-14 rounded bg-slate-200 dark:bg-zinc-800" />
+              </td>
+              <td className="p-3.5">
+                <div className="h-3 w-8 rounded bg-slate-200 dark:bg-zinc-800" />
+              </td>
+              <td className="p-3.5">
+                <div className="h-3 w-20 rounded bg-slate-200 dark:bg-zinc-800" />
+              </td>
+              <td className="p-3.5">
+                <div className="flex items-center justify-end gap-2">
+                  <div className="h-6 w-18 rounded-lg bg-slate-200 dark:bg-zinc-800" />
+                  <div className="h-6 w-6 rounded-lg bg-slate-200 dark:bg-zinc-800" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function KnowledgeBaseView() {
   const { setActivePIDDoc } = useIndraStore();
 
   const [documents, setDocuments] = useState<KBDocument[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
@@ -298,15 +346,22 @@ export default function KnowledgeBaseView() {
         {/* Documents Table */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-              Indexed Documents ({documents.length})
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+              <span>Indexed Documents</span>
+              {loading && documents.length === 0 ? (
+                <span className="inline-block w-8 h-3.5 rounded-md bg-slate-200 dark:bg-zinc-800 animate-pulse" />
+              ) : (
+                <span>({documents.length})</span>
+              )}
             </h2>
             <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500">
               GET /api/kb/documents
             </span>
           </div>
 
-          {documents.length === 0 && !loading ? (
+          {loading && documents.length === 0 ? (
+            <DocumentTableSkeleton />
+          ) : documents.length === 0 ? (
             <div className="text-xs text-slate-400 dark:text-zinc-500 italic p-8 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 shadow-2xs">
               No documents indexed yet. Upload plant maintenance SOPs, inspection records, or P&ID diagrams above.
             </div>
