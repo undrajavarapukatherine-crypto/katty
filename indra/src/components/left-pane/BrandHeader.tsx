@@ -4,7 +4,8 @@ import { Plus, Clock } from 'lucide-react';
 import { useIndraStore } from '@/store/indra-store';
 
 export default function BrandHeader() {
-  const { newConversation, setScheduledTasksOpen, setActiveNav } = useIndraStore();
+  const { newConversation, setScheduledTasksOpen, setActiveNav, scheduledTasks } = useIndraStore();
+  const activeCount = (scheduledTasks || []).filter((t) => t.status === 'active').length;
 
   return (
     <div className="px-3 pt-3 pb-2 border-b border-zinc-800/50 space-y-2">
@@ -29,7 +30,15 @@ export default function BrandHeader() {
       >
         <Clock className="w-3.5 h-3.5 text-zinc-500" />
         <span className="text-xs font-mono">Scheduled Tasks</span>
-        <span className="ml-auto text-[9px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded font-mono border border-emerald-500/30 font-bold">4</span>
+        {activeCount > 0 ? (
+          <span className="ml-auto text-[9px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded font-mono border border-emerald-500/30 font-bold">
+            {activeCount}
+          </span>
+        ) : (
+          <span className="ml-auto text-[9px] px-1.5 py-0.2 bg-zinc-800/80 text-zinc-500 rounded font-mono border border-zinc-800">
+            0
+          </span>
+        )}
       </button>
     </div>
   );

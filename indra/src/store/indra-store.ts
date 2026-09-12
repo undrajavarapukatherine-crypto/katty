@@ -131,12 +131,24 @@ export interface PendingApproval {
   [key: string]: any;
 }
 
+export interface WatchdogTask {
+  id: string;
+  name: string;
+  schedule: string;
+  description: string;
+  engine: string;
+  status: 'active' | 'paused';
+  lastRun: string;
+  query: string;
+}
+
 export interface IndraState {
   // Navigation & Workspace
   activeNav: 'workbench' | 'kb' | 'audit';
   activeModel: string;
   modelReason?: string;
   isSidebarOpen: boolean;
+  scheduledTasks: WatchdogTask[];
 
   // Live Backend Telemetry & Status
   isBackendConnected: boolean;
@@ -172,6 +184,9 @@ export interface IndraState {
   setApprovalsModalOpen: (open: boolean) => void;
   setSettingsOpen: (open: boolean) => void;
   setScheduledTasksOpen: (open: boolean) => void;
+  addScheduledTask: (task: WatchdogTask) => void;
+  toggleScheduledTask: (id: string) => void;
+  removeScheduledTask: (id: string) => void;
 
   // Real Backend Calls & WebSocket Handlers
   fetchModels: () => Promise<void>;
@@ -222,6 +237,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
   isApprovalsModalOpen: false,
   isSettingsOpen: false,
   isScheduledTasksOpen: false,
+  scheduledTasks: [],
 
   setInputValue: (value: string) => set({ inputValue: value }),
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
@@ -241,6 +257,13 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
   setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
   setSettingsOpen: (open: boolean) => set({ isSettingsOpen: open }),
   setScheduledTasksOpen: (open: boolean) => set({ isScheduledTasksOpen: open }),
+  addScheduledTask: (task: WatchdogTask) => set((state) => ({ scheduledTasks: [task, ...state.scheduledTasks] })),
+  toggleScheduledTask: (id: string) => set((state) => ({
+    scheduledTasks: state.scheduledTasks.map((t) => t.id === id ? { ...t, status: t.status === 'active' ? 'paused' : 'active' } : t),
+  })),
+  removeScheduledTask: (id: string) => set((state) => ({
+    scheduledTasks: state.scheduledTasks.filter((t) => t.id !== id),
+  })),
   setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
   setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
 

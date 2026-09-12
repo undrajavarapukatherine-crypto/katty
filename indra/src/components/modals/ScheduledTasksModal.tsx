@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { 
@@ -6,26 +6,12 @@ import {
   X, 
   Play, 
   Pause, 
-  CheckCircle2, 
-  ShieldCheck, 
+  Plus, 
+  Trash2, 
   Activity, 
-  Calculator, 
-  Lock, 
-  Cpu
+  Calendar
 } from 'lucide-react';
-import { useIndraStore } from '@/store/indra-store';
-
-interface WatchdogTask {
-  id: string;
-  name: string;
-  schedule: string;
-  description: string;
-  engine: string;
-  icon: typeof Calculator;
-  status: 'active' | 'paused';
-  lastRun: string;
-  query: string;
-}
+import { useIndraStore, type WatchdogTask } from '@/store/indra-store';
 
 export default function ScheduledTasksModal() {
   const { 
@@ -33,73 +19,51 @@ export default function ScheduledTasksModal() {
     setScheduledTasksOpen, 
     sendMessage, 
     setActiveNav,
-    isAgentWorking 
+    isAgentWorking,
+    scheduledTasks,
+    toggleScheduledTask,
+    removeScheduledTask,
+    addScheduledTask
   } = useIndraStore();
 
-  const [tasks, setTasks] = useState<WatchdogTask[]>([
-    {
-      id: 'task-asme',
-      name: 'ASME B31.3 Pipe Wall Thickness Cyclic Audit',
-      schedule: 'Every 30 mins',
-      description: 'Verifies plant piping design limits against internal pressure (P) and temperature stress deratings.',
-      engine: 'Deterministic Python / SymPy Kernel',
-      icon: Calculator,
-      status: 'active',
-      lastRun: '5 mins ago',
-      query: 'Execute deterministic ASME B31.3 pipe wall thickness calculation and extract P&ID valve part numbers for Unit #04',
-    },
-    {
-      id: 'task-airgap',
-      name: '0-WAN Air-Gap Packet Containment Audit',
-      schedule: 'Continuous Kernel Daemon',
-      description: 'Enforces hardware loopback isolation and drops any unauthorized external socket egress.',
-      engine: 'BPF Kernel Filter & Cryptographic Ledger',
-      icon: Lock,
-      status: 'active',
-      lastRun: '10s ago (0 packets leaked)',
-      query: 'Run 0-WAN hardware isolation audit and inspect kernel egress packet containment counters',
-    },
-    {
-      id: 'task-vibe',
-      name: 'ISO 10816 Plant Telemetry Sweeper',
-      schedule: 'Every 15 mins',
-      description: 'Sweeps velocity RMS vibration telemetry against Class I-IV ISO 10816 allowable vibration boundaries.',
-      engine: 'FFT Signal Analyzer',
-      icon: Activity,
-      status: 'active',
-      lastRun: '12 mins ago',
-      query: 'Perform ISO 10816-3 vibration severity evaluation on Feed Pump P-101 motor velocity telemetry (4.2 mm/s RMS)',
-    },
-    {
-      id: 'task-merkle',
-      name: 'Merkle SHA-256 State Ledger Sealer',
-      schedule: 'On State Mutation',
-      description: 'Generates parent cryptographic hashes and verifies blockchain audit integrity with zero tamper.',
-      engine: 'SHA-256 Merkle Engine',
-      icon: ShieldCheck,
-      status: 'active',
-      lastRun: 'Just now',
-      query: 'Verify Merkle Audit Ledger root hash and report total cryptographic blocks in chain',
-    },
-  ]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [taskName, setTaskName] = useState('');
+  const [taskSchedule, setTaskSchedule] = useState('Every 30 mins');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [taskQuery, setTaskQuery] = useState('');
 
   if (!isScheduledTasksOpen) return null;
 
-  const toggleTaskStatus = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? { ...t, status: t.status === 'active' ? 'paused' : 'active' }
-          : t
-      )
-    );
-  };
+  const tasks = scheduledTasks || [];
+  const activeCount = tasks.filter((t) => t.status === 'active').length;
 
   const handleRunNow = (task: WatchdogTask) => {
     if (isAgentWorking) return;
     setScheduledTasksOpen(false);
     setActiveNav('workbench');
     sendMessage(task.query);
+  };
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskName.trim() || !taskQuery.trim()) return;
+
+    const newTask: WatchdogTask = {
+      id: `task-${Date.now()}`,
+      name: taskName.trim(),
+      schedule: taskSchedule,
+      description: taskDescription.trim() || 'Automated periodic sovereign execution routine',
+      engine: 'On-Premise Daemon Kernel',
+      status: 'active',
+      lastRun: 'Pending initial trigger',
+      query: taskQuery.trim(),
+    };
+
+    addScheduledTask(newTask);
+    setTaskName('');
+    setTaskDescription('');
+    setTaskQuery('');
+    setIsCreating(false);
   };
 
   return (
@@ -124,81 +88,187 @@ export default function ScheduledTasksModal() {
             </div>
           </div>
 
-          <button
-            onClick={() => setScheduledTasksOpen(false)}
-            className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCreating(!isCreating)}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{isCreating ? 'Cancel' : 'Add Routine'}</span>
+            </button>
+            <button
+              onClick={() => setScheduledTasksOpen(false)}
+              className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Task List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3.5 scrollbar-thin">
-          {tasks.map((task) => {
-            const Icon = task.icon;
-            const isActive = task.status === 'active';
+        {/* Create Routine Form */}
+        {isCreating && (
+          <form onSubmit={handleCreate} className="p-5 border-b border-zinc-800/80 bg-zinc-900/60 space-y-3 font-mono text-xs">
+            <div className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Configure New Autonomous Watchdog</span>
+            </div>
 
-            return (
-              <div
-                key={task.id}
-                className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700/80 transition-all space-y-2.5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div className={`p-1.5 rounded-lg border flex-shrink-0 ${
-                      isActive 
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
-                        : 'bg-zinc-800/60 border-zinc-700 text-zinc-500'
-                    }`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold text-zinc-200 font-mono flex items-center gap-2">
-                        <span>{task.name}</span>
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
-                          isActive 
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                            : 'bg-zinc-800 text-zinc-500'
-                        }`}>
-                          {isActive ? 'ACTIVE' : 'PAUSED'}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
-                        {task.description}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => toggleTaskStatus(task.id)}
-                      className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-mono transition-colors"
-                      title={isActive ? 'Pause watchdog routine' : 'Resume watchdog routine'}
-                    >
-                      {isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
-                    </button>
-                    <button
-                      onClick={() => handleRunNow(task)}
-                      disabled={isAgentWorking}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-mono transition-colors font-medium cursor-pointer"
-                      title="Run routine immediately on live backend"
-                    >
-                      <Play className="w-3 h-3 fill-current" />
-                      <span>Run Now</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono pt-2 border-t border-zinc-800/60">
-                  <div className="flex items-center gap-3">
-                    <span>Schedule: <strong className="text-zinc-400">{task.schedule}</strong></span>
-                    <span>Engine: <strong className="text-zinc-400">{task.engine}</strong></span>
-                  </div>
-                  <div>Last Run: <span className="text-zinc-400">{task.lastRun}</span></div>
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] text-zinc-400 mb-1">Routine Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. ASME B31.3 Stress Check"
+                  value={taskName}
+                  onChange={(e) => setTaskName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-zinc-200 outline-none focus:border-emerald-500"
+                />
               </div>
-            );
-          })}
+              <div>
+                <label className="block text-[10px] text-zinc-400 mb-1">Schedule Interval</label>
+                <select
+                  value={taskSchedule}
+                  onChange={(e) => setTaskSchedule(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-zinc-200 outline-none focus:border-emerald-500"
+                >
+                  <option value="Every 15 mins">Every 15 mins</option>
+                  <option value="Every 30 mins">Every 30 mins</option>
+                  <option value="Every hour">Every hour</option>
+                  <option value="Daily at 00:00 UTC">Daily at 00:00 UTC</option>
+                  <option value="Continuous Daemon">Continuous Daemon</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] text-zinc-400 mb-1">Routine Description</label>
+              <input
+                type="text"
+                placeholder="Brief summary of statutory engineering check"
+                value={taskDescription}
+                onChange={(e) => setTaskDescription(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-zinc-200 outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] text-zinc-400 mb-1">Agent Query / Task Execution Command</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Verify pipeline minimum thickness under ASME B31.3"
+                value={taskQuery}
+                onChange={(e) => setTaskQuery(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-zinc-200 outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setIsCreating(false)}
+                className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg shadow cursor-pointer"
+              >
+                Save Routine
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Task List or Zero-Mock Empty State */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-3.5 scrollbar-thin">
+          {tasks.length === 0 ? (
+            <div className="text-center py-12 px-4 border border-dashed border-zinc-800/80 rounded-xl bg-zinc-900/20 space-y-3">
+              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div className="text-xs font-mono font-medium text-zinc-300">
+                No Scheduled Watchdog Routines Configured
+              </div>
+              <p className="text-[11px] text-zinc-500 font-mono max-w-md mx-auto leading-relaxed">
+                Autonomous scheduled watchdog routines execute on-premise without cloud dependencies. Click &quot;Add Routine&quot; above to configure a periodic monitoring routine.
+              </p>
+            </div>
+          ) : (
+            tasks.map((task) => {
+              const isActive = task.status === 'active';
+
+              return (
+                <div
+                  key={task.id}
+                  className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700/80 transition-all space-y-2.5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className={`p-1.5 rounded-lg border flex-shrink-0 ${
+                        isActive 
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                          : 'bg-zinc-800/60 border-zinc-700 text-zinc-500'
+                      }`}>
+                        <Activity className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-zinc-200 font-mono flex items-center gap-2">
+                          <span>{task.name}</span>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                            isActive 
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                              : 'bg-zinc-800 text-zinc-500'
+                          }`}>
+                            {isActive ? 'ACTIVE' : 'PAUSED'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
+                          {task.description}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={() => toggleScheduledTask(task.id)}
+                        className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-mono transition-colors cursor-pointer"
+                        title={isActive ? 'Pause watchdog routine' : 'Resume watchdog routine'}
+                      >
+                        {isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
+                      </button>
+                      <button
+                        onClick={() => handleRunNow(task)}
+                        disabled={isAgentWorking}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-mono transition-colors font-medium cursor-pointer"
+                        title="Run routine immediately on live backend"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                        <span>Run Now</span>
+                      </button>
+                      <button
+                        onClick={() => removeScheduledTask(task.id)}
+                        className="p-1.5 rounded-lg bg-zinc-800 hover:bg-rose-950/60 hover:text-rose-400 text-zinc-500 text-xs font-mono transition-colors cursor-pointer"
+                        title="Delete routine"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono pt-2 border-t border-zinc-800/60">
+                    <div className="flex items-center gap-3">
+                      <span>Schedule: <strong className="text-zinc-400">{task.schedule}</strong></span>
+                      <span>Engine: <strong className="text-zinc-400">{task.engine}</strong></span>
+                    </div>
+                    <div>Last Run: <span className="text-zinc-400">{task.lastRun}</span></div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Modal Footer */}
