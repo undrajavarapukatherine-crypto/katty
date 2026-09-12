@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, CheckCircle2, Loader2, Circle } from 'lucide-react';
+import { Brain, CheckCircle2, Loader2, Circle, XCircle } from 'lucide-react';
 import type { AgentStep } from '@/store/indra-store';
 
 export default function AgentTrace({ steps }: { steps: AgentStep[] }) {
@@ -31,6 +31,8 @@ export default function AgentTrace({ steps }: { steps: AgentStep[] }) {
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 font-semibold'
                   : step.status === 'in-progress'
                   ? 'bg-violet-50 dark:bg-violet-950/40 border-violet-300 dark:border-violet-700 text-violet-900 dark:text-violet-200 ring-2 ring-violet-500/20 font-bold'
+                  : step.status === 'failed'
+                  ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 font-semibold'
                   : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-500 dark:text-zinc-400'
               }`}
             >
@@ -39,6 +41,9 @@ export default function AgentTrace({ steps }: { steps: AgentStep[] }) {
               )}
               {step.status === 'in-progress' && (
                 <Loader2 className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 animate-spin flex-shrink-0" />
+              )}
+              {step.status === 'failed' && (
+                <XCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
               )}
               {step.status === 'pending' && (
                 <Circle className="w-3.5 h-3.5 text-slate-300 dark:text-zinc-600 flex-shrink-0" />

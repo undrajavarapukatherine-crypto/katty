@@ -9,7 +9,8 @@ import {
   Mic, 
   FileCheck2, 
   Check, 
-  Loader2
+  Loader2,
+  Square
 } from 'lucide-react';
 import useIndraStore, { API_BASE } from '@/store/indra-store';
 
@@ -19,6 +20,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
     setInputValue, 
     sendMessage, 
     isAgentWorking,
+    abortTask,
     activeModel,
     setActiveModel,
     loadedModels,
@@ -46,6 +48,17 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
   useEffect(() => {
     adjustHeight();
   }, [inputValue, adjustHeight]);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isAgentWorking) {
+        e.preventDefault();
+        abortTask();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isAgentWorking, abortTask]);
 
   const toggleSpeechRecognition = () => {
     if (typeof window === 'undefined') return;
@@ -295,19 +308,40 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
                 <Mic className="w-3.5 h-3.5" />
               </button>
 
-              {/* Signature AI Doodle Violet/Indigo Send Button */}
-              <button
-                onClick={handleSend}
-                disabled={(!inputValue.trim() && !selectedAttachment) || isAgentWorking || isUploading}
-                className="w-7 h-7 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 flex items-center justify-center transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed shadow-md shadow-violet-500/25"
-                title="Send Prompt to Sovereign Agent"
-              >
-                {isAgentWorking ? (
-                  <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
-                ) : (
+              {/* If agent is working: show stop control */}
+              {isAgentWorking && (
+                <button
+                  type="button"
+                  onClick={abortTask}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-mono font-semibold transition-colors cursor-pointer shadow-xs"
+                  title="Stop / Abort sovereign agent execution (Esc)"
+                >
+                  <Square className="w-2.5 h-2.5 fill-rose-600 dark:fill-rose-400 text-rose-600 dark:text-rose-400" />
+                  <span>Stop</span>
+                </button>
+              )}
+
+              {/* Action Button: Stop if working, Send otherwise */}
+              {isAgentWorking ? (
+                <button
+                  type="button"
+                  onClick={abortTask}
+                  className="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition-all cursor-pointer shadow-md shadow-rose-500/30 group"
+                  title="Stop Agent Execution (Esc)"
+                >
+                  <Square className="w-2.5 h-2.5 fill-current text-white group-hover:scale-110 transition-transform" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={(!inputValue.trim() && !selectedAttachment) || isUploading}
+                  className="w-7 h-7 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 flex items-center justify-center transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed shadow-md shadow-violet-500/25"
+                  title="Send Prompt to Sovereign Agent"
+                >
                   <ArrowRight className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-                )}
-              </button>
+                </button>
+              )}
             </div>
           </div>
         </div>

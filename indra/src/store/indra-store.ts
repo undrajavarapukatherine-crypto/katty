@@ -36,7 +36,7 @@ export interface AgentEvent {
 export interface AgentStep {
   id: string;
   label: string;
-  status: 'completed' | 'in-progress' | 'pending';
+  status: 'completed' | 'in-progress' | 'pending' | 'failed';
   detail?: string;
 }
 
@@ -262,6 +262,7 @@ export interface IndraState {
   incrementBlockedCount: () => void;
   setDetectedTags: (tags: string[]) => void;
   setActivePIDDoc: (doc: KBDocument | null) => void;
+  abortTask: () => void;
 }
 
 let networkWs: WebSocket | null = null;
@@ -1347,6 +1348,66 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
         onAction: () => get().runOfflineSimulation(agentMessageId, content),
       });
     }
+  },
+
+  abortTask: () => {
+    if (taskWs) {
+      taskWs.onclose = null;
+      taskWs.onerror = null;
+      taskWs.onmessage = null;
+      taskWs.close();
+      taskWs = null;
+    }
+
+    const { currentTaskId, messages } = get();
+
+    if (currentTaskId) {
+      fetch(`${API_BASE}/api/tasks/${currentTaskId}/abort`, {
+        method: 'POST',
+      }).catch(() => {});
+    }
+
+    const updatedMessages = [...messages];
+    let lastAgentIndex = -1;
+    for (let i = updatedMessages.length - 1; i >= 0; i--) {
+      if (updatedMessages[i].role === 'agent') {
+        lastAgentIndex = i;
+        break;
+      }
+    }
+
+    if (lastAgentIndex !== -1) {
+      const lastMsg = updatedMessages[lastAgentIndex];
+      const updatedSteps = lastMsg.agentSteps?.map((s) =>
+        s.status === 'in-progress'
+          ? { ...s, status: 'failed' as const, label: `${s.label} (Stopped)` }
+          : s
+      );
+
+      const abortNote = '\n\n*🛑 Task execution stopped by operator.*';
+      const newContent = lastMsg.content
+        ? `${lastMsg.content}${abortNote}`
+        : '*Task execution was stopped by operator.*';
+
+      updatedMessages[lastAgentIndex] = {
+        ...lastMsg,
+        content: newContent,
+        agentSteps: updatedSteps,
+      };
+    }
+
+    set({
+      isAgentWorking: false,
+      messages: updatedMessages,
+    });
+
+    get().addToast({
+      type: 'info',
+      title: 'Execution Stopped',
+      message: 'Agent operation was aborted by operator.',
+    });
+
+    get().saveCurrentSession();
   },
     }),
     {
