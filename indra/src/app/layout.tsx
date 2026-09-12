@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'INDRA — Industrial Neural Decision & Reasoning Assistant',
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full bg-[#f8fafc] dark:bg-[#0a0a0a]">
       <body className="h-full bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 antialiased overflow-hidden select-none">
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );

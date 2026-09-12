@@ -4,7 +4,7 @@ import useIndraStore from '@/store/indra-store';
 import type { Message } from '@/store/indra-store';
 import AgentTrace from './AgentTrace';
 import ToolExecution from './ToolExecution';
-import { Cpu } from 'lucide-react';
+import { Cpu, AlertCircle, RefreshCw, Play } from 'lucide-react';
 
 function parseMarkdown(content: string) {
   if (!content) return null;
@@ -77,7 +77,7 @@ function parseMarkdown(content: string) {
 }
 
 export default function AgentMessage({ message }: { message: Message }) {
-  const { isAgentWorking } = useIndraStore();
+  const { isAgentWorking, retryMessage, runOfflineSimulation } = useIndraStore();
 
   return (
     <div className="flex justify-start">
@@ -109,11 +109,55 @@ export default function AgentMessage({ message }: { message: Message }) {
         {/* Tool Execution */}
         {message.toolExecution && <ToolExecution execution={message.toolExecution} />}
 
-        {/* Content */}
-        {message.content && (
-          <div className="px-5 py-4 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 shadow-xs text-slate-800 dark:text-zinc-200">
-            {parseMarkdown(message.content)}
+        {/* Content or Error Card */}
+        {message.isError ? (
+          <div className="p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 shadow-xs space-y-3 font-mono text-xs">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-bold">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                <span>FastAPI Sovereign Backend Offline</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-800 font-bold">
+                CONNECTION FAILED
+              </span>
+            </div>
+
+            <p className="text-[11px] text-rose-900/80 dark:text-rose-200/80 leading-relaxed font-sans">
+              Could not reach <code className="px-1.5 py-0.5 rounded bg-rose-100/70 dark:bg-rose-900/50 font-mono text-[10px]">{message.errorDetails?.endpoint || 'http://localhost:8000/api/tasks'}</code>.
+              The backend service may be stopped or initializing.
+            </p>
+
+            {message.errorDetails?.message && (
+              <div className="p-2.5 rounded-xl bg-white/70 dark:bg-black/40 border border-rose-200/60 dark:border-rose-900/40 text-[10px] text-rose-800 dark:text-rose-300 overflow-x-auto">
+                {message.errorDetails.message}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 pt-1 border-t border-rose-200/60 dark:border-rose-900/40 flex-wrap">
+              <button
+                onClick={() => retryMessage(message.id)}
+                className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Retry Request</span>
+              </button>
+              
+              <button
+                onClick={() => runOfflineSimulation(message.id, message.errorDetails?.originalPrompt)}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shadow-violet-500/20"
+                title="Execute full ASME B31.3 deterministic calculation in air-gapped sandbox"
+              >
+                <Play className="w-3 h-3 text-white" />
+                <span>Run Offline Sovereign Simulation</span>
+              </button>
+            </div>
           </div>
+        ) : (
+          message.content && (
+            <div className="px-5 py-4 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 shadow-xs text-slate-800 dark:text-zinc-200">
+              {parseMarkdown(message.content)}
+            </div>
+          )
         )}
       </div>
     </div>

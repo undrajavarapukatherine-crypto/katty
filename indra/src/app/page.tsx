@@ -7,6 +7,7 @@ import KnowledgeBaseView from '@/components/views/KnowledgeBaseView';
 import AuditLedgerView from '@/components/views/AuditLedgerView';
 import HITLApprovalModal from '@/components/approvals/HITLApprovalModal';
 import ScheduledTasksModal from '@/components/modals/ScheduledTasksModal';
+import ToastContainer from '@/components/common/ToastContainer';
 import { useIndraStore } from '@/store/indra-store';
 import { 
   PanelLeft, 
@@ -270,6 +271,9 @@ export default function Home() {
 
       {/* 6. Scheduled Autonomous Plant Watchdogs Modal */}
       <ScheduledTasksModal />
+
+      {/* 7. Global Connection Alerts & Status Toasts */}
+      <ToastContainer />
     </div>
   );
 }
