@@ -13,8 +13,6 @@ import { useIndraStore } from '@/store/indra-store';
 import { 
   PanelLeft, 
   PanelRight,
-  ArrowLeft, 
-  ArrowRight, 
   X, 
   Cpu, 
   Lock, 
@@ -22,6 +20,12 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+
+const navLabels: Record<string, string> = {
+  workbench: 'Agent Workbench',
+  kb: 'Offline Knowledge Base',
+  audit: 'Audit & Compliance Ledger',
+};
 
 export default function Home() {
   const { 
@@ -34,7 +38,6 @@ export default function Home() {
     setActiveModel,
     activeNav,
     setActiveNav,
-    cycleNav,
     loadedModels,
     isBackendConnected,
     pendingApprovals,
@@ -132,25 +135,7 @@ export default function Home() {
             <PanelLeft className="w-4 h-4" />
           </button>
           <div className="h-4 w-px bg-slate-200 dark:bg-zinc-800" />
-          
-          <div className="flex items-center bg-slate-100/80 dark:bg-zinc-900/90 p-0.5 rounded-lg border border-slate-200/60 dark:border-zinc-800">
-            <button 
-              onClick={() => cycleNav('backward')}
-              className="p-1 hover:bg-white dark:hover:bg-zinc-800 rounded text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all cursor-pointer shadow-none hover:shadow-xs"
-              title="Previous Operational View"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
-            <button 
-              onClick={() => cycleNav('forward')}
-              className="p-1 hover:bg-white dark:hover:bg-zinc-800 rounded text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all cursor-pointer shadow-none hover:shadow-xs"
-              title="Next Operational View"
-            >
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <span className="text-slate-700 dark:text-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100/70 dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800">
+          <span className="text-slate-700 dark:text-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100/70 dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800 font-mono">
             {navLabels[activeNav] || 'Agent Workbench'}
           </span>
         </div>
