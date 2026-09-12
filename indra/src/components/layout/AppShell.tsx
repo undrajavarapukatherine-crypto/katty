@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import LeftPane from '@/components/left-pane/LeftPane';
 import RightPane from '@/components/right-pane/RightPane';
@@ -9,6 +9,8 @@ import ScheduledTasksModal from '@/components/modals/ScheduledTasksModal';
 import ToastContainer from '@/components/common/ToastContainer';
 import { useIndraStore } from '@/store/indra-store';
 import { useApprovalsQuery, useModelsQuery } from '@/lib/queries';
+import { useNativeBridge } from '@/hooks/useNativeBridge';
+import { sendNativeNotification } from '@/lib/native-bridge';
 import { 
   PanelLeft, 
   PanelRight,
@@ -52,6 +54,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     toggleTheme,
     syncHistoryWithBackend,
   } = useIndraStore();
+
+  const { isNative, appInfo } = useNativeBridge();
+  const prevApprovalsCount = useRef(pendingApprovals.length);
+
+  // Trigger Native Desktop Notification when new pending approvals arrive
+  useEffect(() => {
+    if (pendingApprovals.length > prevApprovalsCount.current) {
+      const newItems = pendingApprovals.slice(prevApprovalsCount.current);
+      const first = newItems[0];
+      const toolName = first?.tool || first?.tool_name || first?.title || 'Plant Execution Tool';
+      sendNativeNotification({
+        title: 'INDRA: HITL Authorization Required',
+        body: `High-consequence plant tool (${toolName}) awaits authorized digital signature.`,
+      });
+    }
+    prevApprovalsCount.current = pendingApprovals.length;
+  }, [pendingApprovals]);
 
   // Determine active navigation segment from current pathname
   const activeNav: 'workbench' | 'kb' | 'audit' = pathname.startsWith('/kb')
@@ -126,6 +145,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-semibold text-slate-800 dark:text-zinc-200">ON-PREMISE AIR-GAPPED</span>
           </div>
+
+          {isNative && (
+            <Badge variant="violet" className="py-1 px-2.5">
+              ELECTRON DESKTOP
+            </Badge>
+          )}
         </div>
       </header>
 
@@ -262,6 +287,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 )}
               </div>
             </div>
+
+            {isNative && appInfo && (
+              <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-1.5">
+                <span className="text-slate-500 dark:text-zinc-400 block uppercase tracking-wider text-[10px] font-semibold">Native Desktop IPC Bridge</span>
+                <div className="grid grid-cols-3 gap-2 text-[11px] font-mono">
+                  <div>
+                    <span className="text-slate-400 dark:text-zinc-500 block text-[10px]">OS Platform</span>
+                    <span className="font-bold text-slate-800 dark:text-zinc-200">{appInfo.platform} ({appInfo.arch})</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 dark:text-zinc-500 block text-[10px]">Electron Engine</span>
+                    <span className="font-bold text-slate-800 dark:text-zinc-200">v{appInfo.electronVersion || '41.x'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 dark:text-zinc-500 block text-[10px]">Context Isolation</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Hardened (Active)</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-2">

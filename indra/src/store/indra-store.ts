@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getGlobalQueryClient, queryKeys } from '@/lib/queries';
+import { sendNativeNotification } from '@/lib/native-bridge';
 
 // --- API Configuration ---
 export const API_BASE = 'http://localhost:8000';
@@ -879,10 +880,17 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
         });
       },
 
-  addNetworkEvent: (event: NetworkEvent) =>
+  addNetworkEvent: (event: NetworkEvent) => {
+    if (event.status === 'blocked' || event.status === 'contained') {
+      sendNativeNotification({
+        title: 'INDRA: Intrusion Blocked',
+        body: `Localhost boundary dropped outbound packet to ${event.destination} (${event.protocol || 'TCP'}).`,
+      });
+    }
     set((state) => ({
       networkEvents: [event, ...state.networkEvents].slice(0, 100),
-    })),
+    }));
+  },
 
   incrementBlockedCount: () =>
     set((state) => ({ blockedCount: state.blockedCount + 1 })),

@@ -18,13 +18,15 @@ import {
   X,
   ZoomIn,
   ZoomOut,
-  Scan
+  Scan,
+  FolderOpen
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import useIndraStore, { API_BASE, type KBDocument } from '@/store/indra-store';
 import { useKBDocumentsQuery, useUploadKBDocMutation, useDeleteKBDocMutation } from '@/lib/queries';
+import { useNativeBridge } from '@/hooks/useNativeBridge';
 
 function DocumentTableSkeleton() {
   return (
@@ -82,6 +84,8 @@ export default function KnowledgeBaseView() {
   const uploadMutation = useUploadKBDocMutation();
   const deleteMutation = useDeleteKBDocMutation();
 
+  const { isNative, openFileDialog } = useNativeBridge();
+
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
@@ -106,6 +110,26 @@ export default function KnowledgeBaseView() {
       }
     }
     setUploading(false);
+  };
+
+  const handleNativeBrowse = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      const files = await openFileDialog({
+        title: 'Select Plant Documents & CAD Schematics',
+        filters: [
+          { name: 'Engineering Documents', extensions: ['pdf', 'docx', 'xlsx', 'csv', 'txt', 'png', 'jpg', 'jpeg'] },
+          { name: 'P&ID Diagrams', extensions: ['png', 'jpg', 'jpeg', 'svg', 'pdf'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+        properties: ['openFile', 'multiSelections'],
+      });
+      if (files && files.length > 0) {
+        handleUpload(files);
+      }
+    } catch (err) {
+      console.error('Native file picker error:', err);
+    }
   };
 
   // 3. Delete document via DELETE /api/kb/documents/{id}
@@ -201,6 +225,11 @@ export default function KnowledgeBaseView() {
             <span className="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50 font-mono font-bold">
               AIR-GAPPED VECTORSTORE
             </span>
+            {isNative && (
+              <Badge variant="violet">
+                NATIVE ELECTRON IPC
+              </Badge>
+            )}
           </div>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-mono">
             Index plant SOPs, ASME B31.3 standards, P&ID CAD schematics, and equipment data with zero external egress.
@@ -264,6 +293,24 @@ export default function KnowledgeBaseView() {
                 <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
                   Supported: PDF (SOPs), PNG/SVG/JPG (P&ID Drawings), DOCX, XLSX, CSV, TXT
                 </span>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNativeBrowse}
+                    className="gap-1.5 font-mono text-xs z-10 shadow-2xs"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+                    <span>{isNative ? 'Browse Local Drive (Native IPC)' : 'Browse Local Files'}</span>
+                  </Button>
+                  {isNative && (
+                    <Badge variant="violet">
+                      Direct Native FS Read
+                    </Badge>
+                  )}
+                </div>
               </>
             )}
           </div>
