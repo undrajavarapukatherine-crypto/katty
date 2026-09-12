@@ -14,6 +14,14 @@ import {
   AlertCircle,
   Cpu
 } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription 
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import useIndraStore, { API_BASE, type KBDocument, type EquipmentData } from '@/store/indra-store';
 import { useKBDocumentsQuery, useUploadKBDocMutation } from '@/lib/queries';
 
@@ -291,46 +299,36 @@ export default function PIDViewer() {
       </div>
 
       {/* Expanded Modal for High-Resolution Inspection */}
-      {isExpanded && (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div className="w-full max-w-5xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 font-mono">
-                  HIGH-RESOLUTION P&ID INSPECTION CANVAS
-                </h3>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
-                  {activePIDDoc?.filename || 'P&ID Schematic'} • Verified Against ASME B31.3
-                </p>
-              </div>
-              <button 
-                onClick={() => setIsExpanded(false)}
-                className="text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col p-5 bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800">
+          <DialogHeader className="border-b border-slate-100 dark:border-zinc-800 pb-3">
+            <DialogTitle className="text-sm font-bold">
+              HIGH-RESOLUTION P&ID INSPECTION CANVAS
+            </DialogTitle>
+            <DialogDescription className="text-[11px]">
+              {activePIDDoc?.filename || 'P&ID Schematic'} • Verified Against ASME B31.3
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="my-4 flex-1 overflow-auto rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#0c0c0e] flex items-center justify-center p-4 min-h-[400px]">
-              <img
-                src={imageUrl}
-                alt="P&ID Diagram Full"
-                className="max-w-full max-h-[550px] object-contain rounded-lg"
-              />
-            </div>
-
-            <div className="flex justify-between items-center text-xs text-slate-500 dark:text-zinc-400 font-mono pt-2 border-t border-slate-100 dark:border-zinc-800">
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Zero-WAN Air-Gapped Inspection Node</span>
-              <button 
-                onClick={() => setIsExpanded(false)}
-                className="px-4 py-1.5 bg-slate-900 dark:bg-zinc-800 hover:bg-slate-800 dark:hover:bg-zinc-700 text-white rounded-xl text-xs font-mono font-bold cursor-pointer"
-              >
-                Close Canvas
-              </button>
-            </div>
+          <div className="my-4 flex-1 overflow-auto rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#0c0c0e] flex items-center justify-center p-4 min-h-[400px]">
+            <img
+              src={imageUrl}
+              alt="P&ID Diagram Full"
+              className="max-w-full max-h-[550px] object-contain rounded-lg"
+            />
           </div>
-        </div>
-      )}
+
+          <div className="flex justify-between items-center text-xs text-slate-500 dark:text-zinc-400 font-mono pt-2 border-t border-slate-100 dark:border-zinc-800">
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Zero-WAN Air-Gapped Inspection Node</span>
+            <Button 
+              onClick={() => setIsExpanded(false)}
+              size="sm"
+            >
+              Close Canvas
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

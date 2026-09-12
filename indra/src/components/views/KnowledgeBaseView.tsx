@@ -20,6 +20,9 @@ import {
   ZoomOut,
   Scan
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import useIndraStore, { API_BASE, type KBDocument } from '@/store/indra-store';
 import { useKBDocumentsQuery, useUploadKBDocMutation, useDeleteKBDocMutation } from '@/lib/queries';
 
@@ -436,47 +439,45 @@ export default function KnowledgeBaseView() {
       )}
 
       {/* P&ID Drawing Inspection Modal */}
-      {previewDoc && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-800/80 bg-zinc-900/40">
+      <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-zinc-950 border-zinc-800 text-zinc-100">
+          <DialogHeader className="px-5 py-3.5 border-b border-zinc-800/80 bg-zinc-900/40">
+            <div className="flex items-center justify-between pr-8">
               <div className="flex items-center gap-2">
                 <Scan className="w-4 h-4 text-blue-400" />
-                <span className="text-xs font-mono font-semibold text-zinc-200">
-                  P&ID Inspection: {previewDoc.filename}
-                </span>
-                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">
+                <DialogTitle className="text-xs text-zinc-200">
+                  P&ID Inspection: {previewDoc?.filename}
+                </DialogTitle>
+                <Badge variant="success">
                   ASME B31.3 AUDIT READY
-                </span>
+                </Badge>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="icon-sm"
                   onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
-                  className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded cursor-pointer transition-colors"
                   title="Zoom Out"
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
-                </button>
+                </Button>
                 <span className="text-[10px] font-mono text-zinc-400 min-w-[3rem] text-center">
                   {Math.round(zoom * 100)}%
                 </span>
-                <button
+                <Button
+                  variant="outline"
+                  size="icon-sm"
                   onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
-                  className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded cursor-pointer transition-colors"
                   title="Zoom In"
                 >
                   <ZoomIn className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => setPreviewDoc(null)}
-                  className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded ml-2 cursor-pointer transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
+          </DialogHeader>
 
+          {previewDoc && (
             <div className="flex-1 overflow-auto p-4 bg-zinc-900/20 flex items-center justify-center min-h-[400px]">
               <div 
                 className="transition-transform duration-200 origin-center"
@@ -496,29 +497,30 @@ export default function KnowledgeBaseView() {
                 />
               </div>
             </div>
+          )}
 
-            <div className="p-3 border-t border-zinc-800/80 bg-zinc-950 flex items-center justify-between text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-500 uppercase">Detected Equipment Tags:</span>
-                {['FV-101', 'P-101', 'E-101', 'TI-101'].map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px]"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <button
-                onClick={() => setPreviewDoc(null)}
-                className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded text-xs cursor-pointer"
-              >
-                Close Viewer
-              </button>
+          <div className="p-3 border-t border-zinc-800/80 bg-zinc-950 flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-zinc-500 uppercase">Detected Equipment Tags:</span>
+              {['FV-101', 'P-101', 'E-101', 'TI-101'].map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px]"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => setPreviewDoc(null)}
+            >
+              Close Viewer
+            </Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
