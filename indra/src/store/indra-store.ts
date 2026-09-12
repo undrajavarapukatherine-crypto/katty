@@ -824,18 +824,35 @@ export const useIndraStore = create<IndraState>()(
 
 #### 1. Inspection & Operational Verification
 - **Equipment Tag:** \`HX-4201\` (Crude Pre-Heat Exchanger Bank A)
-- **Associated Instruments:** Flow Control Valve \`FV-3102\`, Temperature Transmitter \`TI-4201\` (Operating at 285°C), Pressure Indicator \`PI-3104\` (Operating at 24.2 barg).
-- **Ultrasonic Thickness (UT) Survey:** Actual measured thickness \`0.485 in\` across 12 inspection points.
+- **Associated Instruments:** Flow Control Valve \`FV-3102\`, Temperature Transmitter \`TI-4201\` (285°C), Pressure Indicator \`PI-3104\` (24.2 barg).
+- **Ultrasonic Thickness (UT) Survey:** Actual measured wall thickness \`0.4850 in\` across 12 inspection points.
 
-#### 2. Deterministic ASME B31.3 Math Verification
-- **Code Standard:** ASME B31.3 Process Piping (Equation 3a) & API-570 Inspection Code.
-- **Minimum Wall Thickness Required (\\(t_{min}\\)):** \`0.1582 in\` (including 1.5875 mm corrosion allowance).
-- **Structural Integrity Margin:** \`+0.3268 in\` above critical retirement limit.
-- **Projected Remaining Service Life:** **\`45.1 years\`** at the measured uniform loss rate of 0.184 mm/year.
+#### 2. Deterministic Calculation Summary (ASME B31.3 §304.1.2)
 
-#### 3. Statutory Decision
-- **Status:** **APPROVED FOR UNRESTRICTED CRUDE RUNS**
-- **Action Generated:** Statutory approval document \`Inspection_Approval_HX4201.docx\` compiled and verified in the right pane.`;
+| Parameter | Symbol | Value | Units | Standard / Source |
+| :--- | :--- | :--- | :--- | :--- |
+| Design Pressure | $P$ | 450.0 | psig | Process Flow Sheet |
+| Outside Diameter | $D$ | 8.625 | in | NPS 8 Sch 40 |
+| Allowable Stress | $S$ | 20,000 | psi | ASTM A106 Grade B |
+| Quality Factor | $E$ | 1.00 | - | Seamless Pipe |
+| Temp. Coefficient | $Y$ | 0.40 | - | Ferritic Steel < 900°F |
+| Corrosion Allowance | $c$ | 0.0625 | in | Plant Piping Spec |
+| **Minimum Required ($t_{min}$)** | **$t_m$** | **0.1582** | **in** | **Eq. 3a Result** |
+| **Actual Measured** | **$t_{act}$** | **0.4850** | **in** | **UT NDT Inspection** |
+| **Remaining Life** | **$L_{rem}$** | **45.1** | **years** | **API-570 Clause 7.1** |
+
+#### 3. Verification Python Script
+\`\`\`python
+# ASME B31.3 Eq 3a Verification
+P, D, S, E, Y, c = 450.0, 8.625, 20000.0, 1.0, 0.4, 0.0625
+t_min = (P * D) / (2 * (S * E + P * Y)) + c
+remaining_life = (0.4850 - t_min) / 0.00725
+print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} years")
+\`\`\`
+
+#### 4. Statutory Decision
+- **Compliance Status:** **APPROVED FOR UNRESTRICTED CRUDE RUNS** (Safety Margin: \`+0.3268 in\`)
+- **Deliverable Generated:** [Inspection_Approval_HX4201.docx](#) compiled and cryptographically verified in the Sovereign Inspector pane.`;
 
         set((s) => ({
           isAgentWorking: false,
