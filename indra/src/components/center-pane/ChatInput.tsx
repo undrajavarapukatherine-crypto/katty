@@ -8,10 +8,8 @@ import {
   ChevronDown, 
   Mic, 
   FileCheck2, 
-  Folder, 
   Check, 
-  Loader2,
-  UploadCloud
+  Loader2
 } from 'lucide-react';
 import useIndraStore, { API_BASE } from '@/store/indra-store';
 
@@ -39,7 +37,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setInputValue((inputValue ? `${inputValue} ` : '') + 'Perform ASME B31.3 wall thickness evaluation on Unit #04');
+      setInputValue((inputValue ? `${inputValue} ` : '') + 'Perform ASME B31.3 wall thickness evaluation');
       return;
     }
 
@@ -291,21 +289,6 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
             </div>
           </div>
         </div>
-
-        {/* Local Egress Filter Indicator Directly Below Central Card */}
-        {isCenter && (
-          <div className="flex items-center justify-start pl-1">
-            <button 
-              onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono cursor-pointer"
-              title="Inspect 0-WAN hardware isolation and dropped egress packets"
-            >
-              <Folder className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Local Air-Gapped Egress Filter</span>
-              <ChevronDown className="w-3 h-3 text-zinc-500" />
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

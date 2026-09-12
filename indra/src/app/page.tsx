@@ -13,10 +13,8 @@ import {
   ArrowLeft, 
   ArrowRight, 
   X, 
-  MoreVertical,
-  Cpu,
-  Lock,
-  Sparkles,
+  Cpu, 
+  Lock, 
   ShieldCheck
 } from 'lucide-react';
 
@@ -24,9 +22,6 @@ export default function Home() {
   const { 
     isSidebarOpen, 
     toggleSidebar, 
-    newConversation, 
-    sendMessage, 
-    isAgentWorking,
     activeModel,
     setActiveModel,
     activeNav,
@@ -40,16 +35,16 @@ export default function Home() {
     fetchModels,
     isSettingsOpen,
     setSettingsOpen,
-    setScheduledTasksOpen
   } = useIndraStore();
 
   useEffect(() => {
     fetchPendingApprovals();
   }, [fetchPendingApprovals]);
 
-  const runVerifiedAudit = () => {
-    if (isAgentWorking) return;
-    sendMessage('Execute deterministic ASME B31.3 pipe wall thickness calculation and extract P&ID valve part numbers for Unit #04');
+  const navLabels: Record<string, string> = {
+    workbench: 'Agent Workbench',
+    kb: 'Knowledge Base (RAG)',
+    audit: 'Merkle Audit Ledger',
   };
 
   return (
@@ -73,7 +68,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: Telemetry & Air-Gap Status Indicator (Cross mark removed) */}
+        {/* Right: Telemetry & Air-Gap Status Indicator */}
         <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400">
           <div className="flex items-center gap-1.5 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -82,10 +77,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Secondary Toolbar */}
+      {/* 2. Secondary Navigation Toolbar */}
       <div className="h-9 bg-[#0d0d0d] border-b border-zinc-800/40 flex items-center justify-between px-3 text-xs">
-        {/* Left: Sidebar toggle, Back, Forward */}
-        <div className="flex items-center gap-1.5">
+        {/* Left: Sidebar toggle, View Navigation & Active View Label */}
+        <div className="flex items-center gap-2">
           <button 
             onClick={toggleSidebar}
             className="p-1 hover:bg-zinc-800/80 rounded text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
@@ -93,6 +88,7 @@ export default function Home() {
           >
             <PanelLeft className="w-4 h-4" />
           </button>
+          <div className="h-3.5 w-px bg-zinc-800" />
           <button 
             onClick={() => cycleNav('backward')}
             className="p-1 hover:bg-zinc-800/80 rounded text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
@@ -107,22 +103,13 @@ export default function Home() {
           >
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
+          <span className="text-zinc-400 text-xs font-mono ml-1 font-medium">
+            {navLabels[activeNav] || 'Agent Workbench'}
+          </span>
         </div>
 
-        {/* Center: Quick Verification Action */}
-        <button 
-          onClick={runVerifiedAudit}
-          disabled={isAgentWorking}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono hover:bg-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 shadow-sm"
-          title="Click to execute ASME B31.3 deterministic calculation on live backend"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Execute ASME B31.3 Audit</span>
-        </button>
-
-        {/* Right: HITL Approvals + Menu */}
+        {/* Right: HITL Approvals Gate */}
         <div className="flex items-center gap-2">
-          {/* HITL Approvals Gate Trigger */}
           <button
             onClick={() => setApprovalsModalOpen(true)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono transition-all border cursor-pointer ${
@@ -139,15 +126,6 @@ export default function Home() {
                 {pendingApprovals.length}
               </span>
             )}
-          </button>
-
-          {/* More options menu */}
-          <button 
-            onClick={() => setSettingsOpen(true)}
-            className="p-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors cursor-pointer"
-            title="Settings & Sovereign Hardware Telemetry"
-          >
-            <MoreVertical className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -134,7 +134,6 @@ export interface PendingApproval {
 export interface IndraState {
   // Navigation & Workspace
   activeNav: 'workbench' | 'kb' | 'audit';
-  activeProject: string;
   activeModel: string;
   modelReason?: string;
   isSidebarOpen: boolean;
@@ -167,7 +166,6 @@ export interface IndraState {
   setInputValue: (value: string) => void;
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => void;
   cycleNav: (direction: 'forward' | 'backward') => void;
-  setActiveProject: (project: string) => void;
   setActiveModel: (model: string) => void;
   toggleSidebar: () => void;
   newConversation: () => void;
@@ -200,7 +198,6 @@ const NAV_VIEWS: ('workbench' | 'kb' | 'audit')[] = ['workbench', 'kb', 'audit']
 
 export const useIndraStore = create<IndraState>()((set, get) => ({
   activeNav: 'workbench',
-  activeProject: 'Refinery Unit #04',
   activeModel: 'Auto-Negotiating...',
   modelReason: undefined,
   isSidebarOpen: true,
@@ -239,7 +236,6 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
       set({ activeNav: NAV_VIEWS[prevIndex] });
     }
   },
-  setActiveProject: (project: string) => set({ activeProject: project }),
   setActiveModel: (model: string) => set({ activeModel: model }),
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
@@ -572,8 +568,8 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
               if (Array.isArray(rawSources) && rawSources.length > 0) {
                 const newSources: RAGSource[] = rawSources.map((s: any, i: number) => ({
                   id: s.id || `src-${Date.now()}-${i}`,
-                  document: s.document || s.documentName || s.filename || 'Refinery Knowledge Base',
-                  documentName: s.documentName || s.document || s.filename || 'Refinery Knowledge Base',
+                  document: s.document || s.documentName || s.filename || 'Engineering Knowledge Base',
+                  documentName: s.documentName || s.document || s.filename || 'Engineering Knowledge Base',
                   section: s.section || s.chunk || `Section ${i + 1}`,
                   relevance: Math.round((s.relevance || s.score || 0.85) * (s.score && s.score <= 1 ? 100 : 1)),
                   snippet: s.snippet || s.content || s.text,

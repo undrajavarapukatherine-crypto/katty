@@ -3,15 +3,12 @@
 import { 
   Bot, 
   Database, 
-  ShieldCheck, 
-  Folder, 
-  Layers,
-  FileText
+  ShieldCheck
 } from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
 
 export default function NavigationMenu() {
-  const { activeNav, setActiveNav, activeProject, pendingApprovals } = useIndraStore();
+  const { activeNav, setActiveNav, pendingApprovals } = useIndraStore();
 
   const NAV_ITEMS = [
     { 
@@ -71,31 +68,6 @@ export default function NavigationMenu() {
               </button>
             );
           })}
-        </div>
-      </div>
-
-      {/* 2. Active Refinery Unit Context */}
-      <div className="pt-2 border-t border-zinc-900">
-        <div className="flex items-center justify-between px-2 mb-1.5">
-          <span className="text-[9px] font-semibold tracking-wider uppercase text-zinc-500 font-mono">
-            Active Unit
-          </span>
-          <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
-            AIR-GAPPED
-          </span>
-        </div>
-
-        <div className="p-2 rounded-lg bg-zinc-900/60 border border-zinc-800/60 space-y-1 text-xs">
-          <div className="flex items-center gap-1.5 font-mono text-[11px]">
-            <Folder className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="font-semibold text-zinc-200">{activeProject}</span>
-          </div>
-          <div className="text-[10px] text-zinc-400 pl-5 font-mono">
-            Crude Distillation Unit (CDU-01)
-          </div>
-          <div className="text-[9px] text-zinc-500 pl-5 font-mono">
-            Compliance: API-570 / ASME B31.3
-          </div>
         </div>
       </div>
     </div>
