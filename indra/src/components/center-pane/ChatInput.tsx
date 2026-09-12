@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { 
   Paperclip, 
   ArrowRight, 
@@ -26,11 +26,26 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
   } = useIndraStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const [selectedAttachment, setSelectedAttachment] = useState<{ id?: string; name: string; type: string; size: string; url?: string } | null>(null);
+
+  const adjustHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    // Reset height to auto to compute real scrollHeight when shrinking/growing
+    textarea.style.height = 'auto';
+    // Max height ~5 lines (approx 130px), min height 38px
+    const nextHeight = Math.min(textarea.scrollHeight, 130);
+    textarea.style.height = `${Math.max(nextHeight, 38)}px`;
+  }, []);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [inputValue, adjustHeight]);
 
   const toggleSpeechRecognition = () => {
     if (typeof window === 'undefined') return;
@@ -78,10 +93,13 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
     
     sendMessage(text, attachments);
     setSelectedAttachment(null);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '38px';
+    }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -178,14 +196,18 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
           )}
 
           {/* Main Input Row */}
-          <div className="flex items-start px-4 pt-3.5 pb-2">
-            <input
-              type="text"
+          <div className="flex items-start px-4 pt-3 pb-1.5">
+            <textarea
+              ref={textareaRef}
+              rows={1}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                adjustHeight();
+              }}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything, @ to mention, / for sovereign workflows..."
-              className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 min-h-[38px] font-medium"
+              placeholder="Ask anything, @ to mention, / for sovereign workflows... (Shift+Enter for newline)"
+              className="flex-1 bg-transparent border-none outline-none resize-none text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 min-h-[38px] max-h-[130px] font-medium py-1.5 leading-5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent overflow-y-auto"
               autoFocus={isCenter}
               disabled={isAgentWorking}
             />
