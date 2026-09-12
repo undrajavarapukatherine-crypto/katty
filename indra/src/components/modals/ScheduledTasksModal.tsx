@@ -67,22 +67,22 @@ export default function ScheduledTasksModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden text-slate-800">
+    <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden text-slate-800 dark:text-zinc-100">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-950/70">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-violet-100 text-violet-700">
+            <div className="p-2 rounded-xl bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300">
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 font-mono flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 font-mono flex items-center gap-2">
                 Scheduled Autonomous Plant Watchdogs
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 font-mono">
                   {tasks.filter((t) => t.status === 'active').length} Active
                 </span>
               </h2>
-              <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono mt-0.5">
                 Periodic sovereign routines executing on-premise without cloud dependencies.
               </p>
             </div>
@@ -98,7 +98,7 @@ export default function ScheduledTasksModal() {
             </button>
             <button
               onClick={() => setScheduledTasksOpen(false)}
-              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -107,30 +107,30 @@ export default function ScheduledTasksModal() {
 
         {/* Create Routine Form */}
         {isCreating && (
-          <form onSubmit={handleCreate} className="p-5 border-b border-slate-100 bg-slate-50/60 space-y-3 font-mono text-xs">
-            <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-violet-600" />
+          <form onSubmit={handleCreate} className="p-5 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-950/60 space-y-3 font-mono text-xs">
+            <div className="text-xs font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
               <span>Configure New Autonomous Watchdog</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] text-slate-500 font-semibold mb-1">Routine Name</label>
+                <label className="block text-[10px] text-slate-500 dark:text-zinc-400 font-semibold mb-1">Routine Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. ASME B31.3 Stress Check"
                   value={taskName}
                   onChange={(e) => setTaskName(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-800 outline-none focus:border-violet-400 shadow-2xs"
+                  className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-slate-800 dark:text-zinc-100 outline-none focus:border-violet-400 dark:focus:border-violet-600 shadow-2xs"
                 />
               </div>
               <div>
-                <label className="block text-[10px] text-slate-500 font-semibold mb-1">Schedule Interval</label>
+                <label className="block text-[10px] text-slate-500 dark:text-zinc-400 font-semibold mb-1">Schedule Interval</label>
                 <select
                   value={taskSchedule}
                   onChange={(e) => setTaskSchedule(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-800 outline-none focus:border-violet-400 shadow-2xs"
+                  className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-slate-800 dark:text-zinc-100 outline-none focus:border-violet-400 dark:focus:border-violet-600 shadow-2xs"
                 >
                   <option value="Every 15 mins">Every 15 mins</option>
                   <option value="Every 30 mins">Every 30 mins</option>
@@ -142,25 +142,25 @@ export default function ScheduledTasksModal() {
             </div>
 
             <div>
-              <label className="block text-[10px] text-zinc-400 mb-1">Routine Description</label>
+              <label className="block text-[10px] text-slate-500 dark:text-zinc-400 mb-1">Routine Description</label>
               <input
                 type="text"
                 placeholder="Brief summary of statutory engineering check"
                 value={taskDescription}
                 onChange={(e) => setTaskDescription(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-zinc-200 outline-none focus:border-emerald-500"
+                className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-slate-800 dark:text-zinc-100 outline-none focus:border-violet-400 dark:focus:border-violet-600"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] text-zinc-400 mb-1">Agent Query / Task Execution Command</label>
+              <label className="block text-[10px] text-slate-500 dark:text-zinc-400 mb-1">Agent Query / Task Execution Command</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Verify pipeline minimum thickness under ASME B31.3"
                 value={taskQuery}
                 onChange={(e) => setTaskQuery(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-zinc-200 outline-none focus:border-emerald-500"
+                className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-slate-800 dark:text-zinc-100 outline-none focus:border-violet-400 dark:focus:border-violet-600"
               />
             </div>
 
@@ -168,13 +168,13 @@ export default function ScheduledTasksModal() {
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg cursor-pointer"
+                className="px-3 py-1 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-lg cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg shadow cursor-pointer"
+                className="px-4 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg shadow cursor-pointer transition-colors"
               >
                 Save Routine
               </button>
@@ -183,16 +183,16 @@ export default function ScheduledTasksModal() {
         )}
 
         {/* Task List or Zero-Mock Empty State */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3.5 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-6 space-y-3.5 scrollbar-thin dark:scrollbar-thumb-zinc-700">
           {tasks.length === 0 ? (
-            <div className="text-center py-12 px-4 border border-dashed border-slate-200 rounded-2xl bg-white space-y-3 shadow-2xs">
-              <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center mx-auto">
+            <div className="text-center py-12 px-4 border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 space-y-3 shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center mx-auto">
                 <Clock className="w-6 h-6" />
               </div>
-              <div className="text-xs font-mono font-bold text-slate-800">
+              <div className="text-xs font-mono font-bold text-slate-800 dark:text-zinc-200">
                 No Scheduled Watchdog Routines Configured
               </div>
-              <p className="text-[11px] text-slate-500 font-mono max-w-md mx-auto leading-relaxed">
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono max-w-md mx-auto leading-relaxed">
                 Autonomous scheduled watchdog routines execute on-premise without cloud dependencies. Click &quot;Add Routine&quot; above to configure a periodic monitoring routine.
               </p>
             </div>
@@ -203,29 +203,29 @@ export default function ScheduledTasksModal() {
               return (
                 <div
                   key={task.id}
-                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-violet-300 transition-all space-y-2.5 shadow-2xs"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-all space-y-2.5 shadow-2xs"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div className={`p-2 rounded-xl border flex-shrink-0 ${
                         isActive 
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                          : 'bg-slate-100 border-slate-200 text-slate-400'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300' 
+                          : 'bg-slate-100 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500'
                       }`}>
                         <Activity className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-900 font-mono flex items-center gap-2">
+                        <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-mono flex items-center gap-2">
                           <span>{task.name}</span>
                           <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-bold ${
                             isActive 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                              : 'bg-slate-200 text-slate-600'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                              : 'bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400'
                           }`}>
                             {isActive ? 'ACTIVE' : 'PAUSED'}
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono mt-0.5">
                           {task.description}
                         </div>
                       </div>
@@ -234,7 +234,7 @@ export default function ScheduledTasksModal() {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => toggleScheduledTask(task.id)}
-                        className="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-mono transition-colors cursor-pointer shadow-2xs"
+                        className="p-2 rounded-xl bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-zinc-100 text-xs font-mono transition-colors cursor-pointer shadow-2xs"
                         title={isActive ? 'Pause watchdog routine' : 'Resume watchdog routine'}
                       >
                         {isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-emerald-600" />}

@@ -15,7 +15,9 @@ import {
   X, 
   Cpu, 
   Lock, 
-  ShieldCheck
+  ShieldCheck,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function Home() {
@@ -35,11 +37,20 @@ export default function Home() {
     fetchModels,
     isSettingsOpen,
     setSettingsOpen,
+    theme,
+    setTheme,
+    toggleTheme,
   } = useIndraStore();
 
   useEffect(() => {
     fetchPendingApprovals();
-  }, [fetchPendingApprovals]);
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('indra-theme') as 'light' | 'dark' | null;
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    }
+  }, [fetchPendingApprovals, setTheme]);
 
   const navLabels: Record<string, string> = {
     workbench: 'Agent Workbench',
@@ -48,9 +59,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f8fafc] text-slate-800 select-none">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-zinc-100 select-none">
       {/* 1. Top Sovereign Header Bar - Modern Glassmorphic AI Doodle Style */}
-      <header className="h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-5 text-xs z-50 shadow-xs">
+      <header className="h-16 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between px-5 text-xs z-50 shadow-xs">
         {/* Left: App Title & Large Prominent Logo */}
         <div className="flex items-center gap-3.5">
           <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0 group">
@@ -63,56 +74,75 @@ export default function Home() {
           </div>
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="font-extrabold text-slate-900 tracking-[0.22em] text-lg font-mono">INDRA</span>
-              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 font-bold tracking-wider flex items-center gap-1.5 shadow-xs">
+              <span className="font-extrabold text-slate-900 dark:text-zinc-100 tracking-[0.22em] text-lg font-mono">INDRA</span>
+              <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50 font-bold tracking-wider flex items-center gap-1.5 shadow-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>0-WAN SOVEREIGN</span>
               </span>
             </div>
-            <div className="text-[11px] text-slate-500 font-medium">Industrial Neural Decision & Reasoning Assistant</div>
+            <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">Industrial Neural Decision & Reasoning Assistant</div>
           </div>
         </div>
 
-        {/* Right: Telemetry & Air-Gap Status Indicator */}
-        <div className="flex items-center gap-2.5 font-mono text-[11px]">
-          <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 text-slate-700 shadow-xs">
+        {/* Right: Theme Toggle & Telemetry & Air-Gap Status Indicator */}
+        <div className="flex items-center gap-3 font-mono text-[11px]">
+          {/* Theme Switcher Toggle (Light & Dark Mode) */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 transition-all cursor-pointer font-medium shadow-xs"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {theme === 'dark' ? (
+              <>
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[11px] font-mono font-semibold text-amber-300">Light Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="text-[11px] font-mono font-semibold text-indigo-700">Dark Mode</span>
+              </>
+            )}
+          </button>
+
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-zinc-900 px-3 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-slate-800">ON-PREMISE AIR-GAPPED</span>
+            <span className="font-semibold text-slate-800 dark:text-zinc-200">ON-PREMISE AIR-GAPPED</span>
           </div>
         </div>
       </header>
 
       {/* 2. Secondary Navigation Toolbar */}
-      <div className="h-10 bg-white/75 backdrop-blur-md border-b border-slate-200/70 flex items-center justify-between px-4 text-xs">
+      <div className="h-10 bg-white/75 dark:bg-zinc-950/80 backdrop-blur-md border-b border-slate-200/70 dark:border-zinc-800/70 flex items-center justify-between px-4 text-xs">
         {/* Left: Sidebar toggle, View Navigation & Active View Label */}
         <div className="flex items-center gap-2">
           <button 
             onClick={toggleSidebar}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors cursor-pointer"
             title="Toggle Left Sidebar"
           >
             <PanelLeft className="w-4 h-4" />
           </button>
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-zinc-800" />
           
-          <div className="flex items-center bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/60">
+          <div className="flex items-center bg-slate-100/80 dark:bg-zinc-900/90 p-0.5 rounded-lg border border-slate-200/60 dark:border-zinc-800">
             <button 
               onClick={() => cycleNav('backward')}
-              className="p-1 hover:bg-white rounded text-slate-500 hover:text-slate-800 transition-all cursor-pointer shadow-none hover:shadow-xs"
+              className="p-1 hover:bg-white dark:hover:bg-zinc-800 rounded text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all cursor-pointer shadow-none hover:shadow-xs"
               title="Previous Operational View"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={() => cycleNav('forward')}
-              className="p-1 hover:bg-white rounded text-slate-500 hover:text-slate-800 transition-all cursor-pointer shadow-none hover:shadow-xs"
+              className="p-1 hover:bg-white dark:hover:bg-zinc-800 rounded text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-all cursor-pointer shadow-none hover:shadow-xs"
               title="Next Operational View"
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <span className="text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100/70 border border-slate-200/60">
+          <span className="text-slate-700 dark:text-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100/70 dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800">
             {navLabels[activeNav] || 'Agent Workbench'}
           </span>
         </div>
@@ -123,12 +153,12 @@ export default function Home() {
             onClick={() => setApprovalsModalOpen(true)}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all border cursor-pointer ${
               pendingApprovals.length > 0
-                ? 'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 shadow-xs'
-                : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 shadow-xs'
+                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 shadow-xs'
+                : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-slate-300 dark:hover:border-zinc-700 shadow-xs'
             }`}
             title="Human-in-the-Loop Pending Approvals Gate"
           >
-            <ShieldCheck className={`w-3.5 h-3.5 ${pendingApprovals.length > 0 ? 'text-amber-600' : 'text-slate-400'}`} />
+            <ShieldCheck className={`w-3.5 h-3.5 ${pendingApprovals.length > 0 ? 'text-amber-600' : 'text-slate-400 dark:text-zinc-500'}`} />
             <span>HITL Approvals</span>
             {pendingApprovals.length > 0 && (
               <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-bold text-[9px] animate-pulse">
@@ -140,7 +170,7 @@ export default function Home() {
       </div>
 
       {/* 3. Main Desktop Layout with View Switching */}
-      <main className="flex flex-1 min-h-0 overflow-hidden relative bg-[#f8fafc]">
+      <main className="flex flex-1 min-h-0 overflow-hidden relative bg-[#f8fafc] dark:bg-[#0a0a0a]">
         {/* Pane 1: Left Pane (w-64) */}
         {isSidebarOpen && <LeftPane />}
 
@@ -152,53 +182,53 @@ export default function Home() {
 
       {/* 4. Settings / Sovereign Diagnostics Modal */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-5 text-slate-800">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-5 text-slate-800 dark:text-zinc-100">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
               <div className="flex items-center gap-3">
                 <div className="relative w-9 h-9 flex items-center justify-center flex-shrink-0">
                   <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_2px_8px_rgba(124,58,237,0.2)]" />
                 </div>
-                <h2 className="text-base font-bold text-slate-900 font-mono">
+                <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 font-mono">
                   INDRA Sovereign Hardware & Network Telemetry
                 </h2>
               </div>
               <button 
                 onClick={() => setSettingsOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-4 text-xs font-mono">
-              <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2">
-                <div className="text-emerald-800 font-bold flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5 text-emerald-600" />
+              <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2">
+                <div className="text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   AIR-GAP PROTOCOL: ENFORCED (HARDWARE SWITCH)
                 </div>
-                <div className="text-emerald-700 leading-relaxed text-[11px]">
+                <div className="text-emerald-700 dark:text-emerald-400/90 leading-relaxed text-[11px]">
                   All external WAN gateways, cloud telemetry endpoints, and external socket listeners are strictly dropped at the kernel driver layer.
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-slate-500 block text-[11px]">Backend Status</span>
-                  <span className="text-base font-bold text-slate-900 block mt-0.5">
+                <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
+                  <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Backend Status</span>
+                  <span className="text-base font-bold text-slate-900 dark:text-zinc-100 block mt-0.5">
                     {isBackendConnected ? 'ONLINE (127.0.0.1)' : 'OFFLINE'}
                   </span>
-                  <span className="text-[10px] text-emerald-600 block mt-1 font-semibold">FastAPI Port 8000</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-1 font-semibold">FastAPI Port 8000</span>
                 </div>
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-slate-500 block text-[11px]">Model Weights Security</span>
-                  <span className="text-xs font-bold text-slate-800 block truncate mt-0.5">SHA-256 Merkle Validated</span>
-                  <span className="text-[10px] text-slate-400 block mt-1">Cryptographically Sealed</span>
+                <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
+                  <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Model Weights Security</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block truncate mt-0.5">SHA-256 Merkle Validated</span>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-1">Cryptographically Sealed</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <span className="text-slate-500 block uppercase tracking-wider text-[10px] font-semibold">Resident Model Core</span>
+              <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-2">
+                <span className="text-slate-500 dark:text-zinc-400 block uppercase tracking-wider text-[10px] font-semibold">Resident Model Core</span>
                 <div className="flex flex-wrap gap-2">
                   {loadedModels.length > 0 ? (
                     loadedModels.map((m) => (
@@ -208,14 +238,14 @@ export default function Home() {
                         className={`px-3 py-1 rounded-lg text-[11px] transition-all cursor-pointer font-medium ${
                           activeModel === m.name
                             ? 'bg-violet-600 text-white shadow-sm font-bold'
-                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            : 'bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800'
                         }`}
                       >
                         {m.name}
                       </button>
                     ))
                   ) : (
-                    <span className="text-slate-400 text-xs italic">Resident models fetched from /api/models</span>
+                    <span className="text-slate-400 dark:text-zinc-500 text-xs italic">Resident models fetched from /api/models</span>
                   )}
                 </div>
               </div>
@@ -224,7 +254,7 @@ export default function Home() {
             <div className="flex justify-end gap-3 pt-2">
               <button 
                 onClick={() => setSettingsOpen(false)}
-                className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs text-white font-medium transition-colors cursor-pointer"
+                className="px-4 py-1.5 rounded-xl bg-slate-900 dark:bg-zinc-800 hover:bg-slate-800 dark:hover:bg-zinc-700 text-xs text-white font-medium transition-colors cursor-pointer"
               >
                 Close
               </button>

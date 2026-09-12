@@ -147,27 +147,27 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
   ];
 
   return (
-    <div className={isCenter ? 'w-full max-w-xl mx-auto' : 'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/90 to-transparent pt-12 z-20'}>
+    <div className={isCenter ? 'w-full max-w-xl mx-auto' : 'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#f8fafc] dark:from-[#0a0a0a] via-[#f8fafc]/90 dark:via-[#0a0a0a]/90 to-transparent pt-12 z-20'}>
       <div className={isCenter ? 'space-y-3' : 'relative max-w-3xl mx-auto space-y-2'}>
         {/* Floating Input Card (AI Doodle Modern Hierarchy) */}
-        <div className="w-full bg-white/95 border border-slate-200/90 hover:border-violet-300 rounded-2xl shadow-xl shadow-purple-500/5 backdrop-blur-md overflow-hidden transition-all">
+        <div className="w-full bg-white/95 dark:bg-zinc-900/95 border border-slate-200/90 dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-600 rounded-2xl shadow-xl shadow-purple-500/5 backdrop-blur-md overflow-hidden transition-all">
           {/* File Attachment Chip if attached */}
           {(selectedAttachment || isUploading) && (
             <div className="flex items-center gap-2 px-4 pt-3 text-xs">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-medium">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 font-medium">
                 {isUploading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 text-violet-600 animate-spin" />
-                    <span className="font-mono text-slate-600">Indexing into offline vectorstore...</span>
+                    <Loader2 className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 animate-spin" />
+                    <span className="font-mono text-slate-600 dark:text-zinc-400">Indexing into offline vectorstore...</span>
                   </>
                 ) : (
                   <>
-                    <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <FileCheck2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span className="font-mono">{selectedAttachment?.name}</span>
-                    <span className="text-slate-400 text-[10px]">({selectedAttachment?.size})</span>
+                    <span className="text-slate-400 dark:text-zinc-500 text-[10px]">({selectedAttachment?.size})</span>
                     <button 
                       onClick={() => setSelectedAttachment(null)}
-                      className="text-slate-400 hover:text-slate-700 ml-1 font-bold cursor-pointer"
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 ml-1 font-bold cursor-pointer"
                     >
                       ×
                     </button>
@@ -185,7 +185,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask anything, @ to mention, / for sovereign workflows..."
-              className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 placeholder:text-slate-400 min-h-[38px] font-medium"
+              className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 min-h-[38px] font-medium"
               autoFocus={isCenter}
               disabled={isAgentWorking}
             />
@@ -201,13 +201,13 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
           />
 
           {/* Card Bottom Toolbar */}
-          <div className="flex items-center justify-between px-3 py-2 border-t border-slate-100 bg-slate-50/60 text-xs">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-slate-100 dark:border-zinc-800/80 bg-slate-50/60 dark:bg-zinc-950/60 text-xs">
             {/* Left Controls: Plus + Model Selector Dropdown */}
             <div className="flex items-center gap-1.5">
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading || isAgentWorking}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50 cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 cursor-pointer"
                 title="Upload Document into Knowledge Base"
               >
                 <Plus className="w-4 h-4" />
@@ -216,15 +216,15 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
               <div className="relative">
                 <button 
                   onClick={() => setShowModelPicker(!showModelPicker)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200/80 transition-colors font-mono cursor-pointer shadow-xs"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] text-slate-700 dark:text-zinc-200 hover:text-slate-900 dark:hover:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 transition-colors font-mono cursor-pointer shadow-xs"
                 >
                   <span className="font-semibold">{activeModel}</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <ChevronDown className="w-3 h-3 text-slate-400 dark:text-zinc-500" />
                 </button>
 
                 {showModelPicker && (
-                  <div className="absolute bottom-9 left-0 bg-white border border-slate-200 rounded-xl shadow-2xl p-1.5 w-64 z-50 text-slate-800">
-                    <div className="px-2 py-1 text-[10px] text-slate-400 uppercase font-mono tracking-wider border-b border-slate-100 mb-1">
+                  <div className="absolute bottom-9 left-0 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-2xl p-1.5 w-64 z-50 text-slate-800 dark:text-zinc-100">
+                    <div className="px-2 py-1 text-[10px] text-slate-400 dark:text-zinc-500 uppercase font-mono tracking-wider border-b border-slate-100 dark:border-zinc-800 mb-1">
                       Resident Open-Weight Models
                     </div>
                     {models.map((m) => (
@@ -235,14 +235,14 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
                           setShowModelPicker(false);
                         }}
                         className={`w-full text-left p-2 rounded-lg text-xs transition-colors flex items-start gap-2 ${
-                          activeModel === m.name ? 'bg-violet-50 text-violet-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                          activeModel === m.name ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 font-semibold' : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
                           <div className="font-mono truncate">{m.name}</div>
-                          <div className="text-[10px] text-slate-400 truncate">{m.role}</div>
+                          <div className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">{m.role}</div>
                         </div>
-                        {activeModel === m.name && <Check className="w-3.5 h-3.5 text-violet-600 mt-0.5 flex-shrink-0" />}
+                        {activeModel === m.name && <Check className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 mt-0.5 flex-shrink-0" />}
                       </button>
                     ))}
                   </div>
@@ -255,7 +255,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading || isAgentWorking}
-                className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors rounded-lg hover:bg-slate-100 disabled:opacity-50 cursor-pointer"
+                className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
                 title="Attach Document"
               >
                 <Paperclip className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
                 className={`p-1.5 transition-colors rounded-lg cursor-pointer ${
                   isListening 
                     ? 'text-rose-600 animate-pulse bg-rose-50 ring-1 ring-rose-200' 
-                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    : 'text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800'
                 }`}
                 title={isListening ? 'Listening (Click to stop)...' : 'Start Air-Gapped Voice Transcription'}
               >

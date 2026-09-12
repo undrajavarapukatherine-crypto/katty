@@ -6,6 +6,14 @@
   --foreground-rgb: 15, 23, 42;
   --background-start-rgb: 248, 250, 252;
   --background-end-rgb: 255, 255, 255;
+  color-scheme: light;
+}
+
+.dark {
+  --foreground-rgb: 244, 244, 245;
+  --background-start-rgb: 10, 10, 10;
+  --background-end-rgb: 14, 14, 16;
+  color-scheme: dark;
 }
 
 body {
@@ -14,6 +22,12 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
   user-select: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark body {
+  background: #0a0a0a;
+  color: #f4f4f5;
 }
 
 /* Custom sleek modern scrollbars */
@@ -35,12 +49,20 @@ body {
   background: #94a3b8;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
 /* Monospace font styling for industrial code & telemetry */
 .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* AI Doodle Signature Pastel Aurora Glows */
+/* AI Doodle Signature Pastel Aurora Glows (Adaptive Light & Dark) */
 .aurora-bg {
   background: 
     radial-gradient(circle at 15% 15%, rgba(167, 139, 250, 0.18), transparent 45%),
@@ -49,11 +71,26 @@ body {
     #f8fafc;
 }
 
+.dark .aurora-bg {
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.15), transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.10), transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(52, 211, 153, 0.08), transparent 50%),
+    #0a0a0a;
+}
+
 .card-glass {
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.dark .card-glass {
+  background: rgba(20, 20, 23, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(39, 39, 42, 0.9);
 }
 
 .card-glass-hover {
@@ -64,6 +101,11 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 12px 24px -4px rgba(124, 58, 237, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
   border-color: rgba(167, 139, 250, 0.6);
+}
+
+.dark .card-glass-hover:hover {
+  box-shadow: 0 12px 24px -4px rgba(124, 58, 237, 0.2), 0 4px 8px -2px rgba(0, 0, 0, 0.4);
+  border-color: rgba(167, 139, 250, 0.4);
 }
 
 .violet-glow {

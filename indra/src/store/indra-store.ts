@@ -174,7 +174,12 @@ export interface IndraState {
   isSettingsOpen: boolean;
   isScheduledTasksOpen: boolean;
 
+  // Theme (Light / Dark mode)
+  theme: 'light' | 'dark';
+
   // Actions
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
   setInputValue: (value: string) => void;
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => void;
   cycleNav: (direction: 'forward' | 'backward') => void;
@@ -238,6 +243,27 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
   isSettingsOpen: false,
   isScheduledTasksOpen: false,
   scheduledTasks: [],
+  theme: 'light',
+
+  setTheme: (theme: 'light' | 'dark') => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('indra-theme', theme);
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (err) {
+        console.warn('Unable to persist theme:', err);
+      }
+    }
+    set({ theme });
+  },
+  toggleTheme: () => {
+    const nextTheme = get().theme === 'dark' ? 'light' : 'dark';
+    get().setTheme(nextTheme);
+  },
 
   setInputValue: (value: string) => set({ inputValue: value }),
   setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
