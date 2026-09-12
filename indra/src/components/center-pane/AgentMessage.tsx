@@ -1,14 +1,39 @@
 'use client';
 
+import { useState } from 'react';
 import useIndraStore from '@/store/indra-store';
 import type { Message } from '@/store/indra-store';
 import AgentTrace from './AgentTrace';
 import ToolExecution from './ToolExecution';
 import MarkdownRenderer from '@/components/common/MarkdownRenderer';
-import { Cpu, AlertCircle, RefreshCw, Play } from 'lucide-react';
+import { Cpu, AlertCircle, RefreshCw, Play, Copy, Check } from 'lucide-react';
 
 export default function AgentMessage({ message }: { message: Message }) {
   const { isAgentWorking, retryMessage, runOfflineSimulation } = useIndraStore();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!message.content) return;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(message.content);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = message.content;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn('Failed to copy response text:', err);
+    }
+  };
 
   return (
     <div className="flex justify-start">
@@ -85,8 +110,50 @@ export default function AgentMessage({ message }: { message: Message }) {
           </div>
         ) : (
           message.content && (
-            <div className="px-5 py-4 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 shadow-xs text-slate-800 dark:text-zinc-200">
+            <div className="group/msg relative px-5 py-4 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 shadow-xs text-slate-800 dark:text-zinc-200">
+              {/* Quick Hover Copy Button in Top Right */}
+              <div className="absolute top-3 right-3 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                <button
+                  onClick={handleCopy}
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 transition-all cursor-pointer shadow-xs"
+                  title="Copy full response"
+                >
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+
               <MarkdownRenderer content={message.content} />
+
+              {/* Message Footer Action Bar with Copy Button */}
+              <div className="flex items-center justify-between mt-3.5 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 px-2.5 py-1 -ml-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors cursor-pointer text-xs font-medium"
+                  title="Copy response markdown"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400">Copied to clipboard</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                      <span>Copy response</span>
+                    </>
+                  )}
+                </button>
+
+                {message.timestamp && (
+                  <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 select-none">
+                    {message.timestamp}
+                  </span>
+                )}
+              </div>
             </div>
           )
         )}
