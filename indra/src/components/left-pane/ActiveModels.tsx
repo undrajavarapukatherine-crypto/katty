@@ -14,15 +14,15 @@ export default function ActiveModels() {
   }, [fetchModels]);
 
   return (
-    <div className="px-3 py-3 border-b border-zinc-800/50">
+    <div className="px-3 py-3 border-b border-slate-200/70">
       <div className="flex items-center justify-between px-1 mb-2.5">
-        <div className="flex items-center gap-1.5 text-[10px] font-medium tracking-wider uppercase text-zinc-500 font-mono">
-          <Cpu className="w-3 h-3 text-emerald-400" />
+        <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-slate-400 font-mono">
+          <Cpu className="w-3 h-3 text-violet-600" />
           <span>Resident Models</span>
         </div>
         <button
           onClick={() => fetchModels()}
-          className="text-zinc-600 hover:text-zinc-300 p-0.5 rounded transition-colors"
+          className="text-slate-400 hover:text-slate-700 p-0.5 rounded transition-colors cursor-pointer"
           title="Refresh resident models from /api/models"
         >
           <RefreshCw className="w-2.5 h-2.5" />
@@ -32,27 +32,27 @@ export default function ActiveModels() {
       {loadedModels?.length > 0 ? (
         <div className="space-y-2">
           {loadedModels.map((model) => (
-            <div key={model.id} className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800/50">
+            <div key={model.id} className="p-2 rounded-xl bg-slate-50 border border-slate-200/70 shadow-2xs">
               <div className="flex items-center justify-between gap-1">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-                  <span className="text-zinc-200 font-mono text-[11px] font-semibold truncate">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                  <span className="text-slate-800 font-mono text-[11px] font-bold truncate">
                     {model.name}
                   </span>
                 </div>
-                <span className="text-[9px] text-zinc-500 font-mono flex-shrink-0">
+                <span className="text-[9px] text-slate-400 font-mono font-medium flex-shrink-0">
                   {model.vramUsage}% VRAM
                 </span>
               </div>
 
-              <div className="text-zinc-500 text-[9px] font-mono mt-0.5 pl-3 truncate">
+              <div className="text-slate-500 text-[9px] font-mono mt-0.5 pl-3 truncate">
                 {model.role}
               </div>
 
               {/* VRAM allocation progress track */}
-              <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden mt-1.5">
+              <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden mt-1.5">
                 <div
-                  className="h-full bg-emerald-500/70 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-500"
                   style={{ width: `${Math.min(100, Math.max(5, model.vramUsage || 0))}%` }}
                 />
               </div>

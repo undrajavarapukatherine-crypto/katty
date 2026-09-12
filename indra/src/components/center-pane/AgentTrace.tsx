@@ -7,47 +7,47 @@ export default function AgentTrace({ steps }: { steps: AgentStep[] }) {
   const hasInProgress = steps.some((s) => s.status === 'in-progress');
 
   return (
-    <div className="p-4 rounded-lg bg-zinc-900/50 border border-blue-500/20">
+    <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3">
-        <Brain className="w-4 h-4 text-blue-400" />
-        <span className="text-[10px] font-bold tracking-wider text-blue-400 uppercase">
-          Agent Execution Plan
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg bg-violet-100 flex items-center justify-center">
+          <Brain className="w-3.5 h-3.5 text-violet-600" />
+        </div>
+        <span className="text-[11px] font-bold tracking-wider text-slate-800 uppercase font-mono">
+          Agent Execution Pipeline
         </span>
         {hasInProgress && (
-          <Loader2 className="w-3 h-3 text-blue-400 animate-spin ml-auto" />
+          <Loader2 className="w-3.5 h-3.5 text-violet-600 animate-spin ml-auto" />
         )}
       </div>
 
-      {/* Steps */}
-      <div className="space-y-0.5">
-        {steps.map((step) => (
-          <div
-            key={step.id}
-            className={`flex items-center gap-3 py-2 px-2 rounded transition-all duration-300 ${
-              step.status === 'in-progress' ? 'bg-amber-500/5' : ''
-            }`}
-          >
-            {step.status === 'completed' && (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            )}
-            {step.status === 'in-progress' && (
-              <Loader2 className="w-4 h-4 text-amber-400 animate-spin flex-shrink-0" />
-            )}
-            {step.status === 'pending' && (
-              <Circle className="w-4 h-4 text-zinc-700 flex-shrink-0" />
-            )}
-            <span
-              className={`text-sm transition-colors duration-300 ${
+      {/* Connected Pipeline Steps (AI Doodle Style) */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        {steps.map((step, idx) => (
+          <div key={step.id} className="flex items-center gap-2">
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all shadow-xs ${
                 step.status === 'completed'
-                  ? 'text-zinc-300'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
                   : step.status === 'in-progress'
-                  ? 'text-amber-300 font-medium'
-                  : 'text-zinc-600'
+                  ? 'bg-violet-50 border-violet-300 text-violet-900 ring-2 ring-violet-500/20 font-bold'
+                  : 'bg-slate-50 border-slate-200 text-slate-500'
               }`}
             >
-              {step.label}
-            </span>
+              {step.status === 'completed' && (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+              )}
+              {step.status === 'in-progress' && (
+                <Loader2 className="w-3.5 h-3.5 text-violet-600 animate-spin flex-shrink-0" />
+              )}
+              {step.status === 'pending' && (
+                <Circle className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+              )}
+              <span>{step.label}</span>
+            </div>
+            {idx < steps.length - 1 && (
+              <span className="text-slate-300 font-bold text-xs hidden sm:inline">→</span>
+            )}
           </div>
         ))}
       </div>

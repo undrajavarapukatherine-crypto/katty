@@ -18,7 +18,7 @@ function parseMarkdown(content: string) {
       elements.push(
         <ul key={`list-${elements.length}`} className="list-disc ml-4 space-y-1 my-2">
           {listItems.map((item, i) => (
-            <li key={i} className="text-sm text-zinc-300">
+            <li key={i} className="text-sm text-slate-700">
               {renderInline(item)}
             </li>
           ))}
@@ -33,7 +33,7 @@ function parseMarkdown(content: string) {
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <span key={i} className="font-semibold text-zinc-100">
+          <span key={i} className="font-bold text-slate-900">
             {part.slice(2, -2)}
           </span>
         );
@@ -48,14 +48,14 @@ function parseMarkdown(content: string) {
     if (line.startsWith('### ')) {
       flushList();
       elements.push(
-        <h4 key={`h3-${i}`} className="text-xs font-semibold text-zinc-300 mt-2 mb-1 uppercase tracking-wider">
+        <h4 key={`h3-${i}`} className="text-xs font-bold text-slate-600 mt-2 mb-1 uppercase tracking-wider font-mono">
           {line.slice(4)}
         </h4>
       );
     } else if (line.startsWith('## ')) {
       flushList();
       elements.push(
-        <h3 key={`h-${i}`} className="text-sm font-semibold text-zinc-100 mt-3 mb-2">
+        <h3 key={`h-${i}`} className="text-sm font-extrabold text-slate-900 mt-3 mb-2">
           {line.slice(3)}
         </h3>
       );
@@ -66,7 +66,7 @@ function parseMarkdown(content: string) {
     } else {
       flushList();
       elements.push(
-        <p key={`p-${i}`} className="text-sm text-zinc-300 leading-relaxed my-1">
+        <p key={`p-${i}`} className="text-sm text-slate-700 leading-relaxed my-1">
           {renderInline(line)}
         </p>
       );
@@ -85,19 +85,19 @@ export default function AgentMessage({ message }: { message: Message }) {
         {/* Agent label */}
         <div className="flex items-center gap-2 mb-1">
           <div className="relative w-6 h-6 flex items-center justify-center flex-shrink-0">
-            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]" />
+            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_1px_4px_rgba(124,58,237,0.25)]" />
           </div>
-          <span className="text-[11px] font-bold tracking-wider text-zinc-200 uppercase font-mono">INDRA</span>
+          <span className="text-[11px] font-extrabold tracking-wider text-slate-800 uppercase font-mono">INDRA</span>
           
           {message.modelUsed && (
-            <span className="text-[9px] font-mono text-zinc-500 px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 flex items-center gap-1">
-              <Cpu className="w-2.5 h-2.5 text-blue-400" />
+            <span className="text-[10px] font-mono text-violet-700 px-2 py-0.5 rounded-full bg-violet-50 border border-violet-200/80 flex items-center gap-1 font-semibold">
+              <Cpu className="w-2.5 h-2.5 text-violet-600" />
               <span>{message.modelUsed}</span>
             </span>
           )}
 
           {isAgentWorking && message.agentSteps?.some((s) => s.status !== 'completed') && (
-            <span className="text-[10px] text-zinc-600 animate-pulse font-mono">sovereign reasoning...</span>
+            <span className="text-[10px] text-violet-600 animate-pulse font-mono font-medium">sovereign reasoning...</span>
           )}
         </div>
 
@@ -111,7 +111,7 @@ export default function AgentMessage({ message }: { message: Message }) {
 
         {/* Content */}
         {message.content && (
-          <div className="px-4 py-3 rounded-xl bg-zinc-900/40 border border-zinc-800/60 shadow-sm">
+          <div className="px-5 py-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs text-slate-800">
             {parseMarkdown(message.content)}
           </div>
         )}

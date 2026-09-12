@@ -12,18 +12,18 @@ export default function UserMessage({ message }: { message: Message }) {
             {message.attachments.map((att, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-700/30"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 shadow-xs"
               >
-                <Paperclip className="w-3.5 h-3.5 text-zinc-500" />
-                <span className="text-xs text-zinc-300">{att.name}</span>
-                <span className="text-[10px] text-zinc-600 ml-auto">{att.size}</span>
+                <Paperclip className="w-3.5 h-3.5 text-violet-600" />
+                <span className="text-xs text-slate-800 font-medium">{att.name}</span>
+                <span className="text-[10px] text-slate-400 ml-auto">{att.size}</span>
               </div>
             ))}
           </div>
         )}
-        <div className="px-4 py-3 rounded-2xl rounded-br-sm bg-zinc-800/70 border border-zinc-700/30">
-          <p className="text-sm text-zinc-200">{message.content}</p>
-          <p className="text-[10px] text-zinc-600 mt-1 text-right">{message.timestamp}</p>
+        <div className="px-4.5 py-3.5 rounded-2xl rounded-br-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20">
+          <p className="text-sm font-medium leading-relaxed">{message.content}</p>
+          <p className="text-[10px] text-violet-200 mt-1.5 text-right font-mono">{message.timestamp}</p>
         </div>
       </div>
     </div>

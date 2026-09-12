@@ -11,7 +11,7 @@ export default function LeftPane() {
   const { blockedCount, setSettingsOpen } = useIndraStore();
 
   return (
-    <aside className="w-64 h-full flex flex-col bg-zinc-950 border-r border-zinc-800/50 select-none z-10 flex-shrink-0">
+    <aside className="w-64 h-full flex flex-col bg-white border-r border-slate-200/80 select-none z-10 flex-shrink-0 shadow-xs">
       {/* Top Header & Brand */}
       <BrandHeader />
 
@@ -27,18 +27,18 @@ export default function LeftPane() {
       </div>
 
       {/* Bottom Settings & Node Status Footer */}
-      <div className="p-2 border-t border-zinc-800/50 bg-zinc-950 flex items-center justify-between text-xs text-zinc-400">
+      <div className="p-2.5 border-t border-slate-200/70 bg-white flex items-center justify-between text-xs text-slate-500">
         <button 
           onClick={() => setSettingsOpen(true)}
-          className="flex items-center gap-2 hover:text-zinc-200 transition-colors px-2 py-1 rounded hover:bg-zinc-900 cursor-pointer"
+          className="flex items-center gap-2 hover:text-slate-900 transition-colors px-2 py-1 rounded-lg hover:bg-slate-100 cursor-pointer font-medium"
           title="Open Sovereign Hardware & Air-Gap Telemetry Settings"
         >
-          <Settings className="w-3.5 h-3.5 text-zinc-500" />
+          <Settings className="w-3.5 h-3.5 text-slate-400" />
           <span className="text-[11px]">Settings</span>
         </button>
 
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-          <ShieldCheck className="w-3 h-3 text-emerald-400" />
+        <div className="flex items-center gap-1.5 text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+          <ShieldCheck className="w-3 h-3 text-emerald-600" />
           <span>ON-PREMISE</span>
         </div>
       </div>
