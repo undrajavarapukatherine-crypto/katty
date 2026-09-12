@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { getGlobalQueryClient, queryKeys } from '@/lib/queries';
 
 // --- API Configuration ---
 export const API_BASE = 'http://localhost:8000';
@@ -888,30 +889,7 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
 
   // Fetch real loaded models from FastAPI GET /api/models
   fetchModels: async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/models`);
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-      const data = await res.json();
-      const models: ModelStatus[] = Array.isArray(data)
-        ? data.map((m: any, idx: number) => ({
-            id: m.id || `model-${idx}`,
-            name: m.name || m.id || 'Resident Model',
-            role: m.role || m.description || 'Resident Model',
-            vramUsage: typeof m.vramUsage === 'number' ? m.vramUsage : typeof m.vram_usage === 'number' ? m.vram_usage : 45,
-            status: m.status || 'loaded',
-            memory: m.memory || m.size,
-          }))
-        : [];
-      
-      set({ 
-        loadedModels: models,
-        isBackendConnected: true,
-        activeModel: models[0]?.name || get().activeModel
-      });
-    } catch (err) {
-      console.warn('Backend /api/models currently unreachable at', API_BASE, err);
-      set({ isBackendConnected: false });
-    }
+    getGlobalQueryClient()?.invalidateQueries({ queryKey: queryKeys.models });
   },
 
   // Live WebSocket connection to ws://localhost:8000/ws/network for packet containment
@@ -965,21 +943,7 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
 
   // 3. Human-in-the-Loop Approvals (GET /api/approvals/pending & POST /api/approvals/sign)
   fetchPendingApprovals: async () => {
-    try {
-      set({ loadingApprovals: true });
-      const res = await fetch(`${API_BASE}/api/approvals/pending`);
-      if (res.ok) {
-        const data = await res.json();
-        const list: PendingApproval[] = Array.isArray(data)
-          ? data
-          : (Array.isArray(data.approvals) ? data.approvals : (Array.isArray(data.pending) ? data.pending : []));
-        set({ pendingApprovals: list });
-      }
-    } catch (err) {
-      console.warn('Failed to fetch pending approvals from', `${API_BASE}/api/approvals/pending`, err);
-    } finally {
-      set({ loadingApprovals: false });
-    }
+    getGlobalQueryClient()?.invalidateQueries({ queryKey: queryKeys.approvals });
   },
 
   signApproval: async ({ taskId, stepIndex, approved, signature }) => {

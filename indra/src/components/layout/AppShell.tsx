@@ -8,6 +8,7 @@ import HITLApprovalModal from '@/components/approvals/HITLApprovalModal';
 import ScheduledTasksModal from '@/components/modals/ScheduledTasksModal';
 import ToastContainer from '@/components/common/ToastContainer';
 import { useIndraStore } from '@/store/indra-store';
+import { useApprovalsQuery, useModelsQuery } from '@/lib/queries';
 import { 
   PanelLeft, 
   PanelRight,
@@ -27,6 +28,9 @@ const navLabels: Record<string, string> = {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  const { data: pendingApprovals = [] } = useApprovalsQuery();
+  const { data: loadedModels = [] } = useModelsQuery();
+
   const { 
     isSidebarOpen, 
     toggleSidebar, 
@@ -36,11 +40,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     activeModel,
     setActiveModel,
     setActiveNav,
-    loadedModels,
     isBackendConnected,
-    pendingApprovals,
     setApprovalsModalOpen,
-    fetchPendingApprovals,
     isSettingsOpen,
     setSettingsOpen,
     theme,
@@ -62,7 +63,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [activeNav, setActiveNav]);
 
   useEffect(() => {
-    fetchPendingApprovals();
     syncHistoryWithBackend();
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('indra-theme') as 'light' | 'dark' | null;
@@ -70,7 +70,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         setTheme(savedTheme);
       }
     }
-  }, [fetchPendingApprovals, setTheme, syncHistoryWithBackend]);
+  }, [setTheme, syncHistoryWithBackend]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-zinc-100 select-none">

@@ -1,17 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Cpu, RefreshCw } from 'lucide-react';
-import { useIndraStore } from '@/store/indra-store';
+import { Cpu, RefreshCw, Loader2 } from 'lucide-react';
+import { useModelsQuery } from '@/lib/queries';
 
 export default function ActiveModels() {
-  const loadedModels = useIndraStore((state) => state.loadedModels);
-  const fetchModels = useIndraStore((state) => state.fetchModels);
-  const isBackendConnected = useIndraStore((state) => state.isBackendConnected);
-
-  useEffect(() => {
-    fetchModels();
-  }, [fetchModels]);
+  const { data: loadedModels = [], isLoading, isRefetching, refetch } = useModelsQuery();
 
   return (
     <div className="px-3 py-3 border-b border-slate-200/70 dark:border-zinc-800/70">
@@ -21,15 +14,21 @@ export default function ActiveModels() {
           <span>Resident Models</span>
         </div>
         <button
-          onClick={() => fetchModels()}
-          className="text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors cursor-pointer"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+          className="text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 p-0.5 rounded transition-colors cursor-pointer disabled:opacity-50"
           title="Refresh resident models from /api/models"
         >
-          <RefreshCw className="w-2.5 h-2.5" />
+          <RefreshCw className={`w-2.5 h-2.5 ${isRefetching ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      {loadedModels?.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-4 text-xs text-slate-400 font-mono">
+          <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+          <span>Polling models...</span>
+        </div>
+      ) : loadedModels.length > 0 ? (
         <div className="space-y-2">
           {loadedModels.map((model) => (
             <div key={model.id} className="p-2 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800/80 shadow-2xs">
@@ -60,8 +59,8 @@ export default function ActiveModels() {
           ))}
         </div>
       ) : (
-        <div className="text-slate-400 dark:text-zinc-500 text-[10px] italic px-2 py-2 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">
-          {isBackendConnected ? 'Loading resident models...' : 'Resident models offline (FastAPI port 8000)'}
+        <div className="text-[10px] text-slate-400 dark:text-zinc-500 italic py-2 text-center font-mono">
+          No resident models loaded
         </div>
       )}
     </div>

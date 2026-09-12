@@ -16,16 +16,18 @@ import {
   Clock
 } from 'lucide-react';
 import { API_BASE, type AuditBlock, type PendingApproval } from '@/store/indra-store';
+import { useAuditLedgerQuery, useApprovalsQuery, useSignApprovalMutation } from '@/lib/queries';
 
 export default function AuditLedgerView() {
-  const [blocks, setBlocks] = useState<AuditBlock[]>([]);
-  const [merkleRoot, setMerkleRoot] = useState<string>('');
-  const [isValidChain, setIsValidChain] = useState<boolean>(true);
-  const [loadingLedger, setLoadingLedger] = useState(false);
+  const { data: ledgerData, isLoading: loadingLedger, refetch: fetchLedger } = useAuditLedgerQuery();
+  const { data: pendingApprovals = [], isLoading: loadingApprovals, refetch: fetchPendingApprovals } = useApprovalsQuery();
+  const signMutation = useSignApprovalMutation();
 
-  // HITL Approvals State
-  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
-  const [loadingApprovals, setLoadingApprovals] = useState(false);
+  const blocks: AuditBlock[] = ledgerData?.chain || [];
+  const isValidChain: boolean = ledgerData?.verified ?? true;
+  const totalBlocks: number = ledgerData?.total_blocks || blocks.length;
+  const merkleRoot: string = ledgerData?.merkle_root || 'SHA256:AUTHENTICATED_ROOT';
+
   const [selectedApproval, setSelectedApproval] = useState<PendingApproval | null>(null);
 
   // Sign-off Form State
@@ -37,64 +39,11 @@ export default function AuditLedgerView() {
   const [signSuccess, setSignSuccess] = useState<string | null>(null);
   const [signError, setSignError] = useState<string | null>(null);
 
-  const [totalBlocks, setTotalBlocks] = useState<number>(0);
-
-  // 1. Fetch Merkle Audit Ledger from GET /api/audit/ledger
-  // Response schema: {"verified": true, "total_blocks": 5, "chain": [...]}
-  const fetchLedger = async () => {
-    try {
-      setLoadingLedger(true);
-      const res = await fetch(`${API_BASE}/api/audit/ledger`);
-      if (res.ok) {
-        const data = await res.json();
-        const chain: AuditBlock[] = Array.isArray(data.chain)
-          ? data.chain
-          : (Array.isArray(data.blocks) ? data.blocks : (Array.isArray(data) ? data : []));
-        setBlocks(chain);
-        setIsValidChain(data.verified !== undefined ? Boolean(data.verified) : true);
-        setTotalBlocks(typeof data.total_blocks === 'number' ? data.total_blocks : chain.length);
-        if (chain.length > 0) {
-          setMerkleRoot(
-            chain[chain.length - 1]?.merkle_root || 
-            chain[0]?.merkle_root || 
-            chain[chain.length - 1]?.hash || 
-            'SHA256:AUTHENTICATED_ROOT'
-          );
-        }
-      }
-    } catch (err) {
-      console.warn('Could not load Merkle Audit Ledger from backend:', err);
-    } finally {
-      setLoadingLedger(false);
-    }
-  };
-
-  // 2. Fetch Pending Approvals from GET /api/approvals/pending
-  const fetchPendingApprovals = async () => {
-    try {
-      setLoadingApprovals(true);
-      const res = await fetch(`${API_BASE}/api/approvals/pending`);
-      if (res.ok) {
-        const data = await res.json();
-        const list = Array.isArray(data) 
-          ? data 
-          : (Array.isArray(data.approvals) ? data.approvals : (Array.isArray(data.pending) ? data.pending : []));
-        setPendingApprovals(list);
-        if (list.length > 0 && !selectedApproval) {
-          setSelectedApproval(list[0]);
-        }
-      }
-    } catch (err) {
-      console.warn('Could not load pending approvals from backend:', err);
-    } finally {
-      setLoadingApprovals(false);
-    }
-  };
-
   useEffect(() => {
-    fetchLedger();
-    fetchPendingApprovals();
-  }, []);
+    if (pendingApprovals.length > 0 && !selectedApproval) {
+      setSelectedApproval(pendingApprovals[0]);
+    }
+  }, [pendingApprovals, selectedApproval]);
 
   // 3. Submit 3-Tier Human-in-the-Loop Sign-off to POST /api/approvals/sign
   // Exact payload format: {"task_id": "the-uuid", "step_index": 0, "approved": true, "signature": "Admin User"}
@@ -107,30 +56,16 @@ export default function AuditLedgerView() {
       setSignError(null);
       setSignSuccess(null);
 
-      const payload = {
-        task_id: selectedApproval.task_id || (selectedApproval as any).taskId || selectedApproval.id,
-        step_index: typeof selectedApproval.step_index === 'number' ? selectedApproval.step_index : 0,
+      await signMutation.mutateAsync({
+        taskId: selectedApproval.task_id || (selectedApproval as any).taskId || selectedApproval.id,
+        stepIndex: typeof selectedApproval.step_index === 'number' ? selectedApproval.step_index : 0,
         approved: decision === 'APPROVED',
         signature: signer,
-      };
-
-      const res = await fetch(`${API_BASE}/api/approvals/sign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        throw new Error(`Failed to submit digital sign-off (HTTP ${res.status})`);
-      }
 
       setSignSuccess(`Action recorded: Tool execution ${decision === 'APPROVED' ? 'Approved' : 'Rejected'} by ${signer} & sealed into Merkle Ledger.`);
       setNotes('');
       
-      // Refresh pending items and ledger
-      await fetchPendingApprovals();
-      await fetchLedger();
-
       // Deselect or move to next
       setTimeout(() => {
         setSignSuccess(null);

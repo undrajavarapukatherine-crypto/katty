@@ -15,12 +15,14 @@ import {
   Cpu
 } from 'lucide-react';
 import useIndraStore, { API_BASE, type KBDocument, type EquipmentData } from '@/store/indra-store';
+import { useKBDocumentsQuery, useUploadKBDocMutation } from '@/lib/queries';
 
 export default function PIDViewer() {
   const { detectedTags, activePIDDoc, setActivePIDDoc } = useIndraStore();
 
-  const [pids, setPids] = useState<KBDocument[]>([]);
-  const [loadingPids, setLoadingPids] = useState(false);
+  const { data: allDocs = [], isLoading: loadingPids } = useKBDocumentsQuery();
+  const uploadMutation = useUploadKBDocMutation();
+
   const [selectedTag, setSelectedTag] = useState<EquipmentData | null>(null);
   const [loadingTag, setLoadingTag] = useState(false);
   const [tagError, setTagError] = useState<string | null>(null);
@@ -28,41 +30,25 @@ export default function PIDViewer() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Fetch available P&ID drawings from GET /api/kb/documents
-  const fetchPIDDocuments = async () => {
-    try {
-      setLoadingPids(true);
-      const res = await fetch(`${API_BASE}/api/kb/documents`);
-      if (res.ok) {
-        const docs: KBDocument[] = await res.json();
-        const drawingDocs = docs.filter((d) => {
-          const fn = (d.filename || d.name || '').toLowerCase();
-          return (
-            fn.includes('pid') ||
-            fn.includes('p&id') ||
-            fn.includes('drawing') ||
-            fn.endsWith('.png') ||
-            fn.endsWith('.jpg') ||
-            fn.endsWith('.jpeg') ||
-            fn.endsWith('.svg')
-          );
-        });
-
-        setPids(drawingDocs);
-        if (drawingDocs.length > 0 && !activePIDDoc) {
-          setActivePIDDoc(drawingDocs[0]);
-        }
-      }
-    } catch (err) {
-      console.warn('Could not load P&ID documents from backend:', err);
-    } finally {
-      setLoadingPids(false);
-    }
-  };
+  // 1. Filter available P&ID drawings from cached documents
+  const pids = allDocs.filter((d) => {
+    const fn = (d.filename || d.name || '').toLowerCase();
+    return (
+      fn.includes('pid') ||
+      fn.includes('p&id') ||
+      fn.includes('drawing') ||
+      fn.endsWith('.png') ||
+      fn.endsWith('.jpg') ||
+      fn.endsWith('.jpeg') ||
+      fn.endsWith('.svg')
+    );
+  });
 
   useEffect(() => {
-    fetchPIDDocuments();
-  }, []);
+    if (pids.length > 0 && !activePIDDoc) {
+      setActivePIDDoc(pids[0]);
+    }
+  }, [pids, activePIDDoc, setActivePIDDoc]);
 
   // 2. Query real equipment metadata on tag click from GET /api/equipment/{tag}
   const handleTagClick = async (tag: string) => {
@@ -98,29 +84,15 @@ export default function PIDViewer() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
       setUploading(true);
-      const res = await fetch(`${API_BASE}/api/kb/documents`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const uploadedDoc = await res.json();
-        setActivePIDDoc(uploadedDoc);
-        await fetchPIDDocuments();
-      } else {
-        alert('Failed to upload P&ID diagram to local backend.');
-      }
+      const uploadedDoc = await uploadMutation.mutateAsync(file);
+      setActivePIDDoc(uploadedDoc);
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Error uploading P&ID diagram.');
+      alert('Failed to upload P&ID diagram to local backend.');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 

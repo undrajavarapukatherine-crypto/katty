@@ -12,16 +12,16 @@ import {
   FileSignature,
 } from 'lucide-react';
 import useIndraStore, { type PendingApproval } from '@/store/indra-store';
+import { useApprovalsQuery, useSignApprovalMutation } from '@/lib/queries';
 
 export default function HITLApprovalModal() {
   const { 
     isApprovalsModalOpen, 
     setApprovalsModalOpen, 
-    pendingApprovals, 
-    loadingApprovals, 
-    fetchPendingApprovals, 
-    signApproval 
   } = useIndraStore();
+
+  const { data: pendingApprovals = [], isLoading: loadingApprovals, refetch: fetchPendingApprovals } = useApprovalsQuery();
+  const signMutation = useSignApprovalMutation();
 
   const [signatureName, setSignatureName] = useState('Admin User');
   const [signingId, setSigningId] = useState<string | null>(null);
@@ -41,29 +41,27 @@ export default function HITLApprovalModal() {
     setSigningId(key);
     setFeedback(null);
 
-    const res = await signApproval({
-      taskId: item.task_id || (item as any).taskId || item.id || '',
-      stepIndex: typeof item.step_index === 'number' ? item.step_index : 0,
-      approved,
-      signature: signatureName.trim() || 'Admin User',
-    });
+    try {
+      await signMutation.mutateAsync({
+        taskId: item.task_id || (item as any).taskId || item.id || '',
+        stepIndex: typeof item.step_index === 'number' ? item.step_index : 0,
+        approved,
+        signature: signatureName.trim() || 'Admin User',
+      });
 
-    setSigningId(null);
-
-    if (res.success) {
       setFeedback({
         type: 'success',
         message: approved 
           ? `Authorization granted for ${item.tool || item.tool_name || 'tool'} with digital signature "${signatureName.trim() || 'Admin User'}"`
           : `Execution rejected for ${item.tool || item.tool_name || 'tool'} by "${signatureName.trim() || 'Admin User'}"`,
       });
-      // Refresh pending list
-      fetchPendingApprovals();
-    } else {
+    } catch (err: any) {
       setFeedback({
         type: 'error',
-        message: res.message || 'Failed to submit digital signature to backend.',
+        message: err.message || 'Failed to submit digital signature to backend.',
       });
+    } finally {
+      setSigningId(null);
     }
   };
 

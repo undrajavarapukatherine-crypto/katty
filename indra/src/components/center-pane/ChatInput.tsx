@@ -13,8 +13,12 @@ import {
   Square
 } from 'lucide-react';
 import useIndraStore, { API_BASE } from '@/store/indra-store';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys, useModelsQuery } from '@/lib/queries';
 
 export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bottom' }) {
+  const queryClient = useQueryClient();
+  const { data: loadedModels = [] } = useModelsQuery();
   const { 
     inputValue, 
     setInputValue, 
@@ -23,7 +27,6 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
     abortTask,
     activeModel,
     setActiveModel,
-    loadedModels,
     setSettingsOpen
   } = useIndraStore();
 
@@ -146,6 +149,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
         const docData = await res.json();
         docId = docData.id || docData.document_id;
         docUrl = docData.url;
+        queryClient.invalidateQueries({ queryKey: queryKeys.kbDocuments });
       }
 
       setSelectedAttachment({

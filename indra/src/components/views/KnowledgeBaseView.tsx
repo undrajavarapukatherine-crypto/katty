@@ -21,6 +21,7 @@ import {
   Scan
 } from 'lucide-react';
 import useIndraStore, { API_BASE, type KBDocument } from '@/store/indra-store';
+import { useKBDocumentsQuery, useUploadKBDocMutation, useDeleteKBDocMutation } from '@/lib/queries';
 
 function DocumentTableSkeleton() {
   return (
@@ -74,8 +75,10 @@ function DocumentTableSkeleton() {
 export default function KnowledgeBaseView() {
   const { setActivePIDDoc } = useIndraStore();
 
-  const [documents, setDocuments] = useState<KBDocument[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: documents = [], isLoading: loading, refetch: fetchDocuments } = useKBDocumentsQuery();
+  const uploadMutation = useUploadKBDocMutation();
+  const deleteMutation = useDeleteKBDocMutation();
+
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
@@ -86,26 +89,6 @@ export default function KnowledgeBaseView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Fetch all indexed documents from GET /api/kb/documents
-  const fetchDocuments = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/api/kb/documents`);
-      if (res.ok) {
-        const data = await res.json();
-        setDocuments(Array.isArray(data) ? data : []);
-      }
-    } catch (err) {
-      console.warn('Failed to load KB documents:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDocuments();
-  }, []);
-
   // 2. Upload document to POST /api/kb/documents
   const handleUpload = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
@@ -113,24 +96,13 @@ export default function KnowledgeBaseView() {
     setUploading(true);
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const formData = new FormData();
-      formData.append('file', file);
-
       try {
-        const res = await fetch(`${API_BASE}/api/kb/documents`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!res.ok) {
-          throw new Error(`Upload failed for ${file.name}`);
-        }
+        await uploadMutation.mutateAsync(file);
       } catch (err) {
         console.error('Upload error:', err);
       }
     }
     setUploading(false);
-    await fetchDocuments();
   };
 
   // 3. Delete document via DELETE /api/kb/documents/{id}
@@ -138,15 +110,7 @@ export default function KnowledgeBaseView() {
     if (!confirm(`Permanently remove "${name}" from the offline RAG knowledge base?`)) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/kb/documents/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        setDocuments((prev) => prev.filter((d) => d.id !== id));
-      } else {
-        setErrorMessage('Failed to delete document from backend.');
-        setTimeout(() => setErrorMessage(null), 4000);
-      }
+      await deleteMutation.mutateAsync(id);
     } catch (err) {
       console.error('Delete error:', err);
       setErrorMessage('Backend error communicating with /api/kb/documents.');
@@ -241,7 +205,7 @@ export default function KnowledgeBaseView() {
         </div>
 
         <button
-          onClick={fetchDocuments}
+          onClick={() => fetchDocuments()}
           disabled={loading}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-xs text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors font-mono cursor-pointer shadow-2xs"
         >

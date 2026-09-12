@@ -8,10 +8,12 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
+import { useApprovalsQuery } from '@/lib/queries';
 
 export default function NavigationMenu() {
   const pathname = usePathname();
-  const { setActiveNav, pendingApprovals } = useIndraStore();
+  const { setActiveNav } = useIndraStore();
+  const { data: pendingApprovals = [] } = useApprovalsQuery();
 
   const NAV_ITEMS = [
     { 
