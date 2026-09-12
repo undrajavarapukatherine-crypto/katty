@@ -174,7 +174,7 @@ export default function ChatInput({ mode = 'bottom' }: { mode?: 'center' | 'bott
 
   const isCenter = mode === 'center';
   const models = loadedModels.length > 0 ? loadedModels : [
-    { id: 'resident-default', name: activeModel || 'Resident Qwen Core', role: 'Sovereign Reasoning Engine' }
+    { id: 'resident-default', name: activeModel || 'Resident Model', role: 'Resident Model' }
   ];
 
   return (

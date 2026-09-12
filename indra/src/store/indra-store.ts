@@ -895,7 +895,7 @@ print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} ye
         ? data.map((m: any, idx: number) => ({
             id: m.id || `model-${idx}`,
             name: m.name || m.id || 'Resident Model',
-            role: m.role || (m.name?.includes('Coder') ? 'ASME Deterministic Math' : m.name?.includes('VL') ? 'P&ID Computer Vision' : 'Sovereign Reasoning'),
+            role: m.role || m.description || 'Resident Model',
             vramUsage: typeof m.vramUsage === 'number' ? m.vramUsage : typeof m.vram_usage === 'number' ? m.vram_usage : 45,
             status: m.status || 'loaded',
             memory: m.memory || m.size,
