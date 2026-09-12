@@ -12,19 +12,12 @@ import {
   PanelLeft, 
   ArrowLeft, 
   ArrowRight, 
-  Minus, 
-  Square, 
   X, 
   MoreVertical,
   Cpu,
   Lock,
   Sparkles,
-  ShieldCheck,
-  Bot,
-  Database,
-  RefreshCw,
-  Clock,
-  Maximize2
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Home() {
@@ -50,20 +43,9 @@ export default function Home() {
     setScheduledTasksOpen
   } = useIndraStore();
 
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-
   useEffect(() => {
     fetchPendingApprovals();
   }, [fetchPendingApprovals]);
-
-  const toggleFullscreen = () => {
-    if (typeof document === 'undefined') return;
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
-  };
 
   const runVerifiedAudit = () => {
     if (isAgentWorking) return;
@@ -72,178 +54,30 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0a0a0a] text-zinc-100 select-none">
-      {/* 1. Top OS / Electron Menu Bar */}
-      <header className="h-7 bg-[#0a0a0a] border-b border-zinc-800/30 flex items-center justify-between px-3 text-xs z-50">
-        {/* Left: App Title & Menus */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <img src="/logo.png" alt="INDRA" className="w-4 h-4 object-contain" />
-            <span className="font-bold text-zinc-100 tracking-wider text-xs font-mono">INDRA</span>
+      {/* 1. Top OS / Electron Header Bar */}
+      <header className="h-10 bg-[#0a0a0a] border-b border-zinc-800/40 flex items-center justify-between px-3 text-xs z-50">
+        {/* Left: App Title & Prominent Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800/80 p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm relative group">
+            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-zinc-950 animate-pulse" />
           </div>
-
-          <nav className="flex items-center gap-3 text-zinc-400 text-[11px] relative">
-            <button 
-              onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
-              className={`hover:text-zinc-200 transition-colors py-0.5 cursor-pointer ${activeMenu === 'file' ? 'text-zinc-100 font-semibold' : ''}`}
-            >
-              File
-            </button>
-            <button 
-              onClick={() => setActiveMenu(activeMenu === 'view' ? null : 'view')}
-              className={`hover:text-zinc-200 transition-colors py-0.5 cursor-pointer ${activeMenu === 'view' ? 'text-zinc-100 font-semibold' : ''}`}
-            >
-              View
-            </button>
-            <button 
-              onClick={() => setActiveMenu(activeMenu === 'window' ? null : 'window')}
-              className={`hover:text-zinc-200 transition-colors py-0.5 cursor-pointer ${activeMenu === 'window' ? 'text-zinc-100 font-semibold' : ''}`}
-            >
-              Window
-            </button>
-
-            {/* Menu Dropdowns */}
-            {activeMenu === 'file' && (
-              <div 
-                className="absolute top-6 left-0 bg-zinc-900 border border-zinc-700/60 rounded-lg shadow-2xl py-1 w-56 z-50 text-xs font-mono"
-                onMouseLeave={() => setActiveMenu(null)}
-              >
-                <button 
-                  onClick={() => { newConversation(); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-200 flex justify-between cursor-pointer"
-                >
-                  <span>New Conversation</span>
-                  <span className="text-zinc-500 text-[10px]">Ctrl+N</span>
-                </button>
-                <button 
-                  onClick={() => { runVerifiedAudit(); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-emerald-400 flex justify-between cursor-pointer"
-                >
-                  <span>Run ASME B31.3 Audit</span>
-                  <span className="text-zinc-500 text-[10px]">F5</span>
-                </button>
-                <button 
-                  onClick={() => { setSettingsOpen(true); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
-                >
-                  Sovereign Settings...
-                </button>
-                <button 
-                  onClick={() => { fetchPendingApprovals(); fetchModels(); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex items-center justify-between cursor-pointer"
-                >
-                  <span>Refresh Backend State</span>
-                  <RefreshCw className="w-3 h-3 text-zinc-500" />
-                </button>
-                <div className="h-px bg-zinc-800 my-1" />
-                <div className="px-3 py-1 text-[10px] text-zinc-500 font-mono">
-                  FastAPI: http://localhost:8000
-                </div>
-              </div>
-            )}
-
-            {activeMenu === 'view' && (
-              <div 
-                className="absolute top-6 left-10 bg-zinc-900 border border-zinc-700/60 rounded-lg shadow-2xl py-1 w-56 z-50 text-xs font-mono"
-                onMouseLeave={() => setActiveMenu(null)}
-              >
-                <button 
-                  onClick={() => { toggleSidebar(); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-200 flex justify-between cursor-pointer"
-                >
-                  <span>Toggle Left Sidebar</span>
-                  <span className="text-zinc-500 text-[10px]">Ctrl+B</span>
-                </button>
-                <button 
-                  onClick={() => { setActiveNav('workbench'); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex items-center gap-2 cursor-pointer"
-                >
-                  <Bot className="w-3 h-3 text-emerald-400" />
-                  <span>Agent Workbench</span>
-                </button>
-                <button 
-                  onClick={() => { setActiveNav('kb'); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex items-center gap-2 cursor-pointer"
-                >
-                  <Database className="w-3 h-3 text-blue-400" />
-                  <span>Knowledge Base (RAG)</span>
-                </button>
-                <button 
-                  onClick={() => { setActiveNav('audit'); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex items-center gap-2 cursor-pointer"
-                >
-                  <ShieldCheck className="w-3 h-3 text-amber-400" />
-                  <span>Merkle Audit Ledger</span>
-                </button>
-                <div className="h-px bg-zinc-800 my-1" />
-                <button 
-                  onClick={() => { toggleFullscreen(); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex justify-between cursor-pointer"
-                >
-                  <span>Toggle Fullscreen</span>
-                  <span className="text-zinc-500 text-[10px]">F11</span>
-                </button>
-              </div>
-            )}
-
-            {activeMenu === 'window' && (
-              <div 
-                className="absolute top-6 left-24 bg-zinc-900 border border-zinc-700/60 rounded-lg shadow-2xl py-1 w-56 z-50 text-xs font-mono"
-                onMouseLeave={() => setActiveMenu(null)}
-              >
-                <button 
-                  onClick={() => { setScheduledTasksOpen(true); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex items-center gap-2 cursor-pointer"
-                >
-                  <Clock className="w-3 h-3 text-emerald-400" />
-                  <span>Scheduled Watchdogs...</span>
-                </button>
-                <button 
-                  onClick={() => { setApprovalsModalOpen(true); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 flex items-center gap-2 cursor-pointer"
-                >
-                  <ShieldCheck className="w-3 h-3 text-amber-400" />
-                  <span>HITL Approvals Gate...</span>
-                </button>
-                <button 
-                  onClick={() => { toggleSidebar(); setActiveMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
-                >
-                  Toggle Navigation
-                </button>
-                <div className="h-px bg-zinc-800 my-1" />
-                <button 
-                  onClick={() => { if (typeof window !== 'undefined') window.location.reload(); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-400 cursor-pointer"
-                >
-                  Reload Workspace
-                </button>
-              </div>
-            )}
-          </nav>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-zinc-100 tracking-[0.2em] text-sm font-mono">INDRA</span>
+            <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/25 font-semibold">
+              0-WAN SOVEREIGN
+            </span>
+          </div>
         </div>
 
-        {/* Right: Window Controls */}
+        {/* Right: Window Controls (Close/Reset only, minimize and maximize removed) */}
         <div className="flex items-center gap-2 text-zinc-500">
           <button 
-            onClick={toggleSidebar} 
-            className="hover:text-zinc-300 p-1 cursor-pointer transition-colors"
-            title="Toggle Sidebar"
-          >
-            <Minus className="w-3 h-3" />
-          </button>
-          <button 
-            onClick={toggleFullscreen} 
-            className="hover:text-zinc-300 p-1 cursor-pointer transition-colors"
-            title="Toggle Fullscreen"
-          >
-            <Square className="w-2.5 h-2.5" />
-          </button>
-          <button 
             onClick={newConversation} 
-            className="hover:text-rose-400 p-1 cursor-pointer transition-colors"
-            title="Clear & New Conversation"
+            className="hover:text-rose-400 p-1 hover:bg-zinc-800/60 rounded cursor-pointer transition-colors"
+            title="Reset Conversation / Session"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
