@@ -8,7 +8,7 @@ export default function CenterPane() {
   const messages = useIndraStore((state) => state.messages);
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-[#0d0d0d] relative overflow-hidden">
+    <div className="flex-1 min-h-0 h-full flex flex-col bg-[#0d0d0d] relative overflow-hidden">
       {/* Main Message Area (Handles both Antigravity centered home state and active conversation) */}
       <MessageArea />
 

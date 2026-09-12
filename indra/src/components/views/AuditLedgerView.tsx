@@ -144,7 +144,7 @@ export default function AuditLedgerView() {
   };
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-[#0a0a0a] text-zinc-100 overflow-hidden p-6">
+    <div className="flex-1 min-h-0 h-full flex flex-col bg-[#0a0a0a] text-zinc-100 overflow-hidden p-6">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-zinc-800/60 mb-6">
         <div>

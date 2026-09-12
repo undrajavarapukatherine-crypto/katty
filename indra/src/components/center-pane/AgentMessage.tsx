@@ -84,9 +84,8 @@ export default function AgentMessage({ message }: { message: Message }) {
       <div className="max-w-[85%] space-y-3">
         {/* Agent label */}
         <div className="flex items-center gap-2 mb-1">
-          <div className="relative w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain" />
-            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-zinc-950" />
+          <div className="relative w-6 h-6 flex items-center justify-center flex-shrink-0">
+            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]" />
           </div>
           <span className="text-[11px] font-bold tracking-wider text-zinc-200 uppercase font-mono">INDRA</span>
           

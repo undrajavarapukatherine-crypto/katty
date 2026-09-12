@@ -56,42 +56,49 @@ export default function MessageArea() {
   // Antigravity Home View (Centered floating card)
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 select-none overflow-y-auto">
-        {/* Sovereign AI Hero Emblem */}
-        <div className="flex flex-col items-center mb-6 text-center">
-          <div className="relative mb-5 group">
-            <div className="absolute -inset-4 rounded-3xl bg-emerald-500/20 blur-3xl opacity-80 group-hover:opacity-100 transition-opacity" />
-            <div className="relative w-40 h-40 rounded-3xl bg-zinc-950/95 border border-zinc-800 p-3.5 flex items-center justify-center shadow-2xl">
-              <img src="/logo.png" alt="INDRA Sovereign AI" className="w-full h-full object-contain drop-shadow-2xl" />
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8 flex flex-col items-center select-none scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+        <div className="w-full max-w-xl flex flex-col items-center my-auto">
+          {/* Sovereign AI Hero Emblem */}
+          <div className="flex flex-col items-center mb-6 text-center">
+            <div className="relative mb-5 group cursor-default">
+              {/* Soft ambient radial emerald backlight */}
+              <div className="absolute -inset-8 bg-gradient-to-b from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl opacity-75 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
+              
+              {/* Seamless, free-floating cyber shield emblem */}
+              <div className="relative w-36 h-36 md:w-40 md:h-40 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="INDRA Sovereign AI" 
+                  className="w-full h-full object-contain relative z-10 drop-shadow-[0_14px_28px_rgba(0,0,0,0.85)] drop-shadow-[0_0_22px_rgba(16,185,129,0.35)] transition-transform duration-500 group-hover:scale-105" 
+                />
+              </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center shadow-lg">
-              <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-bold tracking-[0.25em] text-zinc-100 font-mono">INDRA</h1>
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-bold tracking-wider flex items-center gap-1.5 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>0-WAN AIR-GAP</span>
+              </span>
             </div>
+            <p className="text-xs text-zinc-400 font-mono mt-1.5">
+              Industrial Neural Decision & Reasoning Assistant
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-[0.25em] text-zinc-100 font-mono">INDRA</h1>
-            <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30 font-bold tracking-wider">
-              0-WAN AIR-GAP
+
+          {/* Status Indicator Header */}
+          <div className="w-full flex items-center justify-end pl-1 mb-2">
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/25 font-semibold tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>SOVEREIGN AIR-GAP COMPLIANCE</span>
             </span>
           </div>
-          <p className="text-xs text-zinc-400 font-mono mt-1.5">
-            Industrial Neural Decision & Reasoning Assistant
-          </p>
-        </div>
 
-        {/* Status Indicator Header */}
-        <div className="w-full max-w-xl flex items-center justify-end pl-1 mb-2">
-          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/25 font-semibold tracking-wider flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>SOVEREIGN AIR-GAP COMPLIANCE</span>
-          </span>
-        </div>
+          {/* Antigravity Central Floating Card */}
+          <ChatInput mode="center" />
 
-        {/* Antigravity Central Floating Card */}
-        <ChatInput mode="center" />
-
-        {/* Verified Industrial Reasoning Workflows Grid Below Card */}
-        <div className="w-full max-w-xl mt-7">
+          {/* Verified Industrial Reasoning Workflows Grid Below Card */}
+          <div className="w-full mt-7">
           <div className="flex items-center justify-between mb-2.5 px-1">
             <span className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500 font-mono">
               Verified Industrial Reasoning Workflows
@@ -132,12 +139,13 @@ export default function MessageArea() {
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Active Conversation Message Feed
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 pb-36 space-y-6 scrollbar-thin">
+    <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 pb-36 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
       {messages.map((msg) =>
         msg.role === 'user' ? (
           <UserMessage key={msg.id} message={msg} />

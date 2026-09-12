@@ -53,15 +53,20 @@ export default function Home() {
       <header className="h-16 bg-[#0a0a0a] border-b border-zinc-800/50 flex items-center justify-between px-4 text-xs z-50">
         {/* Left: App Title & Large Prominent Logo */}
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800/80 p-1 flex items-center justify-center flex-shrink-0 shadow-xl relative group">
-            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-md" />
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-zinc-950 animate-pulse" />
+          <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0 group">
+            <div className="absolute -inset-1 bg-emerald-500/20 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <img 
+              src="/logo.png" 
+              alt="INDRA" 
+              className="w-full h-full object-contain relative z-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] drop-shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-transform duration-300 group-hover:scale-105" 
+            />
           </div>
           <div>
             <div className="flex items-center gap-2.5">
               <span className="font-bold text-zinc-100 tracking-[0.22em] text-lg font-mono">INDRA</span>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 font-bold tracking-wider">
-                0-WAN SOVEREIGN
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25 font-bold tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>0-WAN SOVEREIGN</span>
               </span>
             </div>
             <div className="text-[11px] text-zinc-400 font-mono">Industrial Neural Decision & Reasoning Assistant</div>
@@ -131,7 +136,7 @@ export default function Home() {
       </div>
 
       {/* 3. Main Desktop Layout with View Switching */}
-      <main className="flex flex-1 overflow-hidden relative">
+      <main className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Pane 1: Left Pane (w-64) */}
         {isSidebarOpen && <LeftPane />}
 
@@ -147,8 +152,8 @@ export default function Home() {
           <div className="w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-xl p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 p-1 flex items-center justify-center shadow-md">
-                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow" />
+                <div className="relative w-9 h-9 flex items-center justify-center flex-shrink-0">
+                  <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" />
                 </div>
                 <h2 className="text-base font-semibold text-zinc-100 font-mono">
                   INDRA Sovereign Hardware & Network Telemetry
