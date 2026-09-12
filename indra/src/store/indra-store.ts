@@ -2,6 +2,15 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getGlobalQueryClient, queryKeys } from '@/lib/queries';
 import { sendNativeNotification } from '@/lib/native-bridge';
+import { 
+  saveSessionToDB, 
+  loadSessionFromDB, 
+  loadLastActiveSession, 
+  listAllSessions, 
+  deleteSessionFromDB, 
+  clearAllSessionsFromDB, 
+  appendDeliverableToDB 
+} from '@/lib/db/session-repository';
 
 // --- API Configuration ---
 export const API_BASE = 'http://localhost:8000';
@@ -234,6 +243,7 @@ export interface IndraState {
   currentSessionId: string;
   hasHydrated: boolean;
   setHasHydrated: (hydrated: boolean) => void;
+  initLocalDB: () => Promise<void>;
   saveCurrentSession: () => void;
   loadSession: (sessionId: string) => void;
   deleteSession: (sessionId: string) => void;
@@ -376,7 +386,38 @@ export const useIndraStore = create<IndraState>()(
         ...(doc ? { isRightPaneOpen: true } : {})
       }),
 
-      // Session Management Implementations
+      // Session Management Implementations (Local-First IndexedDB)
+      initLocalDB: async () => {
+        try {
+          const dbSessions = await listAllSessions();
+          if (dbSessions.length > 0) {
+            const lastSession = await loadLastActiveSession();
+            if (lastSession) {
+              set({
+                currentSessionId: lastSession.id,
+                messages: lastSession.messages || [],
+                deliverables: lastSession.deliverables || [],
+                currentTaskId: lastSession.currentTaskId || null,
+                sessions: dbSessions.map((s) => ({
+                  id: s.id,
+                  title: s.title,
+                  createdAt: s.createdAt,
+                  updatedAt: s.updatedAt,
+                  messages: [],
+                  deliverables: [],
+                })),
+                hasHydrated: true,
+              });
+              return;
+            }
+          }
+          set({ hasHydrated: true });
+        } catch (err) {
+          console.warn('[IndexedDB] initLocalDB failed, falling back to RAM:', err);
+          set({ hasHydrated: true });
+        }
+      },
+
       saveCurrentSession: () => {
         const { currentSessionId, messages, deliverables, ragSources, detectedTags, currentTaskId, sessions } = get();
         if (!messages || messages.length === 0) return;
@@ -411,6 +452,11 @@ export const useIndraStore = create<IndraState>()(
 
         set({ sessions: newSessions });
 
+        // Save asynchronously to Dexie IndexedDB (Local-First Persistence)
+        saveSessionToDB(updatedSession).catch((err) => {
+          console.warn('[IndexedDB] saveSessionToDB error:', err);
+        });
+
         // Asynchronous background sync with /api/history
         try {
           if (typeof window !== 'undefined') {
@@ -423,7 +469,7 @@ export const useIndraStore = create<IndraState>()(
         } catch {}
       },
 
-      loadSession: (sessionId: string) => {
+      loadSession: async (sessionId: string) => {
         if (taskWs) {
           taskWs.close();
           taskWs = null;
@@ -431,6 +477,26 @@ export const useIndraStore = create<IndraState>()(
         // Save current active session before switching
         get().saveCurrentSession();
 
+        // 1. Try loading full session from Dexie IndexedDB first (Local-First)
+        try {
+          const dbSession = await loadSessionFromDB(sessionId);
+          if (dbSession) {
+            set({
+              currentSessionId: dbSession.id,
+              messages: dbSession.messages || [],
+              deliverables: dbSession.deliverables || [],
+              currentTaskId: dbSession.currentTaskId || null,
+              isAgentWorking: false,
+              inputValue: '',
+              activeNav: 'workbench',
+            });
+            return;
+          }
+        } catch (err) {
+          console.warn('[IndexedDB] loadSession error, falling back to state:', err);
+        }
+
+        // 2. Fallback to state
         const target = get().sessions.find((s) => s.id === sessionId);
         if (!target) return;
 
@@ -448,36 +514,17 @@ export const useIndraStore = create<IndraState>()(
       },
 
       deleteSession: (sessionId: string) => {
+        deleteSessionFromDB(sessionId).catch(() => {});
+
         const { currentSessionId, sessions } = get();
         const remaining = sessions.filter((s) => s.id !== sessionId);
 
         if (currentSessionId === sessionId) {
           if (remaining.length > 0) {
             const nextSession = remaining[0];
-            set({
-              sessions: remaining,
-              currentSessionId: nextSession.id,
-              messages: nextSession.messages || [],
-              deliverables: nextSession.deliverables || [],
-              ragSources: nextSession.ragSources || [],
-              detectedTags: nextSession.detectedTags || [],
-              currentTaskId: nextSession.currentTaskId || null,
-              isAgentWorking: false,
-              inputValue: '',
-            });
+            get().loadSession(nextSession.id);
           } else {
-            const newId = `session-${Date.now()}`;
-            set({
-              sessions: [],
-              currentSessionId: newId,
-              messages: [],
-              deliverables: [],
-              ragSources: [],
-              detectedTags: [],
-              currentTaskId: null,
-              isAgentWorking: false,
-              inputValue: '',
-            });
+            get().newConversation();
           }
         } else {
           set({ sessions: remaining });
@@ -489,6 +536,7 @@ export const useIndraStore = create<IndraState>()(
           taskWs.close();
           taskWs = null;
         }
+        clearAllSessionsFromDB().catch(() => {});
         const newId = `session-${Date.now()}`;
         set({
           sessions: [],
@@ -544,6 +592,9 @@ export const useIndraStore = create<IndraState>()(
       },
 
       addDeliverable: (deliverable: Deliverable) => {
+        const { currentSessionId } = get();
+        appendDeliverableToDB(currentSessionId, deliverable).catch(() => {});
+
         set((state) => ({
           isRightPaneOpen: true,
           deliverables: [

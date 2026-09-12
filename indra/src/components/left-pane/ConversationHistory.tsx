@@ -97,7 +97,7 @@ export default function ConversationHistory() {
           ) : (
             sessions.map((session) => {
               const isActive = session.id === currentSessionId;
-              const msgCount = session.messages?.length || 0;
+              const msgCount = (session.messages && session.messages.length > 0) ? session.messages.length : ((session as any).messageCount || 0);
               const timeAgo = formatTimeAgo(session.updatedAt || session.createdAt);
 
               return (

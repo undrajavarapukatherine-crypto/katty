@@ -53,6 +53,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setTheme,
     toggleTheme,
     syncHistoryWithBackend,
+    initLocalDB,
   } = useIndraStore();
 
   const { isNative, appInfo } = useNativeBridge();
@@ -85,6 +86,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [activeNav, setActiveNav]);
 
   useEffect(() => {
+    initLocalDB();
     syncHistoryWithBackend();
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('indra-theme') as 'light' | 'dark' | null;
@@ -92,7 +94,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         setTheme(savedTheme);
       }
     }
-  }, [setTheme, syncHistoryWithBackend]);
+  }, [initLocalDB, setTheme, syncHistoryWithBackend]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-zinc-100 select-none">
@@ -253,18 +255,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
                 <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Backend Binding</span>
-                <span className="text-base font-bold text-slate-900 dark:text-zinc-100 block mt-0.5">
+                <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 block mt-0.5">
                   {isBackendConnected ? '127.0.0.1:8000' : 'OFFLINE'}
                 </span>
-                <Badge variant="success" className="mt-1">Localhost Loopback Only</Badge>
+                <Badge variant="success" className="mt-1">Localhost Loopback</Badge>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
                 <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Model Routing</span>
                 <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block truncate mt-0.5">Local-Only (Zero WAN)</span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-1">Resident Quantized Weights</span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-1">Resident Weights</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
+                <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Storage Engine</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block truncate mt-0.5">Dexie (IndexedDB)</span>
+                <Badge variant="violet" className="mt-1">Local-First Disk</Badge>
               </div>
             </div>
 
