@@ -2,6 +2,7 @@
 
 import BrandHeader from './BrandHeader';
 import NavigationMenu from './NavigationMenu';
+import ConversationHistory from './ConversationHistory';
 import ActiveModels from './ActiveModels';
 import EvidencePanel from './EvidencePanel';
 import { Settings, ShieldCheck } from 'lucide-react';
@@ -17,6 +18,9 @@ export default function LeftPane() {
 
       {/* Navigation & Projects */}
       <NavigationMenu />
+
+      {/* Conversation Sessions History */}
+      <ConversationHistory />
 
       {/* Active Models Widget */}
       <ActiveModels />

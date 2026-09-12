@@ -40,17 +40,19 @@ export default function Home() {
     theme,
     setTheme,
     toggleTheme,
+    syncHistoryWithBackend,
   } = useIndraStore();
 
   useEffect(() => {
     fetchPendingApprovals();
+    syncHistoryWithBackend();
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('indra-theme') as 'light' | 'dark' | null;
       if (savedTheme) {
         setTheme(savedTheme);
       }
     }
-  }, [fetchPendingApprovals, setTheme]);
+  }, [fetchPendingApprovals, setTheme, syncHistoryWithBackend]);
 
   const navLabels: Record<string, string> = {
     workbench: 'Agent Workbench',

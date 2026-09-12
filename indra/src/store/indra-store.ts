@@ -1,10 +1,23 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 // --- API Configuration ---
 export const API_BASE = 'http://localhost:8000';
 export const WS_BASE = 'ws://localhost:8000';
 
 // --- Interfaces ---
+export interface ConversationSession {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: Message[];
+  deliverables?: Deliverable[];
+  ragSources?: RAGSource[];
+  detectedTags?: string[];
+  currentTaskId?: string | null;
+}
+
 export interface NetworkEvent {
   id?: string;
   timestamp: string;
@@ -193,6 +206,17 @@ export interface IndraState {
   toggleScheduledTask: (id: string) => void;
   removeScheduledTask: (id: string) => void;
 
+  // Session & Persistence Management
+  sessions: ConversationSession[];
+  currentSessionId: string;
+  hasHydrated: boolean;
+  setHasHydrated: (hydrated: boolean) => void;
+  saveCurrentSession: () => void;
+  loadSession: (sessionId: string) => void;
+  deleteSession: (sessionId: string) => void;
+  clearAllSessions: () => void;
+  syncHistoryWithBackend: () => Promise<void>;
+
   // Real Backend Calls & WebSocket Handlers
   fetchModels: () => Promise<void>;
   connectNetworkWebSocket: () => void;
@@ -216,105 +240,268 @@ let taskWs: WebSocket | null = null;
 
 const NAV_VIEWS: ('workbench' | 'kb' | 'audit')[] = ['workbench', 'kb', 'audit'];
 
-export const useIndraStore = create<IndraState>()((set, get) => ({
-  activeNav: 'workbench',
-  activeModel: 'Auto-Negotiating...',
-  modelReason: undefined,
-  isSidebarOpen: true,
+export const useIndraStore = create<IndraState>()(
+  persist(
+    (set, get) => ({
+      activeNav: 'workbench',
+      activeModel: 'Auto-Negotiating...',
+      modelReason: undefined,
+      isSidebarOpen: true,
 
-  isBackendConnected: false,
-  isNetworkSocketConnected: false,
-  blockedCount: 0,
-  networkEvents: [],
+      isBackendConnected: false,
+      isNetworkSocketConnected: false,
+      blockedCount: 0,
+      networkEvents: [],
 
-  currentTaskId: null,
-  messages: [],
-  deliverables: [],
-  loadedModels: [],
-  ragSources: [],
-  detectedTags: [],
-  activePIDDoc: null,
-  isAgentWorking: false,
-  inputValue: '',
+      // Conversation & Session Management
+      sessions: [],
+      currentSessionId: `session-${Date.now()}`,
+      hasHydrated: false,
 
-  pendingApprovals: [],
-  loadingApprovals: false,
-  isApprovalsModalOpen: false,
-  isSettingsOpen: false,
-  isScheduledTasksOpen: false,
-  scheduledTasks: [],
-  theme: 'light',
-
-  setTheme: (theme: 'light' | 'dark') => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('indra-theme', theme);
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      } catch (err) {
-        console.warn('Unable to persist theme:', err);
-      }
-    }
-    set({ theme });
-  },
-  toggleTheme: () => {
-    const nextTheme = get().theme === 'dark' ? 'light' : 'dark';
-    get().setTheme(nextTheme);
-  },
-
-  setInputValue: (value: string) => set({ inputValue: value }),
-  setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
-  cycleNav: (direction: 'forward' | 'backward') => {
-    const current = get().activeNav;
-    const currentIndex = NAV_VIEWS.indexOf(current);
-    if (direction === 'forward') {
-      const nextIndex = (currentIndex + 1) % NAV_VIEWS.length;
-      set({ activeNav: NAV_VIEWS[nextIndex] });
-    } else {
-      const prevIndex = (currentIndex - 1 + NAV_VIEWS.length) % NAV_VIEWS.length;
-      set({ activeNav: NAV_VIEWS[prevIndex] });
-    }
-  },
-  setActiveModel: (model: string) => set({ activeModel: model }),
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-  setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
-  setSettingsOpen: (open: boolean) => set({ isSettingsOpen: open }),
-  setScheduledTasksOpen: (open: boolean) => set({ isScheduledTasksOpen: open }),
-  addScheduledTask: (task: WatchdogTask) => set((state) => ({ scheduledTasks: [task, ...state.scheduledTasks] })),
-  toggleScheduledTask: (id: string) => set((state) => ({
-    scheduledTasks: state.scheduledTasks.map((t) => t.id === id ? { ...t, status: t.status === 'active' ? 'paused' : 'active' } : t),
-  })),
-  removeScheduledTask: (id: string) => set((state) => ({
-    scheduledTasks: state.scheduledTasks.filter((t) => t.id !== id),
-  })),
-  setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
-  setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
-
-  newConversation: () => {
-    if (taskWs) {
-      taskWs.close();
-      taskWs = null;
-    }
-    set({
       currentTaskId: null,
       messages: [],
+      deliverables: [],
+      loadedModels: [],
       ragSources: [],
+      detectedTags: [],
+      activePIDDoc: null,
       isAgentWorking: false,
       inputValue: '',
-      detectedTags: [],
-    });
-  },
 
-  addDeliverable: (deliverable: Deliverable) =>
-    set((state) => ({
-      deliverables: [
-        deliverable,
-        ...state.deliverables.filter((d) => d.filename !== deliverable.filename),
-      ],
-    })),
+      pendingApprovals: [],
+      loadingApprovals: false,
+      isApprovalsModalOpen: false,
+      isSettingsOpen: false,
+      isScheduledTasksOpen: false,
+      scheduledTasks: [],
+      theme: 'light',
+
+      setHasHydrated: (hydrated: boolean) => set({ hasHydrated: hydrated }),
+
+      setTheme: (theme: 'light' | 'dark') => {
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('indra-theme', theme);
+            if (theme === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+          } catch (err) {
+            console.warn('Unable to persist theme:', err);
+          }
+        }
+        set({ theme });
+      },
+      toggleTheme: () => {
+        const nextTheme = get().theme === 'dark' ? 'light' : 'dark';
+        get().setTheme(nextTheme);
+      },
+
+      setInputValue: (value: string) => set({ inputValue: value }),
+      setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
+      cycleNav: (direction: 'forward' | 'backward') => {
+        const current = get().activeNav;
+        const currentIndex = NAV_VIEWS.indexOf(current);
+        if (direction === 'forward') {
+          const nextIndex = (currentIndex + 1) % NAV_VIEWS.length;
+          set({ activeNav: NAV_VIEWS[nextIndex] });
+        } else {
+          const prevIndex = (currentIndex - 1 + NAV_VIEWS.length) % NAV_VIEWS.length;
+          set({ activeNav: NAV_VIEWS[prevIndex] });
+        }
+      },
+      setActiveModel: (model: string) => set({ activeModel: model }),
+      toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      setApprovalsModalOpen: (open: boolean) => set({ isApprovalsModalOpen: open }),
+      setSettingsOpen: (open: boolean) => set({ isSettingsOpen: open }),
+      setScheduledTasksOpen: (open: boolean) => set({ isScheduledTasksOpen: open }),
+      addScheduledTask: (task: WatchdogTask) => set((state) => ({ scheduledTasks: [task, ...state.scheduledTasks] })),
+      toggleScheduledTask: (id: string) => set((state) => ({
+        scheduledTasks: state.scheduledTasks.map((t) => t.id === id ? { ...t, status: t.status === 'active' ? 'paused' : 'active' } : t),
+      })),
+      removeScheduledTask: (id: string) => set((state) => ({
+        scheduledTasks: state.scheduledTasks.filter((t) => t.id !== id),
+      })),
+      setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
+      setActivePIDDoc: (doc: KBDocument | null) => set({ activePIDDoc: doc }),
+
+      // Session Management Implementations
+      saveCurrentSession: () => {
+        const { currentSessionId, messages, deliverables, ragSources, detectedTags, currentTaskId, sessions } = get();
+        if (!messages || messages.length === 0) return;
+
+        const firstUserMsg = messages.find((m) => m.role === 'user');
+        const autoTitle = firstUserMsg 
+          ? (firstUserMsg.content.trim().slice(0, 36) + (firstUserMsg.content.trim().length > 36 ? '...' : ''))
+          : 'Engineering Audit Session';
+
+        const now = new Date().toISOString();
+        const existingIdx = sessions.findIndex((s) => s.id === currentSessionId);
+
+        const updatedSession: ConversationSession = {
+          id: currentSessionId,
+          title: existingIdx >= 0 && sessions[existingIdx].title ? sessions[existingIdx].title : autoTitle,
+          createdAt: existingIdx >= 0 ? sessions[existingIdx].createdAt : now,
+          updatedAt: now,
+          messages,
+          deliverables: deliverables || [],
+          ragSources: ragSources || [],
+          detectedTags: detectedTags || [],
+          currentTaskId,
+        };
+
+        let newSessions: ConversationSession[];
+        if (existingIdx >= 0) {
+          newSessions = [...sessions];
+          newSessions[existingIdx] = updatedSession;
+        } else {
+          newSessions = [updatedSession, ...sessions];
+        }
+
+        set({ sessions: newSessions });
+
+        // Asynchronous background sync with /api/history
+        try {
+          if (typeof window !== 'undefined') {
+            fetch('/api/history', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session: updatedSession }),
+            }).catch(() => {});
+          }
+        } catch {}
+      },
+
+      loadSession: (sessionId: string) => {
+        if (taskWs) {
+          taskWs.close();
+          taskWs = null;
+        }
+        // Save current active session before switching
+        get().saveCurrentSession();
+
+        const target = get().sessions.find((s) => s.id === sessionId);
+        if (!target) return;
+
+        set({
+          currentSessionId: target.id,
+          messages: target.messages || [],
+          deliverables: target.deliverables || [],
+          ragSources: target.ragSources || [],
+          detectedTags: target.detectedTags || [],
+          currentTaskId: target.currentTaskId || null,
+          isAgentWorking: false,
+          inputValue: '',
+          activeNav: 'workbench',
+        });
+      },
+
+      deleteSession: (sessionId: string) => {
+        const { currentSessionId, sessions } = get();
+        const remaining = sessions.filter((s) => s.id !== sessionId);
+
+        if (currentSessionId === sessionId) {
+          if (remaining.length > 0) {
+            const nextSession = remaining[0];
+            set({
+              sessions: remaining,
+              currentSessionId: nextSession.id,
+              messages: nextSession.messages || [],
+              deliverables: nextSession.deliverables || [],
+              ragSources: nextSession.ragSources || [],
+              detectedTags: nextSession.detectedTags || [],
+              currentTaskId: nextSession.currentTaskId || null,
+              isAgentWorking: false,
+              inputValue: '',
+            });
+          } else {
+            const newId = `session-${Date.now()}`;
+            set({
+              sessions: [],
+              currentSessionId: newId,
+              messages: [],
+              deliverables: [],
+              ragSources: [],
+              detectedTags: [],
+              currentTaskId: null,
+              isAgentWorking: false,
+              inputValue: '',
+            });
+          }
+        } else {
+          set({ sessions: remaining });
+        }
+      },
+
+      clearAllSessions: () => {
+        if (taskWs) {
+          taskWs.close();
+          taskWs = null;
+        }
+        const newId = `session-${Date.now()}`;
+        set({
+          sessions: [],
+          currentSessionId: newId,
+          messages: [],
+          deliverables: [],
+          ragSources: [],
+          detectedTags: [],
+          currentTaskId: null,
+          isAgentWorking: false,
+          inputValue: '',
+        });
+      },
+
+      syncHistoryWithBackend: async () => {
+        try {
+          const res = await fetch('/api/history');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && Array.isArray(data.sessions) && data.sessions.length > 0) {
+              const currentSessions = get().sessions;
+              const currentIds = new Set(currentSessions.map((s) => s.id));
+              const toAdd = data.sessions.filter((s: ConversationSession) => s.id && !currentIds.has(s.id));
+              if (toAdd.length > 0) {
+                set({ sessions: [...currentSessions, ...toAdd] });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Optional backend history sync skipped:', err);
+        }
+      },
+
+      newConversation: () => {
+        if (taskWs) {
+          taskWs.close();
+          taskWs = null;
+        }
+        // Save current active session before resetting
+        get().saveCurrentSession();
+
+        const newId = `session-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        set({
+          currentSessionId: newId,
+          currentTaskId: null,
+          messages: [],
+          deliverables: [],
+          ragSources: [],
+          isAgentWorking: false,
+          inputValue: '',
+          detectedTags: [],
+        });
+      },
+
+      addDeliverable: (deliverable: Deliverable) => {
+        set((state) => ({
+          deliverables: [
+            deliverable,
+            ...state.deliverables.filter((d) => d.filename !== deliverable.filename),
+          ],
+        }));
+        get().saveCurrentSession();
+      },
 
   addNetworkEvent: (event: NetworkEvent) =>
     set((state) => ({
@@ -481,6 +668,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
       inputValue: '',
       isAgentWorking: true,
     }));
+    get().saveCurrentSession();
 
     try {
       // Exact payload format: {"text": "user's prompt string"}
@@ -717,6 +905,7 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
 
             // Sync approvals after task completion
             get().fetchPendingApprovals();
+            get().saveCurrentSession();
           }
         } catch (err) {
           console.error('Error processing task WebSocket message:', err);
@@ -745,8 +934,45 @@ export const useIndraStore = create<IndraState>()((set, get) => ({
             : m
         ),
       }));
+      get().saveCurrentSession();
     }
   },
-}));
+    }),
+    {
+      name: 'indra-chat-session-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        sessions: state.sessions,
+        currentSessionId: state.currentSessionId,
+        messages: state.messages,
+        deliverables: state.deliverables,
+        ragSources: state.ragSources,
+        detectedTags: state.detectedTags,
+        currentTaskId: state.currentTaskId,
+        scheduledTasks: state.scheduledTasks,
+        theme: state.theme,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true);
+          // Safety: ensure transient flags are cleanly reset upon reload
+          state.isAgentWorking = false;
+          state.isBackendConnected = false;
+          state.isNetworkSocketConnected = false;
+          state.loadingApprovals = false;
+          state.isApprovalsModalOpen = false;
+          state.isSettingsOpen = false;
+          state.isScheduledTasksOpen = false;
+          state.inputValue = '';
+          // Apply stored theme if present
+          if (typeof window !== 'undefined' && state.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        }
+      },
+    }
+  )
+);
 
 export default useIndraStore;
+
