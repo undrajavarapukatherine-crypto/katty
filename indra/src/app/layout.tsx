@@ -3,6 +3,7 @@ import './globals.css';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import QueryProvider from '@/providers/QueryProvider';
 import WebSocketProvider from '@/providers/WebSocketProvider';
+import { VoiceCommandProvider } from '@/providers/VoiceCommandProvider';
 import AppShell from '@/components/layout/AppShell';
 
 export const metadata: Metadata = {
@@ -29,9 +30,11 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>
             <WebSocketProvider>
-              <AppShell>
-                {children}
-              </AppShell>
+              <VoiceCommandProvider>
+                <AppShell>
+                  {children}
+                </AppShell>
+              </VoiceCommandProvider>
             </WebSocketProvider>
           </QueryProvider>
         </ErrorBoundary>

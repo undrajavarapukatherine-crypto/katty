@@ -23,6 +23,9 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import VoiceCommandButton from '@/components/voice/VoiceCommandButton';
+import VoiceTranscriptOverlay from '@/components/voice/VoiceTranscriptOverlay';
+import { useVoiceCommandContext } from '@/providers/VoiceCommandProvider';
 
 const navLabels: Record<string, string> = {
   workbench: 'Agent Workbench',
@@ -57,6 +60,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   } = useIndraStore();
 
   const { isNative, appInfo } = useNativeBridge();
+  const voiceCommand = useVoiceCommandContext();
   const prevApprovalsCount = useRef(pendingApprovals.length);
 
   // Trigger Native Desktop Notification when new pending approvals arrive
@@ -142,6 +146,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </>
             )}
           </button>
+
+          {/* Voice Command Mic Button (Whisper Local AI) */}
+          <VoiceCommandButton />
 
           <div className="flex items-center gap-2 bg-slate-50 dark:bg-zinc-900 px-3 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -314,6 +321,28 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             )}
+
+            <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-1.5">
+              <span className="text-slate-500 dark:text-zinc-400 block uppercase tracking-wider text-[10px] font-semibold">Voice Engine (Local Whisper AI)</span>
+              <div className="grid grid-cols-3 gap-2 text-[11px] font-mono">
+                <div>
+                  <span className="text-slate-400 dark:text-zinc-500 block text-[10px]">Model</span>
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">whisper-tiny.en</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 dark:text-zinc-500 block text-[10px]">Status</span>
+                  <span className={`font-bold ${voiceCommand.isModelLoaded ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-zinc-400'}`}>
+                    {voiceCommand.isModelLoaded ? 'Loaded (Warm)' : voiceCommand.isModelLoading ? `Loading ${voiceCommand.modelLoadProgress}%` : 'Not Loaded'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 dark:text-zinc-500 block text-[10px]">Inference</span>
+                  <Badge variant={voiceCommand.isModelLoaded ? 'success' : 'default'} className="mt-0.5">
+                    {typeof navigator !== 'undefined' && 'gpu' in navigator ? 'WebGPU' : 'WASM'} Local
+                  </Badge>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
@@ -335,6 +364,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* 7. Global Connection Alerts & Status Toasts */}
       <ToastContainer />
+
+      {/* 8. Voice Command Transcript Overlay (Whisper Local AI) */}
+      <VoiceTranscriptOverlay />
     </div>
   );
 }
