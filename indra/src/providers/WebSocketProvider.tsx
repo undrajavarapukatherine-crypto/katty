@@ -11,6 +11,7 @@ import useIndraStore, {
   type Deliverable, 
   type RAGSource 
 } from '@/store/indra-store';
+import type { GenerativeUISpec } from '@/components/generative-ui/types';
 import { getGlobalQueryClient, queryKeys } from '@/lib/queries';
 
 export type TaskStreamStatus = 'idle' | 'submitted' | 'streaming' | 'completed' | 'error';
@@ -426,6 +427,31 @@ export default function WebSocketProvider({ children }: { children: React.ReactN
               };
 
               useIndraStore.getState().addDeliverable(newDeliverable);
+            }
+
+            // Generative UI event (Server-Driven Micro-Frontends)
+            else if (type === 'generative_ui' || type === 'ui_component' || type === 'ui') {
+              flushTokenBuffer();
+              const componentName = ev.component || ev.name || ev.ui_type || 'IndustrialGauge';
+              const componentProps = ev.props || ev.data || ev.arguments || {};
+              const title = ev.title;
+              const spec: GenerativeUISpec = {
+                id: ev.id || `genui-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                component: componentName,
+                title,
+                props: componentProps,
+                status: 'ready',
+              };
+
+              useIndraStore.setState((state) => ({
+                messages: state.messages.map((m) => {
+                  if (m.id !== agentMessageId) return m;
+                  return {
+                    ...m,
+                    generativeUI: [...(m.generativeUI || []), spec],
+                  };
+                }),
+              }));
             }
 
             // Complete event

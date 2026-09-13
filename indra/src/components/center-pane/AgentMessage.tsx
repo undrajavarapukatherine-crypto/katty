@@ -7,6 +7,7 @@ import { useWebSocket } from '@/providers/WebSocketProvider';
 import AgentTrace from './AgentTrace';
 import ToolExecution from './ToolExecution';
 import MarkdownRenderer from '@/components/common/MarkdownRenderer';
+import GenerativeUIBlock from '@/components/generative-ui/GenerativeUIBlock';
 import { Cpu, AlertCircle, RefreshCw, Play, Copy, Check } from 'lucide-react';
 
 export default function AgentMessage({ message }: { message: Message }) {
@@ -111,7 +112,7 @@ export default function AgentMessage({ message }: { message: Message }) {
             </div>
           </div>
         ) : (
-          message.content && (
+          (message.content || (message.generativeUI && message.generativeUI.length > 0)) && (
             <div className="group/msg relative px-5 py-4 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 shadow-xs text-slate-800 dark:text-zinc-200">
               {/* Quick Hover Copy Button in Top Right */}
               <div className="absolute top-3 right-3 opacity-0 group-hover/msg:opacity-100 transition-opacity">
@@ -128,7 +129,16 @@ export default function AgentMessage({ message }: { message: Message }) {
                 </button>
               </div>
 
-              <MarkdownRenderer content={message.content} />
+              {message.content && <MarkdownRenderer content={message.content} />}
+
+              {/* Direct Server-Driven Generative UI Micro-Frontends */}
+              {message.generativeUI && message.generativeUI.length > 0 && (
+                <div className="space-y-3 mt-3 pt-2 border-t border-slate-100 dark:border-zinc-800/80">
+                  {message.generativeUI.map((spec, idx) => (
+                    <GenerativeUIBlock key={spec.id || `genui-${idx}`} spec={spec} />
+                  ))}
+                </div>
+              )}
 
               {/* Message Footer Action Bar with Copy Button */}
               <div className="flex items-center justify-between mt-3.5 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 text-xs">

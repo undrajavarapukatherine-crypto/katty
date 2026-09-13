@@ -12,7 +12,7 @@ import type { NetworkEvent } from '@/store/indra-store';
 export type DetachedWindowType = 'pid' | 'audit' | 'monitor';
 
 export type CrossWindowEventPayload =
-  | { type: 'TAG_SELECTED'; tag: string }
+  | { type: 'TAG_SELECTED'; tag: string; metadata?: Record<string, any> }
   | { type: 'TAGS_DETECTED'; tags: string[] }
   | { type: 'EGRESS_EVENT'; blockedCount: number; event?: NetworkEvent }
   | { type: 'HITL_UPDATE'; taskId: string; approved: boolean; signature?: string }
@@ -181,3 +181,10 @@ class MultiWindowSyncBus {
 
 // Global Singleton
 export const multiWindowSync = new MultiWindowSyncBus();
+
+/**
+ * Convenience helper to broadcast a cross-window synchronization event
+ */
+export function broadcastSyncEvent(event: CrossWindowEventPayload): void {
+  multiWindowSync.broadcast(event);
+}

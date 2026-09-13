@@ -17,11 +17,18 @@ import ChatInput from './ChatInput';
 
 const verifiedWorkflows = [
   {
+    title: 'Pump P-101 Live Telemetry & Control Deck',
+    desc: 'Stream interactive React gauge, dynamic vibration line chart, and PLC setpoint controls',
+    query: 'What is the status of pump P-101? Stream live telemetry gauge, vibration chart, and DCS setpoint control deck',
+    icon: Activity,
+    badge: 'Generative UI',
+  },
+  {
     title: 'ASME B31.3 Pipe Thickness Calculation',
     desc: 'Deterministic calculation for minimum wall thickness under design pressure & temperature',
     query: 'Calculate minimum required pipe wall thickness under ASME B31.3 for design pressure 24.0 bar, temperature 180°C, and ASTM A106 Grade B pipe',
     icon: Calculator,
-    badge: 'ASME B31.3',
+    badge: 'Interactive Math',
   },
   {
     title: 'Extract P&ID Valve Part Numbers',
@@ -29,13 +36,6 @@ const verifiedWorkflows = [
     query: 'Analyze the active P&ID drawing and extract all valve part numbers, instrument tags, and piping classes',
     icon: Scan,
     badge: 'Vision OCR',
-  },
-  {
-    title: 'ISO 10816 Vibration Analysis',
-    desc: 'Evaluate pump velocity telemetry against ISO 10816-3 Class I-IV vibration severity bands',
-    query: 'Perform ISO 10816-3 vibration severity evaluation on Feed Pump P-101 motor velocity telemetry (4.2 mm/s RMS)',
-    icon: Activity,
-    badge: 'ISO 10816',
   },
   {
     title: 'Generate Word & Excel Deliverables',

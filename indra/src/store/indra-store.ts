@@ -11,6 +11,7 @@ import {
   clearAllSessionsFromDB, 
   appendDeliverableToDB 
 } from '@/lib/db/session-repository';
+import type { GenerativeUISpec } from '@/components/generative-ui/types';
 
 // --- API Configuration ---
 export const API_BASE = 'http://localhost:8000';
@@ -71,6 +72,7 @@ export interface Message {
   toolExecution?: { code: string; output: string; language: string; toolName?: string };
   modelUsed?: string;
   isError?: boolean;
+  generativeUI?: GenerativeUISpec[];
   errorDetails?: {
     message: string;
     endpoint?: string;
@@ -206,6 +208,7 @@ export interface IndraState {
   loadedModels: ModelStatus[];
   ragSources: RAGSource[];
   detectedTags: string[];
+  selectedTag: string | null;
   activePIDDoc: KBDocument | null;
   isAgentWorking: boolean;
   inputValue: string;
@@ -274,6 +277,7 @@ export interface IndraState {
   addNetworkEvent: (event: NetworkEvent) => void;
   incrementBlockedCount: () => void;
   setDetectedTags: (tags: string[]) => void;
+  selectTag: (tag: string | null) => void;
   setActivePIDDoc: (doc: KBDocument | null) => void;
   abortTask: () => void;
 }
@@ -308,6 +312,7 @@ export const useIndraStore = create<IndraState>()(
       loadedModels: [],
       ragSources: [],
       detectedTags: [],
+      selectedTag: null,
       activePIDDoc: null,
       isAgentWorking: false,
       inputValue: '',
@@ -381,6 +386,7 @@ export const useIndraStore = create<IndraState>()(
         scheduledTasks: state.scheduledTasks.filter((t) => t.id !== id),
       })),
       setDetectedTags: (tags: string[]) => set({ detectedTags: tags }),
+      selectTag: (tag: string | null) => set({ selectedTag: tag }),
       setActivePIDDoc: (doc: KBDocument | null) => set({ 
         activePIDDoc: doc,
         ...(doc ? { isRightPaneOpen: true } : {})
@@ -875,39 +881,125 @@ export const useIndraStore = create<IndraState>()(
         };
         get().addDeliverable(certDeliverable);
 
-        const finalMarkdown = `### Sovereign Engineering Analysis Completed (Offline Simulation Mode)
+        const isPumpQuery = /pump|p-101|vibration|telemetry|gauge|setpoint|speed|form/i.test(promptText);
 
-#### 1. Inspection & Operational Verification
-- **Equipment Tag:** \`HX-4201\` (Crude Pre-Heat Exchanger Bank A)
-- **Associated Instruments:** Flow Control Valve \`FV-3102\`, Temperature Transmitter \`TI-4201\` (285°C), Pressure Indicator \`PI-3104\` (24.2 barg).
-- **Ultrasonic Thickness (UT) Survey:** Actual measured wall thickness \`0.4850 in\` across 12 inspection points.
+        let finalMarkdown = '';
+        if (isPumpQuery) {
+          finalMarkdown = `### Sovereign Equipment Status & Telemetry (P-101)
 
-#### 2. Deterministic Calculation Summary (ASME B31.3 §304.1.2)
+The sovereign neural agent has retrieved live telemetry for **Slurry Feed Pump P-101** from the local SCADA historian. Real-time vibration spectra and discharge pressure have been synthesized into interactive micro-frontends below.
 
-| Parameter | Symbol | Value | Units | Standard / Source |
-| :--- | :--- | :--- | :--- | :--- |
-| Design Pressure | $P$ | 450.0 | psig | Process Flow Sheet |
-| Outside Diameter | $D$ | 8.625 | in | NPS 8 Sch 40 |
-| Allowable Stress | $S$ | 20,000 | psi | ASTM A106 Grade B |
-| Quality Factor | $E$ | 1.00 | - | Seamless Pipe |
-| Temp. Coefficient | $Y$ | 0.40 | - | Ferritic Steel < 900°F |
-| Corrosion Allowance | $c$ | 0.0625 | in | Plant Piping Spec |
-| **Minimum Required ($t_{min}$)** | **$t_m$** | **0.1582** | **in** | **Eq. 3a Result** |
-| **Actual Measured** | **$t_{act}$** | **0.4850** | **in** | **UT NDT Inspection** |
-| **Remaining Life** | **$L_{rem}$** | **45.1** | **years** | **API-570 Clause 7.1** |
+\`\`\`gen-ui
+{
+  "component": "IndustrialGauge",
+  "props": {
+    "tag": "P-101",
+    "title": "Slurry Feed Pump P-101 Discharge Pressure",
+    "value": 78.4,
+    "min": 0,
+    "max": 100,
+    "unit": "psig",
+    "thresholds": { "normal": 70, "warning": 85, "critical": 95 },
+    "status": "warning",
+    "subtitle": "Crude Distillation Unit 1 • Header A"
+  }
+}
+\`\`\`
 
-#### 3. Verification Python Script
-\`\`\`python
-# ASME B31.3 Eq 3a Verification
-P, D, S, E, Y, c = 450.0, 8.625, 20000.0, 1.0, 0.4, 0.0625
-t_min = (P * D) / (2 * (S * E + P * Y)) + c
-remaining_life = (0.4850 - t_min) / 0.00725
-print(f"Required t_min: {t_min:.4f} in | Remaining Life: {remaining_life:.1f} years")
+#### Real-Time Tri-Axial Vibration Analysis (ISO 10816-3)
+Velocity readings are currently tracking in **Zone B (Satisfactory for Continued Service)** with intermittent harmonic peaks at 2x shaft running speed.
+
+\`\`\`gen-ui
+{
+  "component": "TelemetryChart",
+  "props": {
+    "tag": "P-101",
+    "title": "Feed Pump P-101 Vibration Telemetry",
+    "subtitle": "Drive End Bearing Velocity Spectrum",
+    "unit": "mm/s RMS",
+    "isoClass": "Class II",
+    "liveUpdate": true
+  }
+}
+\`\`\`
+
+#### Interactive DCS Setpoint Control Deck
+Use the control deck below to adjust VFD speed, modulate minimum flow recirculation valve \`FV-101\`, or queue setpoints for Human-in-the-Loop cryptographic sign-off.
+
+\`\`\`gen-ui
+{
+  "component": "ParameterControlForm",
+  "props": {
+    "tag": "P-101",
+    "title": "P-101 VFD & Spillback Setpoint Adjustment",
+    "subtitle": "Distributed Controller Loop FIC-101",
+    "equipmentMode": "AUTO",
+    "requireHITL": true
+  }
+}
+\`\`\`
+
+- **P&ID Cross-Reference:** Equipment tag \`P-101\` and recirculation valve \`FV-101\` highlighted on schematic.
+- **Compliance Status:** ISO 10816-3 Class II compliant; bearing lube temperature nominal at 64°C.`;
+        } else {
+          finalMarkdown = `### Sovereign Engineering Analysis Completed (Offline Simulation Mode)
+
+#### 1. Real-Time Interactive Wall Thickness Evaluator (ASME B31.3)
+Drag the parameter sensitivity controls below to evaluate design margin under varying operational pressures.
+
+\`\`\`gen-ui
+{
+  "component": "ASMEComplianceCard",
+  "props": {
+    "tag": "HX-4201",
+    "title": "ASME B31.3 §304.1.2 Interactive Wall Thickness Evaluator",
+    "initialPressure": 450,
+    "diameter": 8.625,
+    "allowableStress": 20000,
+    "corrosionAllowance": 0.0625,
+    "actualThickness": 0.4850
+  }
+}
+\`\`\`
+
+#### 2. Shell Operating Pressure Gauge
+\`\`\`gen-ui
+{
+  "component": "IndustrialGauge",
+  "props": {
+    "tag": "PI-3104",
+    "title": "HX-4201 Shell Operating Pressure",
+    "value": 310.5,
+    "min": 0,
+    "max": 600,
+    "unit": "psig",
+    "thresholds": { "normal": 400, "warning": 480, "critical": 550 },
+    "status": "optimal",
+    "subtitle": "High Pressure Steam Pre-Heater"
+  }
+}
+\`\`\`
+
+#### 3. Equipment Reliability Index
+\`\`\`gen-ui
+{
+  "component": "EquipmentHealthCard",
+  "props": {
+    "tag": "HX-4201",
+    "name": "Crude Pre-Heat Exchanger Bank A",
+    "type": "Shell & Tube Exchanger (TEMA Class R)",
+    "healthScore": 94,
+    "mtbfHours": 22000,
+    "operatingHours": 14200,
+    "lastInspectionDate": "2026-09-01"
+  }
+}
 \`\`\`
 
 #### 4. Statutory Decision
 - **Compliance Status:** **APPROVED FOR UNRESTRICTED CRUDE RUNS** (Safety Margin: \`+0.3268 in\`)
 - **Deliverable Generated:** [Inspection_Approval_HX4201.docx](#) compiled and cryptographically verified in the Sovereign Inspector pane.`;
+        }
 
         set((s) => ({
           isAgentWorking: false,

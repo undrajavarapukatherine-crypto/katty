@@ -63,6 +63,21 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     createAction: (router) => () => router.push('/audit'),
   },
   {
+    intent: 'SHOW_PUMP_STATUS',
+    label: 'Stream Pump P-101 Telemetry & Control Deck',
+    patterns: [
+      /\b(?:show|stream|pull\s+up|display|check)\s+(?:the\s+)?(?:status\s+of\s+)?(?:pump|p-?101|feed\s+pump)(?:\s+status|\s+telemetry)?\b/i,
+      /\bpump\s+(?:status|telemetry)\b/i,
+    ],
+    keywords: ['pump', 'p-101', 'telemetry', 'status', 'stream'],
+    baseConfidence: 0.92,
+    createAction: (router, store) => () => {
+      router.push('/workbench');
+      store.setInputValue('What is the status of pump P-101? Stream live telemetry gauge, vibration chart, and DCS setpoint control deck');
+      store.selectTag('P-101');
+    },
+  },
+  {
     intent: 'TOGGLE_SIDEBAR',
     label: 'Toggle Sidebar',
     patterns: [

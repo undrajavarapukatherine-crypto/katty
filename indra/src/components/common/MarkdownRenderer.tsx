@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Check, Copy } from 'lucide-react';
+import GenerativeUIBlock from '@/components/generative-ui/GenerativeUIBlock';
+import { parseGenerativeUISpec } from '@/lib/generative-ui/parser';
 
 function CodeBlock({ language, code }: { language: string; code: string }) {
   const [copied, setCopied] = useState(false);
@@ -71,8 +73,18 @@ const customComponents = {
       );
     }
 
-    const language = match ? match[1] : '';
-    return <CodeBlock language={language} code={codeString} />;
+    const rawLanguage = match ? match[1] : '';
+    const langLower = (rawLanguage || className || '').toLowerCase();
+    const isGenUI = langLower.includes('gen-ui') || langLower.includes('genui') || langLower.includes('ui') || langLower.includes('generative-ui');
+
+    if (isGenUI || (langLower.includes('json') && codeString.includes('"component"'))) {
+      const spec = parseGenerativeUISpec(codeString);
+      if (spec) {
+        return <GenerativeUIBlock spec={spec} />;
+      }
+    }
+
+    return <CodeBlock language={rawLanguage} code={codeString} />;
   },
   // Table support (GFM)
   table({ children }: any) {
