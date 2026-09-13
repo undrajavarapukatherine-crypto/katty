@@ -24,9 +24,10 @@ import {
 import { Button } from '@/components/ui/button';
 import useIndraStore, { API_BASE, type KBDocument, type EquipmentData } from '@/store/indra-store';
 import { useKBDocumentsQuery, useUploadKBDocMutation } from '@/lib/queries';
+import InteractivePIDCanvas from '@/components/canvas/InteractivePIDCanvas';
 
 export default function PIDViewer() {
-  const { detectedTags, activePIDDoc, setActivePIDDoc } = useIndraStore();
+  const { detectedTags, activePIDDoc, setActivePIDDoc, theme } = useIndraStore();
 
   const { data: allDocs = [], isLoading: loadingPids } = useKBDocumentsQuery();
   const uploadMutation = useUploadKBDocMutation();
@@ -153,72 +154,16 @@ export default function PIDViewer() {
         onChange={handleFileUpload}
       />
 
-      {/* Main Inspection Canvas */}
-      <div 
-        onClick={() => setIsExpanded(true)}
-        className="relative rounded-xl bg-slate-100/80 dark:bg-zinc-900/40 border border-slate-200/80 dark:border-zinc-800/60 overflow-hidden aspect-[4/3] cursor-pointer group hover:border-slate-300 dark:hover:border-zinc-700 transition-all flex items-center justify-center shadow-2xs"
-      >
-        {activePIDDoc || pids.length > 0 ? (
-          <>
-            <img
-              src={imageUrl}
-              alt="P&ID Diagram"
-              className="w-full h-full object-contain p-1.5 opacity-90 group-hover:opacity-100 transition-opacity"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-
-            {/* Dynamic Tag OCR Overlay Bounding Boxes */}
-            <div className="absolute inset-0 pointer-events-none p-3">
-              <div className="w-full h-full relative">
-                {tagsToShow.map((tag, idx) => {
-                  const pos = [
-                    { top: '25%', left: '20%' },
-                    { top: '55%', left: '45%' },
-                    { top: '35%', left: '70%' },
-                    { top: '70%', left: '25%' },
-                  ][idx % 4];
-
-                  const isSelected = selectedTag?.tag === tag;
-
-                  return (
-                    <div
-                      key={tag}
-                      style={pos}
-                      className={`absolute px-1.5 py-0.5 rounded text-[8px] font-mono font-bold tracking-tight border transition-all ${
-                        isSelected
-                          ? 'bg-violet-600 text-white border-violet-400 scale-110 shadow-md ring-1 ring-violet-300'
-                          : 'bg-white/90 dark:bg-violet-950/80 text-violet-700 dark:text-violet-300 border-violet-300 dark:border-violet-500/50 shadow-2xs'
-                      }`}
-                    >
-                      {tag}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Overlay hint */}
-            <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-white dark:from-zinc-950 via-white/80 dark:via-zinc-950/80 to-transparent flex items-center justify-between text-[9px] text-slate-500 dark:text-zinc-500 font-mono">
-              <span className="truncate max-w-[130px] font-semibold">{activePIDDoc?.filename || 'P&ID Diagram'}</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">LIVE VISION OCR</span>
-            </div>
-          </>
-        ) : (
-          <div 
-            onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-            className="flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-slate-200/50 dark:hover:bg-zinc-800/40 w-full h-full"
-          >
-            <FileImage className="w-8 h-8 text-slate-400 dark:text-zinc-600 mb-2" />
-            <span className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
-              {uploading ? 'Uploading P&ID...' : 'Upload P&ID Diagram'}
-            </span>
-            <span className="text-[10px] text-slate-400 dark:text-zinc-600 mt-1">
-              Supports PNG, JPG, SVG CAD schematics
-            </span>
-          </div>
-        )}
+      {/* Main Interactive WebGL / Vector Inspection Canvas */}
+      <div className="relative rounded-xl border border-slate-200/80 dark:border-zinc-800/60 overflow-hidden aspect-[4/3] bg-slate-900 shadow-2xs">
+        <InteractivePIDCanvas
+          imageUrl={imageUrl}
+          activeTag={selectedTag?.tag || null}
+          detectedTags={tagsToShow}
+          onSelectTag={handleTagClick}
+          theme={theme}
+          isExpanded={false}
+        />
       </div>
 
       {/* Identified Tags Selector */}
@@ -310,11 +255,14 @@ export default function PIDViewer() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="my-4 flex-1 overflow-auto rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#0c0c0e] flex items-center justify-center p-4 min-h-[400px]">
-            <img
-              src={imageUrl}
-              alt="P&ID Diagram Full"
-              className="max-w-full max-h-[550px] object-contain rounded-lg"
+          <div className="my-3 flex-1 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-950 overflow-hidden h-[580px]">
+            <InteractivePIDCanvas
+              imageUrl={imageUrl}
+              activeTag={selectedTag?.tag || null}
+              detectedTags={tagsToShow}
+              onSelectTag={handleTagClick}
+              theme={theme}
+              isExpanded={true}
             />
           </div>
 
