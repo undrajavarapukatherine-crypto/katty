@@ -41,6 +41,10 @@ export interface ElectronAPI {
   showNotification: (options: NativeNotificationOptions) => Promise<{ success: boolean; error?: string }>;
   getAppInfo: () => Promise<NativeAppInfo>;
   openPath: (targetPath: string) => Promise<string>;
+  openSubWindow: (type: 'pid' | 'audit' | 'monitor', options?: Record<string, any>) => Promise<{ success: boolean }>;
+  closeSubWindow: (type: 'pid' | 'audit' | 'monitor') => Promise<{ success: boolean }>;
+  broadcastState: (payload: any) => Promise<{ success: boolean }>;
+  onStateUpdated: (callback: (payload: any) => void) => () => void;
 }
 
 declare global {

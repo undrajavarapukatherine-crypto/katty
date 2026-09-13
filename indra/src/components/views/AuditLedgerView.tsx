@@ -13,10 +13,12 @@ import {
   AlertTriangle,
   FileCheck,
   Cpu,
-  Clock
+  Clock,
+  ExternalLink
 } from 'lucide-react';
 import { API_BASE, type AuditBlock, type PendingApproval } from '@/store/indra-store';
 import { useAuditLedgerQuery, useApprovalsQuery, useSignApprovalMutation } from '@/lib/queries';
+import { multiWindowSync } from '@/lib/sync/multi-window-sync';
 
 export default function AuditLedgerView() {
   const { data: ledgerData, isLoading: loadingLedger, refetch: fetchLedger } = useAuditLedgerQuery();
@@ -116,6 +118,15 @@ export default function AuditLedgerView() {
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loadingLedger ? 'animate-spin' : ''}`} />
             <span>Verify</span>
+          </button>
+
+          <button
+            onClick={() => multiWindowSync.openWindow('audit')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300 font-mono transition-colors shadow-2xs cursor-pointer font-bold"
+            title="Detach Ledger to Dedicated Popout Window"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Pop Out Window</span>
           </button>
         </div>
       </div>

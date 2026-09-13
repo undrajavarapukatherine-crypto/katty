@@ -12,7 +12,8 @@ import {
   Layers, 
   FileImage, 
   AlertCircle,
-  Cpu
+  Cpu,
+  Monitor
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -25,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import useIndraStore, { API_BASE, type KBDocument, type EquipmentData } from '@/store/indra-store';
 import { useKBDocumentsQuery, useUploadKBDocMutation } from '@/lib/queries';
 import InteractivePIDCanvas from '@/components/canvas/InteractivePIDCanvas';
+import { multiWindowSync } from '@/lib/sync/multi-window-sync';
 
 export default function PIDViewer() {
   const { detectedTags, activePIDDoc, setActivePIDDoc, theme } = useIndraStore();
@@ -129,6 +131,13 @@ export default function PIDViewer() {
           </h2>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => multiWindowSync.openWindow('pid')}
+            className="text-slate-400 hover:text-violet-600 dark:text-zinc-500 dark:hover:text-violet-400 p-1 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"
+            title="Tear Off to Monitor 2 (Multi-Monitor Mode)"
+          >
+            <Monitor className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200 p-1 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"

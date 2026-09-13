@@ -121,6 +121,120 @@ ipcMain.handle('shell:openPath', async (event, targetPath) => {
   return await shell.openPath(targetPath);
 });
 
+// Multi-Window & Multi-Monitor Sub-Window Manager
+const subWindows = new Map();
+
+function createSubWindow(type, options = {}) {
+  // If window already open, focus it
+  const existingWin = subWindows.get(type);
+  if (existingWin && !existingWin.isDestroyed()) {
+    existingWin.focus();
+    return existingWin;
+  }
+
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  let winConfig = {
+    width: 1200,
+    height: 800,
+    backgroundColor: '#0a0a0a',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+      webSecurity: true,
+    },
+  };
+
+  let targetRoute = `/detach/${type}`;
+
+  if (type === 'pid') {
+    winConfig = {
+      ...winConfig,
+      width: options.width || 1280,
+      height: options.height || 850,
+      minWidth: 800,
+      minHeight: 600,
+      title: 'INDRA — P&ID Engineering Schematic (Monitor 2)',
+    };
+  } else if (type === 'audit') {
+    winConfig = {
+      ...winConfig,
+      width: options.width || 1200,
+      height: options.height || 850,
+      minWidth: 800,
+      minHeight: 600,
+      title: 'INDRA — Merkle Audit Ledger & 3-Tier HITL',
+    };
+  } else if (type === 'monitor') {
+    winConfig = {
+      ...winConfig,
+      width: 400,
+      height: 260,
+      frame: false,
+      transparent: true,
+      alwaysOnTop: true,
+      resizable: false,
+      skipTaskbar: false,
+      title: 'INDRA — Sovereign Egress Monitor',
+    };
+  }
+
+  const subWin = new BrowserWindow(winConfig);
+  subWin.loadURL(`${appUrl}${targetRoute}`);
+
+  // Prevent egress outside localhost
+  subWin.webContents.on('will-navigate', (event, url) => {
+    const parsed = new URL(url);
+    if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+      event.preventDefault();
+      console.warn(`[AIR-GAP IPC BLOCKED] Egress navigation from subwindow to ${url} aborted.`);
+    }
+  });
+
+  subWin.on('closed', () => {
+    subWindows.delete(type);
+    // Notify main window that sub-window closed
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('window:state-updated', {
+        type: 'WINDOW_CLOSED',
+        windowType: type,
+      });
+    }
+  });
+
+  subWindows.set(type, subWin);
+  return subWin;
+}
+
+// Multi-Window IPC Handlers
+ipcMain.handle('window:open', async (event, { type, options }) => {
+  createSubWindow(type, options);
+  return { success: true };
+});
+
+ipcMain.handle('window:close', async (event, type) => {
+  const win = subWindows.get(type);
+  if (win && !win.isDestroyed()) {
+    win.close();
+    subWindows.delete(type);
+  }
+  return { success: true };
+});
+
+ipcMain.handle('window:state-sync', (event, payload) => {
+  // Broadcast state updates across all open windows (main and subwindows)
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents !== event.sender) {
+    mainWindow.webContents.send('window:state-updated', payload);
+  }
+  for (const [winType, win] of subWindows.entries()) {
+    if (win && !win.isDestroyed() && win.webContents !== event.sender) {
+      win.webContents.send('window:state-updated', payload);
+    }
+  }
+  return { success: true };
+});
+
 // App Lifecycle
 app.whenReady().then(() => {
   createWindow();
