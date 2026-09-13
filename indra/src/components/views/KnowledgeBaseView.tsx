@@ -19,7 +19,10 @@ import {
   ZoomIn,
   ZoomOut,
   Scan,
-  FolderOpen
+  FolderOpen,
+  Zap,
+  Cpu,
+  HardDrive
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -27,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import useIndraStore, { API_BASE, type KBDocument } from '@/store/indra-store';
 import { useKBDocumentsQuery, useUploadKBDocMutation, useDeleteKBDocMutation } from '@/lib/queries';
 import { useNativeBridge } from '@/hooks/useNativeBridge';
+import { useLocalRAG } from '@/hooks/useLocalRAG';
 
 function DocumentTableSkeleton() {
   return (
@@ -80,12 +84,27 @@ function DocumentTableSkeleton() {
 export default function KnowledgeBaseView() {
   const { setActivePIDDoc } = useIndraStore();
 
-  const { data: documents = [], isLoading: loading, refetch: fetchDocuments } = useKBDocumentsQuery();
+  const { data: remoteDocuments = [], isLoading: loadingRemote, refetch: fetchDocuments } = useKBDocumentsQuery();
   const uploadMutation = useUploadKBDocMutation();
   const deleteMutation = useDeleteKBDocMutation();
 
   const { isNative, openFileDialog } = useNativeBridge();
+  const {
+    isModelLoaded,
+    isModelLoading,
+    device,
+    ingestion,
+    localDocs,
+    stats: vectorStats,
+    lastSearchLatency,
+    loadModel,
+    ingestFileLocally,
+    searchLocally,
+    deleteLocalDocument,
+    refreshLocalData,
+  } = useLocalRAG();
 
+  const [storageEngine, setStorageEngine] = useState<'local' | 'backend'>('local');
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
@@ -96,9 +115,38 @@ export default function KnowledgeBaseView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 2. Upload document to POST /api/kb/documents
+  // Preload local embedding model on mount
+  useEffect(() => {
+    loadModel();
+  }, [loadModel]);
+
+  // Unified document list based on active storage engine
+  const displayedDocs = storageEngine === 'local'
+    ? localDocs.map((d) => ({
+        id: d.id,
+        name: d.filename,
+        filename: d.filename,
+        size: `${(d.size / 1024).toFixed(1)} KB`,
+        chunks: d.chunksCount,
+        indexed_at: d.indexedAt,
+        status: d.status,
+        engine: d.engine,
+        isLocal: true,
+      }))
+    : remoteDocuments;
+
+  const loading = storageEngine === 'local' ? false : loadingRemote;
+
+  // 2. Upload document (Local WASM Vector Embedding or Remote FastAPI)
   const handleUpload = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
+
+    if (storageEngine === 'local') {
+      for (let i = 0; i < files.length; i++) {
+        await ingestFileLocally(files[i]);
+      }
+      return;
+    }
 
     setUploading(true);
     for (let i = 0; i < files.length; i++) {
@@ -132,9 +180,14 @@ export default function KnowledgeBaseView() {
     }
   };
 
-  // 3. Delete document via DELETE /api/kb/documents/{id}
+  // 3. Delete document
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Permanently remove "${name}" from the offline RAG knowledge base?`)) return;
+
+    if (storageEngine === 'local') {
+      await deleteLocalDocument(id, name);
+      return;
+    }
 
     try {
       await deleteMutation.mutateAsync(id);
@@ -145,7 +198,7 @@ export default function KnowledgeBaseView() {
     }
   };
 
-  // 4. Offline search via GET /api/kb/search?q=...
+  // 4. Vector / Semantic search (Local WASM Cosine Search vs Remote API)
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
@@ -153,8 +206,22 @@ export default function KnowledgeBaseView() {
       return;
     }
 
+    setSearching(true);
+
+    if (storageEngine === 'local') {
+      try {
+        const localHits = await searchLocally(searchQuery.trim(), 5);
+        setSearchResults(localHits);
+      } catch (err) {
+        console.error('Local vector search error:', err);
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+      return;
+    }
+
     try {
-      setSearching(true);
       const res = await fetch(`${API_BASE}/api/kb/search?q=${encodeURIComponent(searchQuery.trim())}`);
       if (res.ok) {
         const data = await res.json();
@@ -223,7 +290,7 @@ export default function KnowledgeBaseView() {
               Offline RAG Knowledge Base
             </h1>
             <span className="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50 font-mono font-bold">
-              AIR-GAPPED VECTORSTORE
+              {storageEngine === 'local' ? 'IN-BROWSER WASM VECTOR DB' : 'AIR-GAPPED VECTORSTORE'}
             </span>
             {isNative && (
               <Badge variant="violet">
@@ -232,21 +299,81 @@ export default function KnowledgeBaseView() {
             )}
           </div>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-mono">
-            Index plant SOPs, ASME B31.3 standards, P&ID CAD schematics, and equipment data with zero external egress.
+            {storageEngine === 'local'
+              ? `Client-side WASM inference (all-MiniLM-L6-v2 ${device.toUpperCase()}) with zero backend calls • IndexedDB persistent storage`
+              : 'Index plant SOPs, ASME B31.3 standards, P&ID CAD schematics, and equipment data with zero external egress.'}
           </p>
         </div>
 
-        <button
-          onClick={() => fetchDocuments()}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-xs text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors font-mono cursor-pointer shadow-2xs"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Storage Engine Switcher */}
+          <div className="flex items-center bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs font-mono shadow-2xs">
+            <button
+              onClick={() => setStorageEngine('local')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                storageEngine === 'local'
+                  ? 'bg-violet-600 text-white font-bold shadow-xs'
+                  : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-300" />
+              <span>WASM Vector DB</span>
+            </button>
+            <button
+              onClick={() => setStorageEngine('backend')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                storageEngine === 'backend'
+                  ? 'bg-violet-600 text-white font-bold shadow-xs'
+                  : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              <HardDrive className="w-3.5 h-3.5" />
+              <span>FastAPI Backend</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => storageEngine === 'local' ? refreshLocalData() : fetchDocuments()}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-xs text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors font-mono cursor-pointer shadow-2xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-6 scrollbar-thin dark:scrollbar-thumb-zinc-700 pr-1">
+        {/* Real-time WASM Vector Ingestion Progress */}
+        {ingestion && (
+          <div className="p-4 rounded-2xl bg-violet-950/40 border border-violet-800/60 shadow-lg text-xs font-mono animate-in fade-in duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-violet-400 animate-spin" />
+                <span className="font-bold text-violet-200 uppercase tracking-wider">
+                  Client-Side WASM Ingestion: {ingestion.filename}
+                </span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-900/60 text-violet-300 font-bold border border-violet-700">
+                {ingestion.progressPercent}% • {device.toUpperCase()}
+              </span>
+            </div>
+            
+            {/* Progress bar */}
+            <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden mb-2">
+              <div 
+                className="bg-gradient-to-r from-violet-500 to-emerald-400 h-full transition-all duration-300 rounded-full"
+                style={{ width: `${ingestion.progressPercent}%` }}
+              />
+            </div>
+
+            <div className="flex justify-between items-center text-[10px] text-zinc-400">
+              <span>{ingestion.message}</span>
+              <span className="text-emerald-400 font-bold">Zero Remote Backend Calls</span>
+            </div>
+          </div>
+        )}
+
         {/* Drag and drop upload zone (AI Doodle Violet Theme) */}
         <div
           onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -355,9 +482,17 @@ export default function KnowledgeBaseView() {
                 <span className="text-xs font-mono font-bold text-slate-800 dark:text-zinc-200">
                   Search Results ({searchResults.length})
                 </span>
-                <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50 font-semibold">
-                  Offline Semantic Retrieval
-                </span>
+                <div className="flex items-center gap-2">
+                  {lastSearchLatency !== null && storageEngine === 'local' && (
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/60 flex items-center gap-1">
+                      <Zap className="w-2.5 h-2.5 text-amber-300" />
+                      <span>{lastSearchLatency}ms (Zero WAN)</span>
+                    </span>
+                  )}
+                  <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50 font-semibold">
+                    {storageEngine === 'local' ? 'WASM Cosine Vector Retrieval' : 'Offline Semantic Retrieval'}
+                  </span>
+                </div>
               </div>
 
               {searchResults.length === 0 ? (
@@ -372,11 +507,18 @@ export default function KnowledgeBaseView() {
                         <span className="font-mono text-violet-700 dark:text-violet-400 font-bold">
                           {res.filename || res.document || 'Document'}
                         </span>
-                        {res.score !== undefined && (
-                          <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 font-medium">
-                            Relevance: {Math.round(res.score * 100)}%
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {res.matchType && (
+                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-violet-950/60 text-violet-300 border border-violet-800/50 font-bold">
+                              {res.matchType === 'HYBRID_EXACT' ? 'EXACT + VECTOR' : 'SEMANTIC VECTOR'}
+                            </span>
+                          )}
+                          {(res.scorePercent !== undefined || res.score !== undefined) && (
+                            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                              {res.scorePercent !== undefined ? `${res.scorePercent}% Match` : `Relevance: ${Math.round(res.score * 100)}%`}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <p className="text-slate-700 dark:text-zinc-300 leading-relaxed font-mono text-[11px]">
                         {res.content || res.text || res.snippet}
@@ -393,21 +535,23 @@ export default function KnowledgeBaseView() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-              <span>Indexed Documents</span>
-              {loading && documents.length === 0 ? (
+              <span>{storageEngine === 'local' ? 'Local WASM Indexed Documents' : 'Indexed Documents'}</span>
+              {loading && displayedDocs.length === 0 ? (
                 <span className="inline-block w-8 h-3.5 rounded-md bg-slate-200 dark:bg-zinc-800 animate-pulse" />
               ) : (
-                <span>({documents.length})</span>
+                <span>({displayedDocs.length})</span>
               )}
             </h2>
             <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500">
-              GET /api/kb/documents
+              {storageEngine === 'local'
+                ? `INDEXEDDB • ${vectorStats?.chunkCount || 0} CHUNKS • ${device.toUpperCase()} 384D`
+                : 'GET /api/kb/documents'}
             </span>
           </div>
 
-          {loading && documents.length === 0 ? (
+          {loading && displayedDocs.length === 0 ? (
             <DocumentTableSkeleton />
-          ) : documents.length === 0 ? (
+          ) : displayedDocs.length === 0 ? (
             <div className="text-xs text-slate-400 dark:text-zinc-500 italic p-8 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 shadow-2xs">
               No documents indexed yet. Upload plant maintenance SOPs, inspection records, or P&ID diagrams above.
             </div>
@@ -424,7 +568,7 @@ export default function KnowledgeBaseView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-                  {documents.map((doc) => {
+                  {displayedDocs.map((doc: any) => {
                     const isDrawing = (doc.filename || '').toLowerCase().includes('pid') || 
                       (doc.filename || '').toLowerCase().endsWith('.png') ||
                       (doc.filename || '').toLowerCase().endsWith('.jpg');
@@ -442,10 +586,15 @@ export default function KnowledgeBaseView() {
                           <span className="truncate max-w-xs font-mono text-xs font-medium text-slate-800 dark:text-zinc-200">
                             {doc.filename || doc.name}
                           </span>
+                          {doc.isLocal && (
+                            <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60">
+                              WASM VECTOR
+                            </span>
+                          )}
                         </td>
                         <td className="p-3.5 text-slate-500 dark:text-zinc-400">{typeof doc.size === 'number' ? `${(doc.size / 1024).toFixed(1)} KB` : doc.size || '-'}</td>
-                        <td className="p-3.5 text-slate-500 dark:text-zinc-400">{doc.chunk_count || 1}</td>
-                        <td className="p-3.5 text-slate-400 dark:text-zinc-500">{doc.created_at || doc.uploaded_at || 'Recent'}</td>
+                        <td className="p-3.5 text-slate-500 dark:text-zinc-400">{doc.chunks || doc.chunk_count || 1}</td>
+                        <td className="p-3.5 text-slate-400 dark:text-zinc-500">{doc.indexed_at ? new Date(doc.indexed_at).toLocaleDateString() : doc.created_at || doc.uploaded_at || 'Recent'}</td>
                         <td className="p-3.5 text-right space-x-2">
                           {isDrawing && (
                             <button
