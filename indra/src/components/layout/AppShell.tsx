@@ -32,6 +32,7 @@ import { multiWindowSync } from '@/lib/sync/multi-window-sync';
 
 const navLabels: Record<string, string> = {
   workbench: 'Agent Workbench',
+  canvas: 'Spatial Canvas Workspace',
   kb: 'Knowledge Base (RAG)',
   audit: 'Merkle Audit Ledger',
 };
@@ -82,7 +83,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pendingApprovals]);
 
   // Determine active navigation segment from current pathname
-  const activeNav: 'workbench' | 'kb' | 'audit' = pathname.startsWith('/kb')
+  const activeNav: 'workbench' | 'canvas' | 'kb' | 'audit' = pathname.startsWith('/canvas')
+    ? 'canvas'
+    : pathname.startsWith('/kb')
     ? 'kb'
     : pathname.startsWith('/audit')
     ? 'audit'

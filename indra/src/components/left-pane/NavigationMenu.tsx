@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import { 
   Bot, 
   Database, 
-  ShieldCheck
+  ShieldCheck,
+  Network
 } from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
 import { useApprovalsQuery } from '@/lib/queries';
@@ -22,6 +23,13 @@ export default function NavigationMenu() {
       label: 'Agent Workbench', 
       icon: Bot,
       desc: 'Sovereign AI Reasoning Workspace'
+    },
+    { 
+      id: 'canvas' as const, 
+      href: '/canvas',
+      label: 'Spatial Canvas', 
+      icon: Network,
+      desc: 'Infinite 2D Node Workspace'
     },
     { 
       id: 'kb' as const, 

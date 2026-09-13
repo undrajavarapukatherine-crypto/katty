@@ -188,7 +188,7 @@ export interface WatchdogTask {
 
 export interface IndraState {
   // Navigation & Workspace
-  activeNav: 'workbench' | 'kb' | 'audit';
+  activeNav: 'workbench' | 'canvas' | 'kb' | 'audit';
   activeModel: string;
   modelReason?: string;
   isSidebarOpen: boolean;
@@ -227,7 +227,7 @@ export interface IndraState {
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
   setInputValue: (value: string) => void;
-  setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => void;
+  setActiveNav: (nav: 'workbench' | 'canvas' | 'kb' | 'audit') => void;
   cycleNav: (direction: 'forward' | 'backward') => void;
   setActiveModel: (model: string) => void;
   toggleSidebar: () => void;
@@ -285,7 +285,7 @@ export interface IndraState {
 let networkWs: WebSocket | null = null;
 let taskWs: WebSocket | null = null;
 
-const NAV_VIEWS: ('workbench' | 'kb' | 'audit')[] = ['workbench', 'kb', 'audit'];
+const NAV_VIEWS: ('workbench' | 'canvas' | 'kb' | 'audit')[] = ['workbench', 'canvas', 'kb', 'audit'];
 
 export const useIndraStore = create<IndraState>()(
   persist(
@@ -359,7 +359,7 @@ export const useIndraStore = create<IndraState>()(
       },
 
       setInputValue: (value: string) => set({ inputValue: value }),
-      setActiveNav: (nav: 'workbench' | 'kb' | 'audit') => set({ activeNav: nav }),
+      setActiveNav: (nav: 'workbench' | 'canvas' | 'kb' | 'audit') => set({ activeNav: nav }),
       cycleNav: (direction: 'forward' | 'backward') => {
         const current = get().activeNav;
         const currentIndex = NAV_VIEWS.indexOf(current);

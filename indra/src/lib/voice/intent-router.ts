@@ -41,6 +41,17 @@ const INTENT_DEFINITIONS: IntentDefinition[] = [
     createAction: (router) => () => router.push('/workbench'),
   },
   {
+    intent: 'NAVIGATE_CANVAS',
+    label: 'Navigate to Spatial Canvas',
+    patterns: [
+      /\b(?:go\s+to|open|show|pull\s+up|switch\s+to|navigate\s+to)\s+(?:the\s+)?(?:spatial\s*canvas|canvas|infinite\s*canvas|node\s*workspace|graph\s*view)\b/i,
+      /\b(?:spatial\s*canvas|canvas\b)/i,
+    ],
+    keywords: ['canvas', 'spatial', 'infinite', 'nodes', 'graph'],
+    baseConfidence: 0.88,
+    createAction: (router) => () => router.push('/canvas'),
+  },
+  {
     intent: 'NAVIGATE_KB',
     label: 'Navigate to Knowledge Base',
     patterns: [
