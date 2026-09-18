@@ -18,8 +18,7 @@ import {
   Lock, 
   ShieldCheck, 
   Sun, 
-  Moon,
-  Radio
+  Moon
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -162,15 +161,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <span className="font-semibold text-slate-800 dark:text-zinc-200">ON-PREMISE AIR-GAPPED</span>
           </div>
 
-          {/* Floating Sovereign Monitor HUD Popout */}
-          <button
-            onClick={() => multiWindowSync.openWindow('monitor')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 transition-all cursor-pointer font-medium shadow-xs"
-            title="Pop Out Floating Sovereign Network HUD (Always on Top Desktop Overlay)"
-          >
-            <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-            <span className="font-semibold text-slate-800 dark:text-zinc-200">HUD Widget</span>
-          </button>
 
           {isNative && (
             <Badge variant="violet" className="py-1 px-2.5">
