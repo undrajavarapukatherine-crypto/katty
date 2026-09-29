@@ -18,16 +18,11 @@ import {
   ShieldCheck, 
   Sun, 
   Moon,
-  Presentation,
   Clock,
   Download,
   AlertTriangle,
-  Cpu,
-  Server,
-  Search,
   Volume2,
   VolumeX,
-  Keyboard
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -97,11 +92,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // DCS Air-Gap Telemetry, Synchronized 1Hz UTC Clock & Audit Recording Engine
   const {
     utcTime,
-    apiLatencyMs,
-    isApiAlive,
-    merkleRootPreview,
-    merkleRootRaw,
-    gpuLoad,
     isRecording,
     recordingDuration,
     eventCount,
@@ -299,18 +289,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             )}
           </button>
 
-          {/* Control Room Shortcuts Pill */}
-          <div 
-            className="hidden 2xl:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/5 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 font-mono text-[10px] text-slate-500 dark:text-zinc-400 select-none"
-            title="DCS Control Room Ergonomic Keybindings"
-          >
-            <Keyboard className="w-3 h-3 text-slate-400 dark:text-zinc-500" />
-            <span><strong className="text-slate-800 dark:text-zinc-200">1-4</strong> Panes</span>
-            <span className="text-slate-300 dark:text-zinc-700">•</span>
-            <span><strong className="text-slate-800 dark:text-zinc-200">Ctrl+↵</strong> Transmit</span>
-            <span className="text-slate-300 dark:text-zinc-700">•</span>
-            <span><strong className="text-rose-600 dark:text-rose-400">Esc</strong> Trip</span>
-          </div>
 
           {/* Theme Switcher Toggle */}
           <button
