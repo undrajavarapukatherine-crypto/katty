@@ -174,10 +174,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [initLocalDB, setTheme, syncHistoryWithBackend]);
 
+  // Ensure window scroll stays at 0, 0 when toggling sidebars or routes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  }, [isSidebarOpen, pathname]);
+
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-zinc-100 select-none">
+    <div className="flex flex-col h-screen w-full max-w-full overflow-hidden bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-zinc-100 select-none">
       {/* 1. Top DCS Sovereign Header Bar */}
-      <header className="h-16 bg-white dark:bg-zinc-950 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-5 text-xs z-50">
+      <header className="h-16 bg-white dark:bg-zinc-950 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-5 text-xs z-50 w-full max-w-full overflow-hidden">
         {/* Left: App Title, Logo & Live Synchronized UTC Clock */}
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-3 group">
@@ -367,7 +374,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* 2. Secondary DCS Navigation & Air-Gap Telemetry Toolbar */}
-      <div className="h-11 bg-white/85 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between px-3 sm:px-4 text-xs overflow-x-auto no-scrollbar">
+      <div className="h-11 bg-white/85 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between px-3 sm:px-4 text-xs overflow-x-auto no-scrollbar w-full max-w-full">
         {/* Left: Sidebar Toggle & Ergonomic Quick Navigation Bar */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button 
@@ -466,12 +473,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* 3. Main Layout with Routed Children Content */}
-      <main className="flex flex-1 min-h-0 overflow-hidden relative bg-[#f8fafc] dark:bg-[#0a0a0a]">
+      <main className="flex flex-1 min-h-0 min-w-0 w-full overflow-hidden relative bg-[#f8fafc] dark:bg-[#0a0a0a]">
         {/* Pane 1: Left Pane (w-64) */}
         {isSidebarOpen && <LeftPane />}
 
         {/* Pane 2: Routed Content (Workbench, KB, or Audit) */}
-        {children}
+        <div className="flex-1 min-w-0 w-full h-full overflow-hidden flex flex-col relative">
+          {children}
+        </div>
       </main>
 
       {/* 4. Settings / Sovereign Diagnostics Modal */}

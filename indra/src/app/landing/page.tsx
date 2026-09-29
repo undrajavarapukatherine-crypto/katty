@@ -21,9 +21,9 @@ export const metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white dark:selection:text-slate-950 transition-colors duration-150">
+    <div className="flex-1 min-w-0 w-full h-full overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white dark:selection:text-slate-950 transition-colors duration-150">
       {/* 1. Header / Navigation */}
-      <header className="border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 backdrop-blur sticky top-0 z-50 transition-colors">
+      <header className="w-full border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 backdrop-blur sticky top-0 z-50 transition-colors flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex-shrink-0">
@@ -67,7 +67,7 @@ export default function LandingPage() {
       </header>
 
       {/* 2. Hero Section — Concrete, High-Density Industrial Value Proposition */}
-      <section className="border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 py-16 sm:py-24 transition-colors">
+      <section className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 py-16 sm:py-24 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="max-w-4xl space-y-6">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-mono shadow-2xs">
@@ -151,7 +151,7 @@ export default function LandingPage() {
       </section>
 
       {/* 3. Engineering Capabilities & Technical Architecture */}
-      <section id="architecture" className="py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 transition-colors">
+      <section id="architecture" className="w-full py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mb-12">
             <span className="text-xs font-mono font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Subsystem Breakdown</span>
@@ -234,7 +234,7 @@ export default function LandingPage() {
       </section>
 
       {/* 4. Standards Compliance Section */}
-      <section id="standards" className="py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 transition-colors">
+      <section id="standards" className="w-full py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mb-10">
             <span className="text-xs font-mono font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Statutory Engineering Alignment</span>
@@ -291,7 +291,7 @@ export default function LandingPage() {
       </section>
 
       {/* 5. Air-Gap & Security Architecture Section */}
-      <section id="air-gap" className="py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 transition-colors">
+      <section id="air-gap" className="w-full py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mb-10">
             <span className="text-xs font-mono font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Cybersecurity &amp; Containment</span>
@@ -332,7 +332,7 @@ export default function LandingPage() {
       </section>
 
       {/* 6. Direct Action Section */}
-      <section className="py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 transition-colors">
+      <section className="w-full py-16 sm:py-20 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 py-16 sm:py-24 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Access the Sovereign Workbench</h2>
@@ -360,7 +360,7 @@ export default function LandingPage() {
       </section>
 
       {/* 7. Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-10 text-xs text-slate-500 dark:text-slate-400 font-mono transition-colors">
+      <footer className="w-full border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-10 text-xs text-slate-500 dark:text-slate-400 font-mono transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="relative w-5 h-5 rounded overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
