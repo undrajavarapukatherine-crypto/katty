@@ -61,7 +61,7 @@ export const ANSI_PAPER_FORMATS: Record<'A0' | 'A1' | 'A2' | 'A3' | 'A4' | 'NONE
   A0: {
     id: 'A0',
     name: 'ANSI / ISO A0',
-    label: 'A0 (1189 × 841 mm) — Major Refinery Master Sheet',
+    label: 'A0 (1189 x 841 mm) - Major Plant Master Sheet',
     width: 2378,
     height: 1682,
     mmWidth: 1189,
@@ -72,7 +72,7 @@ export const ANSI_PAPER_FORMATS: Record<'A0' | 'A1' | 'A2' | 'A3' | 'A4' | 'NONE
   A1: {
     id: 'A1',
     name: 'ANSI / ISO A1',
-    label: 'A1 (841 × 594 mm) — Standard Process Unit P&ID',
+    label: 'A1 (841 × 594 mm) - Standard Process Unit P&ID',
     width: 1682,
     height: 1188,
     mmWidth: 841,
@@ -83,7 +83,7 @@ export const ANSI_PAPER_FORMATS: Record<'A0' | 'A1' | 'A2' | 'A3' | 'A4' | 'NONE
   A2: {
     id: 'A2',
     name: 'ANSI / ISO A2',
-    label: 'A2 (594 × 420 mm) — Package Unit Schematic',
+    label: 'A2 (594 × 420 mm) - Package Unit Schematic',
     width: 1188,
     height: 840,
     mmWidth: 594,
@@ -94,7 +94,7 @@ export const ANSI_PAPER_FORMATS: Record<'A0' | 'A1' | 'A2' | 'A3' | 'A4' | 'NONE
   A3: {
     id: 'A3',
     name: 'ANSI / ISO A3',
-    label: 'A3 (420 × 297 mm) — Sub-System Skid Flowsheet',
+    label: 'A3 (420 × 297 mm) - Sub-System Skid Flowsheet',
     width: 840,
     height: 594,
     mmWidth: 420,
@@ -105,7 +105,7 @@ export const ANSI_PAPER_FORMATS: Record<'A0' | 'A1' | 'A2' | 'A3' | 'A4' | 'NONE
   A4: {
     id: 'A4',
     name: 'ANSI / ISO A4',
-    label: 'A4 (297 × 210 mm) — Single Loop Instrument Diagram',
+    label: 'A4 (297 × 210 mm) - Single Loop Instrument Diagram',
     width: 594,
     height: 420,
     mmWidth: 297,
@@ -131,11 +131,11 @@ export const PIPING_LINE_SPECS: LineSpec[] = [
     id: 'spec-p-16',
     label: '16"-P-101-A1A',
     size: '16"',
-    service: 'Crude Hydrocarbon Process Feed',
+    service: 'process stream Hydrocarbon Process Feed',
     serviceCode: 'P',
     materialClass: 'CS 150# (A106-B)',
     color: '#10b981', // emerald
-    description: 'Crude suction/discharge process transfer line',
+    description: 'process stream suction/discharge process transfer line',
   },
   {
     id: 'spec-p-12',
@@ -184,7 +184,7 @@ export const PIPING_LINE_SPECS: LineSpec[] = [
     service: 'Medium Pressure Superheated Steam',
     serviceCode: 'S',
     materialClass: 'Cr-Mo Steel 300# (A335-P11)',
-    color: '#8b5cf6', // violet
+    color: '#06b6d4', // cyan
     description: 'Utility stripping steam injection line',
   },
   {
@@ -646,7 +646,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
   {
     id: 'asset-col-01',
     tag: 'C-301',
-    name: 'Crude Fractionation Distillation Column',
+    name: 'process stream Fractionation Distillation Column',
     category: 'columns',
     standard: 'ASME Sec VIII Div 2 / API 510',
     subType: 'Multi-Draw Tray Column (54 Trays)',
@@ -662,7 +662,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Overhead Vapor Line', position: 'top' },
       { id: 'drain', type: 'drain', label: 'Side-Stream Draw', position: 'right' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'column-trayed',
   },
   {
@@ -683,7 +683,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Sweet Gas Vent', position: 'top' },
       { id: 'drain', type: 'drain', label: 'Lean Solvent In', position: 'left' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'column-packed',
   },
   {
@@ -704,7 +704,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Vapor Return to Main Column', position: 'right' },
       { id: 'drain', type: 'drain', label: 'Stripping Steam In', position: 'left' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'column-stripper',
   },
   {
@@ -725,7 +725,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Off-Gas Vent to Flare', position: 'top' },
       { id: 'drain', type: 'drain', label: 'Water Boot Drain', position: 'right' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'vessel-vertical',
   },
   {
@@ -746,7 +746,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Vapor Header to K-101', position: 'top' },
       { id: 'drain', type: 'drain', label: 'Produced Water Out', position: 'bottom' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'vessel-horizontal',
   },
   {
@@ -767,7 +767,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Vent', position: 'top' },
       { id: 'drain', type: 'drain', label: 'Separated Water Drain', position: 'bottom' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'vessel-coalescer',
   },
   {
@@ -788,7 +788,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'PSV Relief Nozzle', position: 'right' },
       { id: 'drain', type: 'drain', label: 'Condensed Slop Drain', position: 'bottom' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'vessel-vertical',
   },
   {
@@ -809,7 +809,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Flashed Offgas Out', position: 'top' },
       { id: 'drain', type: 'drain', label: 'Boot Purge', position: 'right' },
     ],
-    color: '#8b5cf6',
+    color: '#06b6d4',
     symbol: 'vessel-horizontal',
   },
   {
@@ -831,7 +831,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Safety Blowdown BDV', position: 'right' },
       { id: 'drain', type: 'drain', label: 'Quench H2 Header', position: 'left' },
     ],
-    color: '#a855f7',
+    color: '#06b6d4',
     symbol: 'reactor-catalytic',
   },
   {
@@ -852,7 +852,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { id: 'vent', type: 'vent', label: 'Spent Cat to Regen', position: 'bottom' },
       { id: 'drain', type: 'drain', label: 'Feed Oil Atomizing Steam', position: 'right' },
     ],
-    color: '#a855f7',
+    color: '#06b6d4',
     symbol: 'reactor-fcc',
   },
 
@@ -1317,7 +1317,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
   {
     id: 'asset-tk-02',
     tag: 'TK-602',
-    name: 'External Floating Roof Crude Storage Tank',
+    name: 'External Floating Roof process stream Storage Tank',
     category: 'tanks',
     standard: 'API 650 Annex C',
     subType: 'Double-Deck Pontoon Floating Roof Tank',
@@ -1328,7 +1328,7 @@ export const REGISTERED_EQUIPMENT_CATALOG: EquipmentAsset[] = [
       { label: 'VOC Loss Red.', value: '98.5%' },
     ],
     ports: [
-      { id: 'inlet', type: 'inlet', label: 'Crude Discharge In', position: 'left' },
+      { id: 'inlet', type: 'inlet', label: 'process stream Discharge In', position: 'left' },
       { id: 'outlet', type: 'outlet', label: 'Booster Pump Out', position: 'right' },
       { id: 'vent', type: 'vent', label: 'Roof Drain Hose', position: 'bottom' },
       { id: 'drain', type: 'drain', label: 'Mixer Port', position: 'top' },

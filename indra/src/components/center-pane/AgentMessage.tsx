@@ -43,19 +43,19 @@ export default function AgentMessage({ message }: { message: Message }) {
         {/* Agent label */}
         <div className="flex items-center gap-2 mb-1">
           <div className="relative w-6 h-6 flex items-center justify-center flex-shrink-0">
-            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_1px_4px_rgba(124,58,237,0.25)]" />
+            <img src="/logo.png" alt="INDRA" className="w-full h-full object-contain drop-shadow-[0_1px_4px_rgba(16,185,129,0.25)]" />
           </div>
           <span className="text-[11px] font-extrabold tracking-wider text-slate-800 dark:text-zinc-200 uppercase font-mono">INDRA</span>
           
           {message.modelUsed && (
-            <span className="text-[10px] font-mono text-violet-700 dark:text-violet-300 px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/40 border border-violet-200/80 dark:border-violet-800/50 flex items-center gap-1 font-semibold">
-              <Cpu className="w-2.5 h-2.5 text-violet-600 dark:text-violet-400" />
+            <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center gap-1 font-semibold">
+              <Cpu className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
               <span>{message.modelUsed}</span>
             </span>
           )}
 
           {isAgentWorking && message.agentSteps?.some((s) => s.status !== 'completed') && (
-            <span className="text-[10px] text-violet-600 dark:text-violet-400 animate-pulse font-mono font-medium">sovereign reasoning...</span>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 animate-pulse font-mono font-medium">sovereign reasoning...</span>
           )}
         </div>
 
@@ -68,7 +68,7 @@ export default function AgentMessage({ message }: { message: Message }) {
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-1.5 font-semibold">
                 <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                <span>Backend offline or busy (127.0.0.1:8000)</span>
+                <span>{message.errorDetails?.message || 'Backend offline or busy (127.0.0.1:8000)'}</span>
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -112,21 +112,12 @@ export default function AgentMessage({ message }: { message: Message }) {
 
                 <div className="relative">
                   <MarkdownRenderer content={message.content} />
-                  {isAgentWorking && (
-                    <span 
-                      className="inline-block w-2.5 h-4.5 ml-1.5 align-middle rounded-xs bg-gradient-to-r from-violet-600 via-indigo-500 to-purple-600 animate-pulse shadow-sm shadow-violet-500/50" 
-                      title="Sovereign token generation active"
-                    />
-                  )}
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600 dark:text-indigo-400" />
-                <span>Thinking...</span>
-                <span 
-                  className="inline-block w-2.5 h-4 ml-1 align-middle rounded-xs bg-gradient-to-r from-violet-600 to-indigo-600 animate-pulse" 
-                />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500 dark:text-zinc-400" />
+                <span>Processing sovereign query...</span>
               </div>
             )}
 

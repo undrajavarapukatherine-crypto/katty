@@ -10,7 +10,7 @@ export default function ActiveModels() {
     <div className="px-3 py-3 border-b border-slate-200/70 dark:border-zinc-800/70">
       <div className="flex items-center justify-between px-1 mb-2.5">
         <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-slate-400 dark:text-zinc-500 font-mono">
-          <Cpu className="w-3 h-3 text-violet-600 dark:text-violet-400" />
+          <Cpu className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           <span>Resident Models</span>
         </div>
         <button
@@ -51,7 +51,7 @@ export default function ActiveModels() {
               {/* VRAM allocation progress track */}
               <div className="w-full h-1 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden mt-1.5">
                 <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-500"
+                  className="h-full bg-indigo-500 transition-all duration-500"
                   style={{ width: `${Math.min(100, Math.max(5, model.vramUsage || 0))}%` }}
                 />
               </div>

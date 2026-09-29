@@ -403,8 +403,8 @@ export default function KnowledgeBaseView() {
       return {
         label: 'MD',
         icon: BookOpen,
-        badgeClass: 'bg-violet-950/70 text-violet-300 border-violet-800/60',
-        iconBoxClass: 'bg-violet-950/40 border-violet-800/60 text-violet-400',
+        badgeClass: 'bg-cyan-950/70 text-cyan-300 border-cyan-800/60',
+        iconBoxClass: 'bg-cyan-950/40 border-cyan-800/60 text-cyan-400',
       };
     }
     if (fn.endsWith('.xlsx') || fn.endsWith('.xls') || fn.endsWith('.csv')) {
@@ -437,18 +437,18 @@ export default function KnowledgeBaseView() {
       <div className="flex flex-wrap items-center justify-between pb-4 border-b border-zinc-800/80 mb-5 gap-3">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-950/70 border border-violet-800/60 flex items-center justify-center">
-              <Database className="w-4 h-4 text-violet-400" />
+            <div className="w-8 h-8 rounded-xl bg-cyan-950/70 border border-cyan-800/60 flex items-center justify-center">
+              <Database className="w-4 h-4 text-cyan-400" />
             </div>
             <h1 className="text-base font-bold text-zinc-100 font-mono tracking-tight">
               Sovereign RAG Knowledge Base Explorer
             </h1>
-            <span className="text-[10px] text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-800/60 font-mono font-bold flex items-center gap-1">
+            <span className="text-[10px] text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-md border border-emerald-800/60 font-mono font-bold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {storageEngine === 'local' ? 'IN-BROWSER WASM 384D' : 'AIR-GAPPED VECTORSTORE'}
             </span>
             {isNative && (
-              <Badge variant="violet" className="font-mono text-[10px]">
+              <Badge variant="outline" className="font-mono text-[10px]">
                 NATIVE ELECTRON IPC
               </Badge>
             )}
@@ -467,7 +467,7 @@ export default function KnowledgeBaseView() {
               onClick={() => setStorageEngine('local')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                 storageEngine === 'local'
-                  ? 'bg-violet-600 text-white font-bold shadow-xs'
+                  ? 'bg-emerald-600 text-white font-bold shadow-xs'
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
@@ -478,7 +478,7 @@ export default function KnowledgeBaseView() {
               onClick={() => setStorageEngine('backend')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                 storageEngine === 'backend'
-                  ? 'bg-violet-600 text-white font-bold shadow-xs'
+                  ? 'bg-emerald-600 text-white font-bold shadow-xs'
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
@@ -520,8 +520,8 @@ export default function KnowledgeBaseView() {
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
             dragActive
-              ? 'border-violet-500 bg-violet-950/30'
-              : 'border-zinc-800 hover:border-violet-500/60 bg-zinc-900/40 hover:bg-zinc-900/80 shadow-md'
+              ? 'border-emerald-500 bg-emerald-950/30'
+              : 'border-zinc-800 hover:border-emerald-500/60 bg-zinc-900/40 hover:bg-zinc-900/80 shadow-md'
           }`}
         >
           <input
@@ -535,7 +535,7 @@ export default function KnowledgeBaseView() {
           <div className="flex flex-col items-center">
             {uploading ? (
               <>
-                <Loader2 className="w-7 h-7 text-violet-400 animate-spin mb-2" />
+                <Loader2 className="w-7 h-7 text-emerald-400 animate-spin mb-2" />
                 <span className="text-xs font-bold text-zinc-200">
                   Indexing files into offline vectorstore...
                 </span>
@@ -545,7 +545,7 @@ export default function KnowledgeBaseView() {
               </>
             ) : (
               <>
-                <div className="w-9 h-9 rounded-xl bg-violet-950/60 border border-violet-800/50 flex items-center justify-center mb-2 text-violet-400">
+                <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-800/50 flex items-center justify-center mb-2 text-emerald-400">
                   <Upload className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold text-zinc-200">
@@ -563,7 +563,7 @@ export default function KnowledgeBaseView() {
                     onClick={handleNativeBrowse}
                     className="gap-1.5 font-mono text-xs z-10"
                   >
-                    <FolderOpen className="w-3.5 h-3.5 text-violet-400" />
+                    <FolderOpen className="w-3.5 h-3.5 text-emerald-400" />
                     <span>{isNative ? 'Browse Local Drive (Native IPC)' : 'Browse Local Files'}</span>
                   </Button>
                 </div>
@@ -582,15 +582,15 @@ export default function KnowledgeBaseView() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search ASME B31.3 wall thickness, API 570 remaining life, ISO 10816 vibration zones, API 617 surge..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-violet-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-emerald-500 transition-colors"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-3 text-zinc-500 hover:text-zinc-300 text-xs font-mono"
+                  className="absolute right-3 top-3 text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
-                  ✕
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -598,7 +598,7 @@ export default function KnowledgeBaseView() {
             <button
               type="submit"
               disabled={searching}
-              className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-xs font-bold text-white transition-all flex items-center gap-1.5 shadow-sm shadow-violet-500/20 cursor-pointer disabled:opacity-50 font-mono"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all flex items-center gap-1.5 shadow-sm shadow-emerald-500/20 cursor-pointer disabled:opacity-50 font-mono"
             >
               {searching && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>Vector Search</span>
@@ -635,12 +635,12 @@ export default function KnowledgeBaseView() {
               </span>
               <div className="flex items-center gap-2">
                 {lastSearchLatency !== null && storageEngine === 'local' && (
-                  <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/60 flex items-center gap-1">
+                  <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800/60 flex items-center gap-1">
                     <Zap className="w-2.5 h-2.5 text-amber-300" />
                     <span>{lastSearchLatency}ms (Zero WAN)</span>
                   </span>
                 )}
-                <span className="text-[10px] text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-800/50 font-semibold">
+                <span className="text-[10px] text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-800/50 font-semibold">
                   {storageEngine === 'local' ? 'WASM Cosine Vector Retrieval' : 'Offline Semantic Retrieval'}
                 </span>
               </div>
@@ -655,14 +655,14 @@ export default function KnowledgeBaseView() {
                 {searchResults.map((res, i) => (
                   <div
                     key={i}
-                    className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs space-y-1 hover:border-violet-500/60 transition-colors"
+                    className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs space-y-1 hover:border-emerald-500/60 transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-violet-400 font-bold">
+                      <span className="text-emerald-400 font-bold">
                         {res.filename || res.document || 'Document'}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-violet-950/60 text-violet-300 border border-violet-800/50 font-bold">
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-950/60 text-emerald-300 border border-emerald-800/50 font-bold">
                           {res.matchType || 'SEMANTIC_VECTOR'}
                         </span>
                         <span className="text-[10px] text-emerald-400 font-bold">
@@ -693,7 +693,7 @@ export default function KnowledgeBaseView() {
                 <span className="w-2 h-2 rounded-full bg-emerald-500" /> &gt;0.85 HIGH
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" /> 0.65–0.85 MOD
+                <span className="w-2 h-2 rounded-full bg-amber-500" /> 0.65-0.85 MOD
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-slate-500" /> &lt;0.65 BASE

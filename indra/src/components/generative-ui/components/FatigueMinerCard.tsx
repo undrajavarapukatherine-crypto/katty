@@ -181,7 +181,7 @@ export default function FatigueMinerCard({
               <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-slate-500 dark:text-zinc-400">
                 Cumulative Damage (D)
               </span>
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border ${
                 isPautMandatory
                   ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800'
                   : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
@@ -342,7 +342,7 @@ export default function FatigueMinerCard({
 
             <div className="space-y-1 text-[11px] font-mono">
               <div className="font-bold flex items-center gap-2">
-                <span>{isPautMandatory ? 'MANDATORY PAUT REQUIRED PRIOR TO NEXT STARTUP' : 'PAUT INSPECTION DEFERRED — ASSET WITHIN SAFE FATIGUE REGIME'}</span>
+                <span>{isPautMandatory ? 'MANDATORY PAUT REQUIRED PRIOR TO NEXT STARTUP' : 'PAUT INSPECTION DEFERRED - ASSET WITHIN SAFE FATIGUE REGIME'}</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/10 dark:bg-white/10 font-bold">
                   THRESHOLD: D = 0.80
                 </span>

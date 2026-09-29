@@ -21,7 +21,7 @@ import type { EquipmentHealthCardProps } from '../types';
 
 export default function EquipmentHealthCard({
   tag = 'P-101',
-  name = 'Crude Distillation Slurry Feed Pump A',
+  name = 'Heavy Industrial Process Pump P-101A',
   type = 'Centrifugal Slurry Pump (API 610 BB2)',
   healthScore = 92,
   mtbfHours = 14200,
@@ -97,7 +97,7 @@ export default function EquipmentHealthCard({
 
         {/* Health Status Pill & Rescan */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-700 text-emerald-300 font-bold">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-950/80 border border-emerald-700 text-emerald-300 font-bold">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>{score}/100 HEALTH INDEX</span>
           </div>

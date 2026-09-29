@@ -205,12 +205,12 @@ export default function FunctionalSafetyCard({
     const shaSeal = 'd38f2910c4a7e189b5062a4980f7d142ce09';
     const deliverable = {
       id: `iso13849-${Date.now()}`,
-      name: `ISO 13849-1 Functional Safety Certificate — ${assetTag}`,
+      name: `ISO 13849-1 Functional Safety Certificate - ${assetTag}`,
       filename: `ISO_13849_PL_Assessment_${assetTag}.pdf`,
       type: 'pdf',
       size: '2.1 MB',
       generatedAt: new Date().toLocaleTimeString(),
-      title: `ISO 13849-1 Machinery Safety Assessment — ${assetTag}`,
+      title: `ISO 13849-1 Machinery Safety Assessment - ${assetTag}`,
       timestamp: new Date().toLocaleTimeString(),
       description: `Category ${archCat} architecture verification. Symmetrized MTTFd: ${calculations.symmetrizedMttfd} yrs (${calculations.mttfdLevel}), DCavg: ${dcAvg}% (${calculations.dcLevel}), CCF Score: ${ccfScore}/100. PFHd: ${calculations.pfhdFormatted}. Achieved PL: ${calculations.achievedPl.toUpperCase()} (${calculations.silEquivalent}).`,
       hash: shaSeal,
@@ -237,7 +237,7 @@ export default function FunctionalSafetyCard({
       {/* 1. HEADER & SIF LOCATOR */}
       <div className="px-5 py-3.5 bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-950 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
@@ -245,7 +245,7 @@ export default function FunctionalSafetyCard({
               <h2 className="text-sm font-bold font-mono text-zinc-100 tracking-wide uppercase">
                 {title}
               </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-violet-500/15 text-violet-300 border border-violet-500/30">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                 CATEGORY 4 / SIL 3
               </span>
             </div>
@@ -259,7 +259,7 @@ export default function FunctionalSafetyCard({
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleLocate}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-violet-500/50 text-xs font-mono font-bold text-violet-400 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-emerald-500/50 text-xs font-mono font-bold text-emerald-400 transition-all shadow-sm"
             title="Locate Safety Loop in P&ID"
           >
             <Crosshair className="w-3.5 h-3.5" />
@@ -284,7 +284,7 @@ export default function FunctionalSafetyCard({
       <div className="p-5 border-b border-zinc-800 bg-zinc-900/20">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-violet-400" />
+            <Layers className="w-4 h-4 text-emerald-400" />
             <h3 className="text-xs font-bold font-mono text-zinc-200 tracking-wide uppercase">
               ISO 13849-1 Category 4 Dual-Channel Architectural Schematic
             </h3>
@@ -318,7 +318,7 @@ export default function FunctionalSafetyCard({
               </text>
               
               {/* Input Block I1 */}
-              <rect x="0" y="0" width="130" height="48" rx="6" fill="url(#chan1Gradient)" stroke="#8b5cf6" strokeWidth="1.5" />
+              <rect x="0" y="0" width="130" height="48" rx="6" fill="url(#chan1Gradient)" stroke="#06b6d4" strokeWidth="1.5" />
               <text x="65" y="20" fill="#ede9fe" fontSize="10" fontFamily="monospace" textAnchor="middle" fontWeight="bold">
                 INPUT I1 (PT-401A)
               </text>
@@ -327,11 +327,11 @@ export default function FunctionalSafetyCard({
               </text>
 
               {/* Connecting Vector */}
-              <line x1="130" y1="24" x2="190" y2="24" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 2" />
-              <polygon points="186,21 194,24 186,27" fill="#8b5cf6" />
+              <line x1="130" y1="24" x2="190" y2="24" stroke="#06b6d4" strokeWidth="2" strokeDasharray="4 2" />
+              <polygon points="186,21 194,24 186,27" fill="#06b6d4" />
 
               {/* Logic Block L1 */}
-              <rect x="195" y="0" width="140" height="48" rx="6" fill="url(#chan1Gradient)" stroke="#8b5cf6" strokeWidth="1.5" />
+              <rect x="195" y="0" width="140" height="48" rx="6" fill="url(#chan1Gradient)" stroke="#06b6d4" strokeWidth="1.5" />
               <text x="265" y="20" fill="#ede9fe" fontSize="10" fontFamily="monospace" textAnchor="middle" fontWeight="bold">
                 LOGIC L1 (CPU A)
               </text>
@@ -340,11 +340,11 @@ export default function FunctionalSafetyCard({
               </text>
 
               {/* Connecting Vector */}
-              <line x1="335" y1="24" x2="395" y2="24" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 2" />
-              <polygon points="391,21 399,24 391,27" fill="#8b5cf6" />
+              <line x1="335" y1="24" x2="395" y2="24" stroke="#06b6d4" strokeWidth="2" strokeDasharray="4 2" />
+              <polygon points="391,21 399,24 391,27" fill="#06b6d4" />
 
               {/* Output Block M1 */}
-              <rect x="400" y="0" width="130" height="48" rx="6" fill="url(#chan1Gradient)" stroke="#8b5cf6" strokeWidth="1.5" />
+              <rect x="400" y="0" width="130" height="48" rx="6" fill="url(#chan1Gradient)" stroke="#06b6d4" strokeWidth="1.5" />
               <text x="465" y="20" fill="#ede9fe" fontSize="10" fontFamily="monospace" textAnchor="middle" fontWeight="bold">
                 OUTPUT M1 (SOV-A)
               </text>
@@ -429,7 +429,7 @@ export default function FunctionalSafetyCard({
             {/* FINAL SAFETY ACTUATOR (Right Side) */}
             <g transform="translate(630, 60)">
               {/* Connecting vectors from M1 & M2 to Final Element */}
-              <path d="M -60 -11 L -20 -11 L 0 44" stroke="#8b5cf6" strokeWidth="2" fill="none" />
+              <path d="M -60 -11 L -20 -11 L 0 44" stroke="#06b6d4" strokeWidth="2" fill="none" />
               <path d="M -60 99 L -20 99 L 0 44" stroke="#64748b" strokeWidth="2" fill="none" />
 
               <rect x="0" y="8" width="180" height="72" rx="8" fill="#18181b" stroke="#10b981" strokeWidth="2" />
@@ -577,7 +577,7 @@ export default function FunctionalSafetyCard({
                   key={pl}
                   className={`py-2 text-center rounded-lg font-mono text-xs font-bold uppercase transition-all ${
                     isAchieved
-                      ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30 scale-105 border border-violet-400'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 scale-105 border border-emerald-400'
                       : 'bg-zinc-800/80 text-zinc-500 border border-zinc-700/50'
                   }`}
                 >
@@ -633,7 +633,7 @@ export default function FunctionalSafetyCard({
       <div className="p-5 bg-zinc-900/40">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-violet-400" />
+            <Sliders className="w-4 h-4 text-cyan-400" />
             <h3 className="text-xs font-bold font-mono text-zinc-200 tracking-wide uppercase">
               Sensitivity Sliders &amp; Architecture Presets
             </h3>
@@ -643,7 +643,7 @@ export default function FunctionalSafetyCard({
           <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
             <button
               onClick={() => handleApplyPreset('4', 48.0, 42.0, 99.0, 75)}
-              className="px-2 py-1 rounded bg-violet-950/60 hover:bg-violet-900 text-violet-300 border border-violet-700 transition-colors"
+              className="px-2 py-1 rounded bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 transition-colors"
             >
               Cat 4 + DC High (PL e)
             </button>
@@ -675,7 +675,7 @@ export default function FunctionalSafetyCard({
           <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono mb-2">
               <span className="text-zinc-400">MTTFd Channel 1:</span>
-              <span className="font-bold text-violet-400">{mttfd1.toFixed(1)} yrs</span>
+              <span className="font-bold text-cyan-400">{mttfd1.toFixed(1)} yrs</span>
             </div>
             <input
               type="range"
@@ -684,7 +684,7 @@ export default function FunctionalSafetyCard({
               step="1.0"
               value={mttfd1}
               onChange={(e) => handleSlider(setMttfd1, parseFloat(e.target.value))}
-              className="w-full accent-violet-500 bg-zinc-800 rounded-lg cursor-pointer h-1.5"
+              className="w-full accent-cyan-500 bg-zinc-800 rounded-lg cursor-pointer h-1.5"
             />
             <div className="flex justify-between text-[9px] font-mono text-zinc-500 mt-1.5">
               <span>10 yrs</span>
@@ -769,7 +769,7 @@ export default function FunctionalSafetyCard({
         <div className="mt-4 flex items-center justify-end gap-3 pt-2 border-t border-zinc-800/80">
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-violet-500/50 text-xs font-mono font-bold text-zinc-100 transition-all shadow-md"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-emerald-500/50 text-xs font-mono font-bold text-zinc-100 transition-all shadow-md"
           >
             <FileCheck className="w-4 h-4 text-emerald-400" />
             <span>Export ISO 13849-1 Safety Assessment</span>

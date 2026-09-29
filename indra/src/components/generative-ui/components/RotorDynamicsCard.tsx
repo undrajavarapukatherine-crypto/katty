@@ -173,7 +173,7 @@ export default function RotorDynamicsCard({
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-indigo-500" />
               <span className="font-semibold text-slate-900 dark:text-zinc-100 uppercase tracking-wider text-[11px]">
-                Lateral Campbell Interference Diagram (0 – 8,000 RPM)
+                Lateral Campbell Interference Diagram (0 - 8,000 RPM)
               </span>
             </div>
 
@@ -228,8 +228,8 @@ export default function RotorDynamicsCard({
               </text>
 
               {/* Excitation Line: 2X Misalignment */}
-              <line x1="0" y1={mapY(0)} x2={line2XEnd.x} y2={line2XEnd.y} stroke="#a855f7" strokeWidth="1.8" strokeDasharray="5 2" />
-              <text x={line2XEnd.x - 45} y={line2XEnd.y - 6} fill="#c084fc" fontSize="8" fontFamily="monospace" fontWeight="bold">
+              <line x1="0" y1={mapY(0)} x2={line2XEnd.x} y2={line2XEnd.y} stroke="#06b6d4" strokeWidth="1.8" strokeDasharray="5 2" />
+              <text x={line2XEnd.x - 45} y={line2XEnd.y - 6} fill="#38bdf8" fontSize="8" fontFamily="monospace" fontWeight="bold">
                 2X Misalignment
               </text>
 
@@ -264,7 +264,7 @@ export default function RotorDynamicsCard({
                 <span className="w-2.5 h-0.5 bg-sky-400 inline-block" /> 1X Ray
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-0.5 bg-purple-400 inline-block border-b border-dashed" /> 2X Ray
+                <span className="w-2.5 h-0.5 bg-cyan-400 inline-block border-b border-dashed" /> 2X Ray
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-0.5 bg-amber-400 inline-block" /> 17X VPF ({vanePassHz} Hz)

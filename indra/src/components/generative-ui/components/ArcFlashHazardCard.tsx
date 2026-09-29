@@ -23,6 +23,7 @@ import {
   Flame,
   Copy,
   Check,
+  X,
 } from 'lucide-react';
 import useIndraStore from '@/store/indra-store';
 import { broadcastSyncEvent } from '@/lib/sync/multi-window-sync';
@@ -195,7 +196,7 @@ export default function ArcFlashHazardCard({
     } else {
       category = 'DANGEROUS';
       minPpeRating = 40.0;
-      ppeLabel = 'DANGEROUS — NO WORK PERMITTED';
+      ppeLabel = 'DANGEROUS - NO WORK PERMITTED';
       categoryColor = 'text-rose-500';
       categoryBg = 'bg-rose-950/40';
       categoryBorder = 'border-rose-500/60';
@@ -262,12 +263,12 @@ export default function ArcFlashHazardCard({
     const shaSeal = 'e8c47f02d91b48a7b3e21098654fcda370b9';
     const deliverable = {
       id: `arcflash-${Date.now()}`,
-      name: `IEEE 1584 Arc Flash Study — ${assetTag}`,
+      name: `IEEE 1584 Arc Flash Study - ${assetTag}`,
       filename: `IEEE_1584_ArcFlash_${assetTag}.pdf`,
       type: 'pdf',
       size: '2.4 MB',
       generatedAt: new Date().toLocaleTimeString(),
-      title: `IEEE 1584 Arc Flash & NFPA 70E Safety Study — ${assetTag}`,
+      title: `IEEE 1584 Arc Flash & NFPA 70E Safety Study - ${assetTag}`,
       timestamp: new Date().toLocaleTimeString(),
       description: `Statutory IEEE 1584-2018 calculation: ${calculations.incidentEnergy} cal/cm² at ${workingDistance}mm working distance. Category: ${calculations.category}. Arc Flash Boundary: ${calculations.afbMm}mm.`,
       hash: shaSeal,
@@ -356,7 +357,7 @@ export default function ArcFlashHazardCard({
                   calculations.isDangerous ? 'text-rose-400' : 'text-amber-400'
                 }`}>
                   {calculations.isDangerous
-                    ? 'DANGER: EXTREME ARC BLAST HAZARD — WORK PROHIBITED'
+                    ? 'DANGER: EXTREME ARC BLAST HAZARD - WORK PROHIBITED'
                     : 'WARNING: ARC FLASH & SHOCK HAZARD'}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
@@ -364,7 +365,7 @@ export default function ArcFlashHazardCard({
                 </span>
               </div>
               <p className="text-xs text-zinc-400 font-mono mt-0.5">
-                APPROPRIATE PPE REQUIRED — REFER TO IEEE 1584-2018 CALCULATIONS — DO NOT OPEN OR OPERATE ENERGIZED
+                APPROPRIATE PPE REQUIRED - REFER TO IEEE 1584-2018 CALCULATIONS - DO NOT OPEN OR OPERATE ENERGIZED
               </p>
             </div>
           </div>
@@ -426,7 +427,7 @@ export default function ArcFlashHazardCard({
               <div className="text-2xl font-black font-mono tracking-tight text-zinc-100 mt-1 flex items-baseline gap-2">
                 <span>{calculations.incidentEnergy}</span>
                 <span className="text-sm font-semibold text-zinc-400">cal/cm²</span>
-                <span className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-full border ${calculations.categoryBg} ${calculations.categoryColor} ${calculations.categoryBorder}`}>
+                <span className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-md border ${calculations.categoryBg} ${calculations.categoryColor} ${calculations.categoryBorder}`}>
                   {calculations.ppeLabel}
                 </span>
               </div>
@@ -548,7 +549,7 @@ export default function ArcFlashHazardCard({
             <div>
               <div className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Radio className="w-3.5 h-3.5 text-cyan-400" />
-                Arc Flash Boundary (AFB — 1.2 cal/cm² Threshold)
+                Arc Flash Boundary (AFB - 1.2 cal/cm² Threshold)
               </div>
               <div className="text-2xl font-black font-mono tracking-tight text-zinc-100 mt-1 flex items-baseline gap-2">
                 <span>{calculations.afbMm.toLocaleString()}</span>
@@ -952,13 +953,13 @@ export default function ArcFlashHazardCard({
 
           {/* 4. Hearing Protection */}
           <div className="p-3.5 rounded-xl border bg-zinc-900/70 border-zinc-800 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400 shrink-0">
+            <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shrink-0">
               <Headphones className="w-4 h-4" />
             </div>
             <div className="text-xs">
               <div className="font-mono font-bold text-zinc-200 flex items-center justify-between">
                 <span>Hearing Protection</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   NRR ≥ 26 dB
                 </span>
               </div>
@@ -1154,7 +1155,7 @@ export default function ArcFlashHazardCard({
               onClick={() => setShowLabelModal(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
 
             {/* Authentic ANSI Z535 Field Label Container */}

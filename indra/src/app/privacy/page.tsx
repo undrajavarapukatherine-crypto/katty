@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export const metadata = {
-  title: 'Privacy Policy — INDRA Sovereign AI Workbench',
+  title: 'Privacy Policy - INDRA Sovereign AI Workbench',
   description: 'Sovereign on-premise privacy policy detailing zero-telemetry, zero-WAN egress, and client-side data custody architecture.',
 };
 
@@ -105,7 +105,7 @@ export default function PrivacyPolicyPage() {
                 INDRA is architected from the foundation up as a sovereign, air-gapped system. The software does not establish outbound connections to commercial AI APIs (such as OpenAI, Anthropic, or Google Cloud), third-party analytics platforms, crash reporters, or tracking beacons.
               </p>
               <p>
-                All communications between the user interface and the execution kernel are confined to the local loopback interface (<code>127.0.0.1:8000</code>). When deployed in an air-gapped industrial plant or refinery demilitarized zone (DMZ), all external WAN routing is rejected by physical firewall rules without degrading software functionality.
+                All communications between the user interface and the execution kernel are confined to the local loopback interface (<code>127.0.0.1:8000</code>). When deployed in an air-gapped industrial plant, power station, manufacturing facility, or plant demilitarized zone (DMZ), all external WAN routing is rejected by physical firewall rules without degrading software functionality.
               </p>
             </section>
 
@@ -115,7 +115,7 @@ export default function PrivacyPolicyPage() {
                 <span>Local Storage &amp; IndexedDB Data Custody</span>
               </h2>
               <p>
-                All user data—including chat histories, ASME B31.3 calculation parameters, engineering inspection documents (.pdf, .docx, .xlsx), and custom system instructions—is persisted locally in the client browser using Dexie.js (IndexedDB).
+                All user data-including chat histories, ASME B31.3 calculation parameters, engineering inspection documents (.pdf, .docx, .xlsx), and custom system instructions-is persisted locally in the client browser using Dexie.js (IndexedDB).
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-500 dark:text-slate-400">
                 <li><strong className="text-slate-800 dark:text-slate-200">No Central Database:</strong> There is no cloud-hosted relational database or multi-tenant repository.</li>

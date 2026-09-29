@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LeftPane from '@/components/left-pane/LeftPane';
+import RightPane from '@/components/right-pane/RightPane';
 import ToastContainer from '@/components/common/ToastContainer';
 import { useIndraStore } from '@/store/indra-store';
 import { useApprovalsQuery, useModelsQuery } from '@/lib/queries';
@@ -37,7 +38,6 @@ import { useVoiceCommandContext } from '@/providers/VoiceCommandProvider';
 import { useCrossWindowSync } from '@/hooks/useCrossWindowSync';
 import { multiWindowSync } from '@/lib/sync/multi-window-sync';
 import { useAirGapTelemetry } from '@/hooks/useAirGapTelemetry';
-import UniversalAssetSearchModal from '@/components/common/UniversalAssetSearchModal';
 import { useControlRoomShortcuts } from '@/hooks/useControlRoomShortcuts';
 import { sovereignAudio } from '@/lib/audio/sound-effects';
 
@@ -80,8 +80,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useCrossWindowSync();
   const prevApprovalsCount = useRef(pendingApprovals.length);
 
-  // Control Room Keyboard Shortcuts & Universal Asset Search State
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // Control Room Acoustic State & Shortcuts
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   useEffect(() => {
@@ -93,11 +92,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setIsAudioMuted(nextMuted);
   };
 
-  useControlRoomShortcuts({
-    onOpenSearch: () => setIsSearchOpen(true),
-    isSearchOpen,
-    onCloseSearch: () => setIsSearchOpen(false),
-  });
+  useControlRoomShortcuts();
 
   // DCS Air-Gap Telemetry, Synchronized 1Hz UTC Clock & Audit Recording Engine
   const {
@@ -281,22 +276,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Universal Asset Search Trigger [Ctrl + K] */}
-          <button
-            onClick={() => {
-              sovereignAudio.playClick(0.08);
-              setIsSearchOpen(true);
-            }}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer font-mono text-xs"
-            title="Open Universal Asset & Standards Search (Ctrl+K)"
-          >
-            <Search className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-            <span className="hidden lg:inline text-[11px]">Search Assets</span>
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 rounded font-semibold border border-slate-300 dark:border-zinc-700">
-              Ctrl+K
-            </kbd>
-          </button>
-
           {/* Synthesized Sovereign Audio Ergonomics (Mute / Unmute) */}
           <button
             onClick={handleToggleAudio}
@@ -366,7 +345,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </button>
 
           {isNative && (
-            <Badge variant="violet" className="py-1 px-2.5">
+            <Badge variant="outline" className="py-1 px-2.5 font-bold">
               ELECTRON DESKTOP
             </Badge>
           )}
@@ -383,6 +362,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             title="Toggle Left Navigation Sidebar"
           >
             <PanelLeft className="w-4 h-4" />
+          </button>
+
+          <button 
+            onClick={toggleRightPane}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              isRightPaneOpen 
+                ? 'bg-slate-200/80 dark:bg-zinc-800 text-slate-800 dark:text-zinc-100' 
+                : 'hover:bg-slate-100 dark:hover:bg-zinc-900 text-slate-500 dark:text-zinc-400'
+            }`}
+            title="Toggle Right Inspector Pane (Deliverables, P&ID & Sovereign Monitor)"
+          >
+            <PanelRight className="w-4 h-4" />
           </button>
 
           <div className="h-4 w-px bg-slate-200 dark:bg-zinc-800 mx-0.5" />
@@ -414,61 +405,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        {/* Right: Air-Gap Telemetry Badges & Pitch Deck Action */}
+        {/* Right: Telemetry removed per user request */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Telemetry 1: LOCAL LOOP (127.0.0.1) */}
-          <div 
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold shadow-2xs"
-            title="Local loopback binding (127.0.0.1) - Zero WAN egress confirmed"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="hidden sm:inline">LOCAL LOOP (127.0.0.1)</span>
-            <span className="sm:hidden">127.0.0.1</span>
-          </div>
-
-          {/* Telemetry 2: API ENGINE (Port 8000) Latency */}
-          <div 
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 font-mono text-[10px] font-semibold"
-            title="FastAPI Local Server Port 8000 Healthcheck Roundtrip Latency"
-          >
-            <Server className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
-            <span>API ENGINE (Port 8000):</span>
-            <span className={isApiAlive ? 'text-cyan-600 dark:text-cyan-400 font-bold' : 'text-amber-500 font-bold'}>
-              {apiLatencyMs}ms
-            </span>
-          </div>
-
-          {/* Telemetry 3: AUDIT LEDGER Merkle Root Preview */}
-          <div 
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 font-mono text-[10px] font-semibold"
-            title={`Merkle Chain Integrity Root: ${merkleRootRaw}`}
-          >
-            <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-            <span>AUDIT LEDGER:</span>
-            <span className="text-slate-900 dark:text-zinc-100 font-bold">{merkleRootPreview}</span>
-          </div>
-
-          {/* Telemetry 4: GPU / INFERENCE Load */}
-          <div 
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 font-mono text-[10px] font-semibold"
-            title="Local Tensor Runner & WebGPU Resident Core Load"
-          >
-            <Cpu className="w-3 h-3 text-indigo-500 dark:text-indigo-400" />
-            <span>GPU / INFERENCE:</span>
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">{gpuLoad}%</span>
-          </div>
-
-          {/* SIH 6-Slide Pitch Deck Download */}
-          <a
-            href="http://localhost:8000/api/sih/pitch-deck"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 text-[11px] font-mono font-bold transition-all shadow-2xs cursor-pointer"
-            title="Export official 6-slide Smart India Hackathon 2026 Presentation (.pptx)"
-          >
-            <Presentation className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            <span className="hidden sm:inline">Export SIH Pitch Deck</span>
-          </a>
         </div>
       </div>
 
@@ -481,6 +419,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 min-w-0 w-full h-full overflow-hidden flex flex-col relative">
           {children}
         </div>
+
+        {/* Pane 3: Right Inspector Pane (Deliverables, P&ID CAD & Sovereign Monitor) */}
+        {isRightPaneOpen && (pathname === '/workbench' || pathname === '/') && <RightPane />}
       </main>
 
       {/* 4. Settings / Sovereign Diagnostics Modal */}
@@ -526,7 +467,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <div className="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl">
                 <span className="text-slate-500 dark:text-zinc-400 block text-[11px]">Storage Engine</span>
                 <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block truncate mt-0.5">Dexie (IndexedDB)</span>
-                <Badge variant="violet" className="mt-1">Local-First Disk</Badge>
+                <Badge variant="outline" className="mt-1">Local-First Disk</Badge>
               </div>
             </div>
 
@@ -603,9 +544,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* 7. Universal Asset Search Modal (Ctrl + K) */}
-      <UniversalAssetSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       {/* Global Connection Alerts & Status Toasts */}
       <ToastContainer />

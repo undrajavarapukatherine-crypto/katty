@@ -128,10 +128,10 @@ export default function IndustrialGauge({
           {tag && (
             <button
               onClick={handleLocateTag}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/40 dark:hover:bg-violet-900/50 border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 font-mono text-xs font-bold transition-all cursor-pointer group"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-bold transition-all cursor-pointer group"
               title="Center camera on P&ID diagram"
             >
-              <Crosshair className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 group-hover:rotate-45 transition-transform" />
+              <Crosshair className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:rotate-45 transition-transform" />
               <span>{tag}</span>
             </button>
           )}
@@ -141,7 +141,7 @@ export default function IndustrialGauge({
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${statusColors.badge}`}>
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${statusColors.badge}`}>
             <StatusIcon className="w-3 h-3" />
             <span>{statusColors.label}</span>
           </span>
@@ -256,7 +256,7 @@ export default function IndustrialGauge({
           <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex flex-col gap-1 font-mono">
             <div className="flex items-center gap-2">
               <span className="text-slate-400 dark:text-zinc-500">Design Range:</span>
-              <span className="font-semibold text-slate-700 dark:text-zinc-300">{min} – {max} {unit}</span>
+              <span className="font-semibold text-slate-700 dark:text-zinc-300">{min} - {max} {unit}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-slate-400 dark:text-zinc-500">Warning Trip:</span>
@@ -295,7 +295,7 @@ export default function IndustrialGauge({
         <div className="mt-3 pt-3 border-t border-dashed border-slate-200 dark:border-zinc-800/80 bg-slate-50/70 dark:bg-zinc-950/40 p-3 rounded-xl space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-600 dark:text-zinc-400 font-medium">Interactive Dynamic Sweep:</span>
-            <span className="font-mono font-bold text-violet-600 dark:text-violet-400">{currentValue.toFixed(1)} {unit}</span>
+            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{currentValue.toFixed(1)} {unit}</span>
           </div>
           <input
             type="range"
@@ -307,7 +307,7 @@ export default function IndustrialGauge({
               setCurrentValue(parseFloat(e.target.value));
               setIsAcknowledged(false);
             }}
-            className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-violet-600"
+            className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
           />
           <div className="flex justify-between text-[9px] font-mono text-slate-400 dark:text-zinc-500">
             <span>{min} (Low)</span>

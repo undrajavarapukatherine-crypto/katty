@@ -206,7 +206,7 @@ export default function TelemetryChart({
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-xs font-bold text-zinc-100 tracking-wider">{title}</h4>
-              <span className="px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-400 border border-zinc-800 text-[9px] font-bold">
+              <span className="px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800 text-[9px] font-bold">
                 {isoClass}
               </span>
             </div>
@@ -216,7 +216,7 @@ export default function TelemetryChart({
 
         {/* Real-Time Severity Pill & Controls */}
         <div className="flex items-center gap-2">
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${severityZone.badge}`}>
+          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold border ${severityZone.badge}`}>
             <Activity className="w-3.5 h-3.5" />
             <span>{currentRms} {unit} • {severityZone.zone} ({severityZone.label})</span>
           </div>
@@ -296,7 +296,7 @@ export default function TelemetryChart({
           <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800">
             <div className="flex items-center justify-between text-[10px] text-zinc-400 mb-1.5">
               <span className="font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                <BarChart2 className="w-3 h-3 text-violet-400" />
+                <BarChart2 className="w-3 h-3 text-cyan-400" />
                 15-BIN FFT HARMONIC SPECTRUM (0 - 550 Hz)
               </span>
               <span className="text-[9px] text-zinc-400">Resolution: 0.5X Orders</span>
