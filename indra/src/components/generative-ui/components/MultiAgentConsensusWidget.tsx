@@ -58,7 +58,7 @@ export interface MultiAgentConsensusProps {
 export default function MultiAgentConsensusWidget({
   tag = 'CDU-Pipe-104',
   title = 'Tri-Model Autonomous Peer-Review & Consensus Engine',
-  equipmentType = 'Crude Distillation Transfer Spool (ASTM A106 Gr B)',
+  equipmentType = 'High-Pressure Process Transfer Spool (ASTM A106 Gr B)',
   targetParameter = 'Maximum Allowable Operating Pressure (MAOP) & Recirculation Trip Setpoint',
   consensusValue = '465.0 psig (with 14.5% FV-101 minimum bypass)',
   agreementScore = 98.4,
@@ -79,7 +79,7 @@ export default function MultiAgentConsensusWidget({
       name: 'Agent Alpha (Process Lead)',
       role: 'Thermodynamics & Plant Throughput',
       avatarColor: 'from-cyan-500 to-blue-600',
-      initialStance: 'Advocates maximum throughput at 510 psig to sustain 220,000 kg/h crude feed.',
+      initialStance: 'Advocates maximum throughput at 510 psig to sustain 220,000 kg/h process feed.',
       proposedValue: '510 psig',
       keyMetric: 'Throughput: 100%',
       governingStandard: 'API 14E / Crane TP-410',
@@ -113,7 +113,7 @@ export default function MultiAgentConsensusWidget({
       round: 1,
       speaker: 'ALPHA',
       argument:
-        'To fulfill operational schedule for crude run #42, pipeline CDU-Pipe-104 should operate at 510.0 psig. Darcy-Weisbach friction drops require this inlet pressure to guarantee 2.83 m/s velocity.',
+        'To fulfill operational schedule for continuous production run #42, pipeline CDU-Pipe-104 should operate at 510.0 psig. Darcy-Weisbach friction drops require this inlet pressure to guarantee 2.83 m/s velocity.',
       standardCitation: 'Crane TP-410 §3.2 (Hydraulic Flow Optimization)',
       sentiment: 'DISAGREE',
     },

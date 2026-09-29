@@ -78,7 +78,7 @@ const DEFAULT_NODES: Node<SpatialNodeData>[] = [
     position: { x: 140, y: 440 },
     data: {
       tag: 'P-101A',
-      name: 'Centrifugal Crude Feed Pump',
+      name: 'High-Pressure Process Feed Pump',
       category: 'pumps',
       standard: 'API 610 OH2 / ISO 13709',
       subType: 'Overhung End-Suction Process Pump',
@@ -118,7 +118,7 @@ const DEFAULT_NODES: Node<SpatialNodeData>[] = [
     position: { x: 740, y: 420 },
     data: {
       tag: 'E-201',
-      name: 'Crude Pre-Heat Exchanger',
+      name: 'Process Feed Heat Exchanger',
       category: 'exchangers',
       standard: 'TEMA Type BEM / ASME Sec VIII',
       subType: 'Fixed Tubesheet Heat Exchanger',
@@ -131,7 +131,7 @@ const DEFAULT_NODES: Node<SpatialNodeData>[] = [
       ],
     },
   },
-  // Equipment Asset 4: Crude Distillation Column C-301
+  // Equipment Asset 4: Heavy Industrial Process Column C-301
   {
     id: 'node-eq-c301',
     type: 'equipmentNode',
@@ -143,7 +143,7 @@ const DEFAULT_NODES: Node<SpatialNodeData>[] = [
       standard: 'ASME Sec VIII Div 2 / API 510',
       subType: '54 Valve Trays Multi-Draw Column',
       symbol: 'column-trayed',
-      color: '#8b5cf6',
+      color: '#06b6d4',
       status: 'RUNNING',
       specs: [
         { label: 'Diameter', value: '4.8 m' },
@@ -163,7 +163,7 @@ const DEFAULT_NODES: Node<SpatialNodeData>[] = [
       standard: 'ASME Sec VIII Div 1 / API 521',
       subType: 'Vertical Vapor-Liquid Knock-Out Drum',
       symbol: 'vessel-vertical',
-      color: '#8b5cf6',
+      color: '#06b6d4',
       status: 'RUNNING',
       specs: [
         { label: 'Holdup', value: '5.0 min (NLL)' },
@@ -235,7 +235,7 @@ const DEFAULT_EDGES: Edge[] = [
     type: 'processLine',
     data: {
       lineSpec: '16"-P-101-A1A',
-      service: 'Crude Feed Process',
+      service: 'Process Feed Service',
       serviceCode: 'P',
       color: '#10b981',
       flowRate: '450 m³/h',
@@ -267,7 +267,7 @@ const DEFAULT_EDGES: Edge[] = [
     type: 'processLine',
     data: {
       lineSpec: '16"-HC-201-B3B',
-      service: 'Pre-Heated Crude (185°C)',
+      service: 'Pre-Heated Process Stream (185 deg C)',
       serviceCode: 'HC',
       color: '#f59e0b',
       flowRate: '450 m³/h',
